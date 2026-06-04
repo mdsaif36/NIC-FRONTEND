@@ -141,7 +141,7 @@ function App() {
                 }
               `}} />
               
-              {/* Giant background text (dimmed outline/shimmer) */}
+              {/* Giant background text (previous shimmering design) */}
               <span
                 className="animate-watermark-shimmer absolute"
                 style={{
@@ -150,11 +150,10 @@ function App() {
                   fontWeight: 900,
                   letterSpacing: '-0.03em',
                   lineHeight: 1,
-                  background: 'linear-gradient(90deg, rgba(56,189,248,0.12) 0%, rgba(139,92,246,0.08) 25%, rgba(244,63,94,0.12) 50%, rgba(139,92,246,0.08) 75%, rgba(56,189,248,0.12) 100%)',
+                  background: 'linear-gradient(90deg, rgba(56,189,248,0.24) 0%, rgba(139,92,246,0.18) 25%, rgba(244,63,94,0.24) 50%, rgba(139,92,246,0.18) 75%, rgba(56,189,248,0.24) 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
-                  WebkitTextStroke: '1px rgba(255, 255, 255, 0.05)',
                   userSelect: 'none',
                   pointerEvents: 'none',
                   whiteSpace: 'nowrap',

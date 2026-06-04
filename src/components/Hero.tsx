@@ -67,85 +67,49 @@ export const Hero: React.FC<HeroProps> = () => {
         </div>
       </div>
 
-      {/* ── Bottom Section: Text Promo Banner & Grayscale Logo Ticker ── */}
-      <div className="w-full relative z-10 border-t border-white/5 bg-slate-950/65 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-6">
-          
-          {/* CTA Buttons Banner */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
-            {/* Primary CTA */}
-            <button
-              onClick={() => {}}
-              className="group relative inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full font-sora font-semibold text-sm text-white overflow-hidden transition-all duration-300"
-              style={{
-                background: 'linear-gradient(135deg, #1a6bf5 0%, #7c3aed 50%, #ef4444 100%)',
-                boxShadow: '0 0 24px rgba(26,107,245,0.35)',
-              }}
-            >
-              <span className="relative z-10">Start for Free</span>
-              <svg className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
-              <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
-            </button>
+      {/* ── Bottom Section: Giant Brand Watermark with Sliced Tagline Cutout ── */}
+      <div className="w-full overflow-hidden select-none pointer-events-none mt-12 mb-16 flex items-center justify-center relative h-32 md:h-44 bg-transparent z-10" aria-hidden="true">
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes watermarkShimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          .animate-watermark-shimmer {
+            background-size: 200% auto !important;
+            animation: watermarkShimmer 7s ease-in-out infinite;
+          }
+        `}} />
+        
+        {/* Giant background text (NexInCampus shimmering design) */}
+        <span
+          className="animate-watermark-shimmer absolute"
+          style={{
+            fontFamily: "'Sora', sans-serif",
+            fontSize: 'clamp(2.5rem, 9vw, 8rem)',
+            fontWeight: 900,
+            letterSpacing: '-0.03em',
+            lineHeight: 1,
+            background: 'linear-gradient(90deg, rgba(56,189,248,0.24) 0%, rgba(139,92,246,0.18) 25%, rgba(244,63,94,0.24) 50%, rgba(139,92,246,0.18) 75%, rgba(56,189,248,0.24) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            userSelect: 'none',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+            display: 'block',
+            zIndex: 0,
+          }}
+        >
+          NexInCampus
+        </span>
 
-            {/* Alumni CTA */}
-            <button
-              onClick={() => {}}
-              className="group inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full font-sora font-semibold text-sm text-white border border-white/15 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 transition-all duration-300"
-            >
-              <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
-              </svg>
-              I am Alumni
-            </button>
-
-            {/* College Verify CTA */}
-            <button
-              onClick={() => {}}
-              className="group inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full font-sora font-semibold text-sm text-white border border-white/15 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 transition-all duration-300"
-            >
-              <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.745 3.745 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.745 3.745 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.745 3.745 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-              </svg>
-              College Verify
-            </button>
-          </div>
-
-          {/* Grayscale partner logos strip matching the reference design layout */}
-          <div className="w-full border-t border-white/5 pt-5 pb-1 flex flex-wrap items-center justify-center gap-x-12 gap-y-4 md:gap-x-16 select-none opacity-40 hover:opacity-60 transition-opacity duration-300">
-            
-            {/* Google */}
-            <span className="font-sora text-sm font-extrabold tracking-tight">
-              GOOGLE
-            </span>
-
-            {/* Microsoft */}
-            <span className="font-sora text-sm font-extrabold tracking-tight">
-              MICROSOFT
-            </span>
-
-            {/* Amazon */}
-            <span className="font-sora text-sm font-extrabold tracking-tight">
-              AMAZON
-            </span>
-
-            {/* Meta */}
-            <span className="font-sora text-sm font-extrabold tracking-tight">
-              META
-            </span>
-
-            {/* Flipkart */}
-            <span className="font-sora text-sm font-extrabold tracking-tight">
-              FLIPKART
-            </span>
-
-            {/* Netflix */}
-            <span className="font-sora text-sm font-extrabold tracking-tight">
-              NETFLIX
-            </span>
-          </div>
-
+        {/* The Horizontal Cut/Slicing Bar masking the background text */}
+        <div className="absolute w-full h-[24px] sm:h-[32px] md:h-[40px] bg-[#020205] flex items-center justify-center z-10 border-y border-white/5">
+          {/* Tagline centered inside the cut */}
+          <span className="text-center px-4 font-space-grotesk text-[8px] sm:text-[10px] md:text-[11px] font-extrabold tracking-[0.2em] sm:tracking-[0.3em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400 drop-shadow-[0_2px_8px_rgba(56,189,248,0.15)]">
+            where your college network becomes your career
+          </span>
         </div>
       </div>
     </section>

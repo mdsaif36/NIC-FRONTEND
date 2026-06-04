@@ -141,7 +141,6 @@ function App() {
                 }
               `}} />
               
-              {/* Giant background text (previous shimmering design) */}
               <span
                 className="animate-watermark-shimmer absolute"
                 style={{
@@ -161,7 +160,7 @@ function App() {
                   zIndex: 0,
                 }}
               >
-                NextInCampus
+                NexInCampus
               </span>
 
               {/* The Horizontal Cut/Slicing Bar masking the background text */}

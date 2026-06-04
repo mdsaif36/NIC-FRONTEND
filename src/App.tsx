@@ -1,0 +1,155 @@
+import { useState, useEffect } from 'react';
+import './App.css';
+import { AnimatedBackground } from './components/AnimatedBackground';
+import { Navbar } from './components/Navbar';
+import { Hero } from './components/Hero';
+import { HowItWorks } from './components/HowItWorks';
+import { Stats } from './components/Stats';
+import { CTABanner } from './components/CTABanner';
+import { Footer } from './components/Footer';
+import { AuthPage } from './components/AuthPage';
+import { DashboardPage } from './components/DashboardPage';
+
+function App() {
+  const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard'>('landing');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [session, setSession] = useState<{
+    id: number;
+    role: 'seeker' | 'alumni';
+    name: string;
+    college?: string;
+    company?: string;
+  } | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Check user session on startup
+  useEffect(() => {
+    const checkSession = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const res = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (res.ok) {
+            const user = await res.json();
+            setSession({
+              id: user.id,
+              role: user.role,
+              name: user.name,
+              college: user.college,
+              company: user.company
+            });
+            setCurrentPage('dashboard');
+          } else {
+            localStorage.removeItem('token');
+          }
+        } catch (err) {
+          console.error("Error validating session:", err);
+        }
+      }
+      setIsInitializing(false);
+    };
+    checkSession();
+  }, []);
+
+  // Scroll to top when changing pages
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as any });
+  }, [currentPage]);
+
+  const handleNavigate = (page: 'landing' | 'auth', mode: 'login' | 'signup' = 'login') => {
+    setAuthMode(mode);
+    setCurrentPage(page);
+  };
+
+  const handleAuthSuccess = (token: string, user: { id: number; role: 'seeker' | 'alumni'; name: string; company?: string; college?: string }) => {
+    localStorage.setItem('token', token);
+    setSession(user);
+    setCurrentPage('dashboard');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setSession(null);
+    setCurrentPage('landing');
+  };
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center font-sora select-none">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+          <span className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Initializing Nexus Connect...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="relative min-h-screen flex flex-col justify-between overflow-x-hidden select-none transition-all duration-200 bg-black text-white"
+    >
+      {/* Dynamic Animated Particle Mesh Canvas Background - always visible, renders starry layout */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
+        style={{ opacity: 0.85 }}
+      >
+        <AnimatedBackground showOrbs={false} />
+      </div>
+
+      {/* Navbar Header Section (Only on Landing Page) */}
+      {currentPage === 'landing' && (
+        <Navbar 
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
+        />
+      )}
+
+      <main className="flex-grow relative z-10">
+        {currentPage === 'landing' && (
+          <>
+            {/* Section 1 — Hero */}
+            <Hero onNavigate={handleNavigate} />
+
+            {/* Section 2 — How It Works */}
+            <HowItWorks />
+
+            {/* Section 3 — Stats & Social Proof */}
+            <Stats />
+
+            {/* Section 4 — CTA Banner */}
+            <CTABanner onNavigate={handleNavigate} />
+
+            {/* Footer Section */}
+            <Footer />
+          </>
+        )}
+
+        {currentPage === 'auth' && (
+          <AuthPage 
+            initialMode={authMode}
+            onSuccess={handleAuthSuccess}
+            onBack={() => handleNavigate('landing')}
+          />
+        )}
+
+        {currentPage === 'dashboard' && session && (
+          <DashboardPage 
+            id={session.id}
+            role={session.role}
+            name={session.name}
+            college={session.college}
+            company={session.company}
+            onLogout={handleLogout}
+          />
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default App;

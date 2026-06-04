@@ -1,0 +1,58 @@
+/* App-level styles - kept minimal, most styling is in Tailwind */
+
+/* Gradient text utility */
+.text-gradient {
+  background: linear-gradient(135deg, #1A6BF5 0%, #6B9FFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass morphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Blue glow effect on hover */
+.card-glow:hover {
+  box-shadow: 0 0 30px rgba(26, 107, 245, 0.15),
+              0 0 60px rgba(26, 107, 245, 0.05);
+}
+
+/* Navbar transition */
+.navbar-solid {
+  background: rgba(10, 15, 46, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Hero background glow */
+.hero-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26, 107, 245, 0.15) 0%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+/* Connection ticker dot */
+.ticker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Company logo text styles */
+.company-logo {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  transition: opacity 0.3s;
+}

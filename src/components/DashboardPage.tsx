@@ -1,0 +1,959 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { 
+  Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck
+} from 'lucide-react';
+import { io } from 'socket.io-client';
+import { DashboardTab } from './dashboard/DashboardTab';
+import { DiscoverTab } from './dashboard/DiscoverTab';
+import { RequestsTab } from './dashboard/RequestsTab';
+import { MessagesTab } from './dashboard/MessagesTab';
+import { SavedTab } from './dashboard/SavedTab';
+import { ProfileTab } from './dashboard/ProfileTab';
+import { AlumniDashboard } from './dashboard/AlumniDashboard';
+
+interface DashboardPageProps {
+  id: number;
+  role: 'seeker' | 'alumni';
+  name: string;
+  college?: string;
+  company?: string;
+  onLogout: () => void;
+}
+
+type ActiveTab = 'dashboard' | 'network' | 'my_referrals' | 'messages' | 'saved' | 'profile' | 'accounting';
+
+export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, college = 'IIT Bombay', company = 'Google', onLogout }) => {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+
+  // Profile data (Screen 6)
+  const [profileName, setProfileName] = useState(name);
+  const [profileCollege, setProfileCollege] = useState(college);
+  const [profileYear, setProfileYear] = useState('3rd Year');
+  const [profileBranch, setProfileBranch] = useState('CSE');
+  const [targetCompanies, setTargetCompanies] = useState<string[]>(['Google', 'Microsoft', 'Amazon']);
+  const [newCompanyInput, setNewCompanyInput] = useState('');
+  
+  // Set requested skills list
+  const [skills, setSkills] = useState<string[]>(['Python', 'React', 'ML', 'SQL', 'System Design', 'AWS', 'DSA']);
+  const [newSkillInput, setNewSkillInput] = useState('');
+  
+  // Skill Details state for 3D Globe attributes
+  const [skillDetails, setSkillDetails] = useState<{
+    [key: string]: { proficiency: number; type: 'technical' | 'soft' | 'domain' }
+  }>({
+    'Python': { proficiency: 5, type: 'technical' },
+    'React': { proficiency: 5, type: 'technical' },
+    'ML': { proficiency: 5, type: 'domain' },
+    'SQL': { proficiency: 4, type: 'technical' },
+    'System Design': { proficiency: 5, type: 'domain' },
+    'AWS': { proficiency: 3, type: 'technical' },
+    'DSA': { proficiency: 5, type: 'domain' }
+  });
+
+  const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
+  const [resumeName, setResumeName] = useState('arjun_resume.pdf');
+  const [resumeUploaded, setResumeUploaded] = useState(true);
+  const [bio, setBio] = useState('CSE Junior passionate about building highly interactive web apps and AI systems.');
+  const [githubUrl, setGithubUrl] = useState('https://github.com/arjun');
+  const [linkedinUrl, setLinkedinUrl] = useState('https://linkedin.com/in/arjun');
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // Discover state (Screen 2)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [collegeOnlyFilter, setCollegeOnlyFilter] = useState(true);
+  const [privacyCollegeOnly, setPrivacyCollegeOnly] = useState(true);
+  const [selectedCompanyFilter, setSelectedCompanyFilter] = useState('All');
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState('All');
+  const [availabilityFilter, setAvailabilityFilter] = useState('All');
+  const [aiMatchToggle, setAiMatchToggle] = useState(true);
+  const [selectedAlumni, setSelectedAlumni] = useState<any | null>(null);
+  const [savedAlumniIds, setSavedAlumniIds] = useState<number[]>([]);
+
+  // Request flow modal states (Screen 3)
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [requestStep, setRequestStep] = useState(1);
+  const [targetRole, setTargetRole] = useState('Software Engineer');
+  const [timeline, setTimeline] = useState('Actively looking');
+  const [pitchMessage, setPitchMessage] = useState('');
+  const [aiTipWarning, setAiTipWarning] = useState('');
+  const [alumniForRequest, setAlumniForRequest] = useState<any | null>(null);
+  const [expandedRequest, setExpandedRequest] = useState<any | null>(null);
+  const [trackerFilter, setTrackerFilter] = useState<'All' | 'Pending' | 'Accepted' | 'Declined' | 'Hired'>('All');
+
+  // Seeker Tracker lists & conversations
+  const [requestsList, setRequestsList] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ [key: number]: { id?: number, sender: 'seeker' | 'alumni', text: string, time: string }[] }>({});
+  
+  // Chat input and meeting scheduler
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const [newMessageText, setNewMessageText] = useState('');
+  const [isSchedulerOpen, setIsSchedulerOpen] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('2026-06-05');
+  const [scheduledTime, setScheduledTime] = useState('16:00');
+
+  // Alumni dashboard lists
+  const [requests, setRequests] = useState<any[]>([]);
+  const [referralsSentCount, setReferralsSentCount] = useState(0);
+
+  // Alumni List (Loaded from DB)
+  const [alumniNetwork, setAlumniNetwork] = useState<any[]>([]);
+
+  // Fetch functions
+  const fetchProfile = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfileName(data.name);
+        setProfileCollege(data.college);
+        if (data.role === 'seeker') {
+          setProfileYear(data.year || '3rd Year');
+          setProfileBranch(data.branch || 'CSE');
+          setBio(data.bio || '');
+          setGithubUrl(data.githubUrl || '');
+          setLinkedinUrl(data.linkedinUrl || '');
+          setSkills(data.skills || []);
+          setSkillDetails(data.skillDetails || {});
+          setTargetCompanies(data.targetCompanies || []);
+          setResumeUploaded(data.resumeUploaded);
+          setResumeName(data.resumeName || '');
+        } else {
+          setReferralsSentCount(data.referralsSentCount);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+    }
+  }, []);
+
+  const fetchAlumni = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/users/alumni', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const list = await res.json();
+        const formatted = list.map((a: any) => {
+          const initials = a.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+          const colors = [
+            'from-blue-500 to-indigo-650',
+            'from-purple-500 to-pink-500',
+            'from-emerald-500 to-teal-600',
+            'from-rose-500 to-pink-600',
+            'from-amber-500 to-orange-600',
+            'from-teal-500 to-emerald-600'
+          ];
+          const colorIdx = a.id % colors.length;
+          return {
+            ...a,
+            initials,
+            color: colors[colorIdx]
+          };
+        });
+        setAlumniNetwork(formatted);
+      }
+    } catch (err) {
+      console.error("Error fetching alumni:", err);
+    }
+  }, []);
+
+  const fetchRequests = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      if (role === 'seeker') {
+        const res = await fetch('/api/requests/seeker', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const formatted = data.map((r: any) => ({
+            id: r.id,
+            alumniId: r.alumniId,
+            alumniName: r.alumni.name,
+            company: r.alumni.company,
+            role: r.targetRole,
+            date: new Date(r.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ago',
+            status: r.status,
+            message: r.pitchMessage
+          }));
+          setRequestsList(formatted);
+        }
+      } else {
+        const res = await fetch('/api/requests/alumni', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const formatted = data.map((r: any) => ({
+            id: r.id,
+            studentName: r.seeker.name,
+            class: `${r.seeker.branch} ${r.seeker.year || '3rd Year'}, ${r.seeker.college}`,
+            company: company,
+            role: r.targetRole,
+            score: '94% Match',
+            message: r.pitchMessage,
+            status: r.status,
+            seekerId: r.seekerId
+          }));
+          setRequests(formatted);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading requests:", err);
+    }
+  }, [role, company]);
+
+  const fetchConversations = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/messages/conversations', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setConversations(data);
+      }
+    } catch (err) {
+      console.error("Error loading conversations:", err);
+    }
+  }, []);
+
+  const fetchChatHistory = useCallback(async (partnerId: number) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`/api/messages/history/${partnerId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const formatted = data.map((m: any) => ({
+          id: m.id,
+          sender: m.senderId === id ? 'seeker' as const : 'alumni' as const,
+          text: m.text,
+          time: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }));
+        setChatMessages(prev => ({
+          ...prev,
+          [partnerId]: formatted
+        }));
+      }
+    } catch (err) {
+      console.error("Error loading message history:", err);
+    }
+  }, [id]);
+
+  // Load all initial data on mount
+  useEffect(() => {
+    fetchProfile();
+    fetchAlumni();
+    fetchRequests();
+    fetchConversations();
+  }, [fetchProfile, fetchAlumni, fetchRequests, fetchConversations]);
+
+  // Trigger history fetching when activeChatId changes
+  useEffect(() => {
+    if (activeChatId !== null) {
+      fetchChatHistory(activeChatId);
+    }
+  }, [activeChatId, fetchChatHistory]);
+
+  // Connect Socket.IO
+  useEffect(() => {
+    const socketInstance = io({
+      query: { userId: id }
+    });
+
+    socketInstance.on('message', (msg: any) => {
+      // Find partner ID from msg
+      const partnerId = msg.senderId === id ? msg.receiverId : msg.senderId;
+
+      setChatMessages(prev => {
+        const currentList = prev[partnerId] || [];
+        if (currentList.some((m: any) => m.id === msg.id)) {
+          return prev;
+        }
+        const formattedMsg = {
+          id: msg.id,
+          sender: msg.senderId === id ? 'seeker' as const : 'alumni' as const,
+          text: msg.text,
+          time: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        return {
+          ...prev,
+          [partnerId]: [...currentList, formattedMsg]
+        };
+      });
+
+      // Reload conversations listing
+      fetchConversations();
+      // Reload requests to see status changes if system message triggers it
+      fetchRequests();
+    });
+
+    return () => {
+      socketInstance.disconnect();
+    };
+  }, [id, fetchConversations, fetchRequests]);
+
+  // Seeker submits referral request
+  const submitReferralRequest = async () => {
+    if (!alumniForRequest) return;
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          alumniId: alumniForRequest.id,
+          targetRole,
+          timeline,
+          pitchMessage
+        })
+      });
+      if (res.ok) {
+        fetchRequests();
+        setIsRequestModalOpen(false);
+        setActiveTab('my_referrals');
+      }
+    } catch (err) {
+      console.error("Error submitting request:", err);
+    }
+  };
+
+  // Seeker sends chat message
+  const handleSendMessage = async () => {
+    if (!newMessageText.trim() || activeChatId === null) return;
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          receiverId: activeChatId,
+          text: newMessageText
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const formattedMsg = {
+          id: data.id,
+          sender: 'seeker' as const,
+          text: newMessageText,
+          time: 'Now'
+        };
+        setChatMessages(prev => ({
+          ...prev,
+          [activeChatId]: [...(prev[activeChatId] || []), formattedMsg]
+        }));
+        setNewMessageText('');
+        fetchConversations();
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
+  };
+
+  // Seeker schedules call
+  const handleScheduleCall = async () => {
+    if (activeChatId === null) return;
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/messages/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          receiverId: activeChatId,
+          date: scheduledDate,
+          time: scheduledTime
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const callMsg = {
+          id: data.id,
+          sender: 'seeker' as const,
+          text: data.text,
+          time: 'Now'
+        };
+        setChatMessages(prev => ({
+          ...prev,
+          [activeChatId]: [...(prev[activeChatId] || []), callMsg]
+        }));
+        setIsSchedulerOpen(false);
+        fetchConversations();
+      }
+    } catch (err) {
+      console.error("Error scheduling call:", err);
+    }
+  };
+
+  // Profile Save helper
+  const handleSaveProfile = async (updatedFields: any) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedFields)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfileName(data.name);
+        setProfileCollege(data.college);
+        if (data.role === 'seeker') {
+          setProfileYear(data.year);
+          setProfileBranch(data.branch);
+          setBio(data.bio);
+          setGithubUrl(data.githubUrl);
+          setLinkedinUrl(data.linkedinUrl);
+          setSkills(data.skills);
+          setSkillDetails(data.skillDetails);
+          setTargetCompanies(data.targetCompanies);
+          setResumeUploaded(data.resumeUploaded);
+          setResumeName(data.resumeName);
+        }
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+    }
+  };
+
+  // Wrapped edit mode toggler to auto-save to DB
+  const toggleEditMode = (mode: boolean) => {
+    if (isEditMode && !mode) {
+      handleSaveProfile({
+        name: profileName,
+        college: profileCollege,
+        year: profileYear,
+        branch: profileBranch,
+        bio,
+        githubUrl,
+        linkedinUrl,
+        skills,
+        skillDetails,
+        targetCompanies,
+        resumeUploaded,
+        resumeName
+      });
+    }
+    setIsEditMode(mode);
+  };
+
+  // Alumni updates request status (refer/info/decline)
+  const handleAction = async (requestId: number, action: 'referred' | 'info' | 'declined') => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`/api/requests/${requestId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: action })
+      });
+      if (res.ok) {
+        fetchRequests();
+        fetchProfile(); // update referrals metrics count
+      }
+    } catch (err) {
+      console.error("Error processing request action:", err);
+    }
+  };
+
+  const handleAddCompany = () => {
+    if (newCompanyInput.trim() && !targetCompanies.includes(newCompanyInput.trim())) {
+      setTargetCompanies([...targetCompanies, newCompanyInput.trim()]);
+      setNewCompanyInput('');
+    }
+  };
+
+  const handleRemoveCompany = (c: string) => {
+    setTargetCompanies(targetCompanies.filter(item => item !== c));
+  };
+
+  const handleAddSkill = () => {
+    if (newSkillInput.trim() && !skills.includes(newSkillInput.trim())) {
+      const name = newSkillInput.trim();
+      setSkills([...skills, name]);
+      setSkillDetails(prev => ({
+        ...prev,
+        [name]: { proficiency: 3, type: 'technical' }
+      }));
+      setNewSkillInput('');
+    }
+  };
+
+  const handleRemoveSkill = (s: string) => {
+    setSkills(skills.filter(item => item !== s));
+    setSkillDetails(prev => {
+      const copy = { ...prev };
+      delete copy[s];
+      return copy;
+    });
+  };
+
+  // Seeker writes request note AI Pitch Validation
+  useEffect(() => {
+    if (pitchMessage.trim().length === 0) {
+      setAiTipWarning('');
+    } else if (pitchMessage.trim().length < 60) {
+      setAiTipWarning('🚨 Message is too generic or short. Mention a specific project or achievement to improve response rate.');
+    } else if (!pitchMessage.toLowerCase().includes('project') && !pitchMessage.toLowerCase().includes('build')) {
+      setAiTipWarning('💡 AI Suggestion: Mentioning a specific technical project or link to GitHub would make this request 2x more compelling.');
+    } else {
+      setAiTipWarning('');
+    }
+  }, [pitchMessage]);
+
+  // Derived Profile Completion Percentage
+  const getProfileCompletion = () => {
+    let score = 30; // base
+    if (resumeUploaded) score += 20;
+    if (targetCompanies.length >= 3) score += 20;
+    if (skills.length >= 4) score += 25;
+    if (bio.length > 20) score += 5;
+    return score;
+  };
+
+  // Seeker: Filtered Alumni List (Discover Screen)
+  const getFilteredAlumni = () => {
+    let list = [...alumniNetwork];
+    
+    if (collegeOnlyFilter) {
+      list = list.filter(a => a.college.toLowerCase() === college.toLowerCase());
+    }
+    
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(a => 
+        a.name.toLowerCase().includes(q) || 
+        a.company.toLowerCase().includes(q) || 
+        a.role.toLowerCase().includes(q) || 
+        a.college.toLowerCase().includes(q) ||
+        a.bio.toLowerCase().includes(q)
+      );
+    }
+    
+    if (selectedCompanyFilter !== 'All') {
+      list = list.filter(a => a.company === selectedCompanyFilter);
+    }
+    
+    if (selectedRoleFilter !== 'All') {
+      list = list.filter(a => a.role.toLowerCase().includes(selectedRoleFilter.toLowerCase()));
+    }
+    
+    if (availabilityFilter === 'Available Now') {
+      list = list.filter(a => a.available || a.availability === 'Available Now');
+    } else if (availabilityFilter === 'Open to chat') {
+      list = list.filter(a => a.available || a.availability === 'Available Now');
+    }
+
+    if (aiMatchToggle) {
+      list.sort((a, b) => b.match - a.match);
+    }
+
+    return list;
+  };
+
+  // Open referral request modal
+  const openRequestModal = (alumni: any) => {
+    setAlumniForRequest(alumni);
+    setPitchMessage('');
+    setRequestStep(1);
+    setIsRequestModalOpen(true);
+  };
+
+  // -- RENDER SEEKER PORTAL --
+  if (role === 'seeker') {
+    return (
+      <section className="min-h-screen w-full bg-[#050508] text-slate-100 flex relative overflow-hidden font-inter select-none z-10">
+
+        {/* Desktop Sidebar 240px */}
+        <aside className="hidden md:flex w-[240px] bg-[#08080d]/95 border-r border-white/[0.055] flex-col shrink-0 relative z-30 backdrop-blur-xl">
+          <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-purple-950/25 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-950/10 to-transparent pointer-events-none" />
+          <div className="flex items-center gap-3 px-5 pt-6 pb-5 border-b border-white/[0.055] shrink-0 relative z-10">
+            <div className="w-8 h-8 flex items-center justify-center shrink-0 animate-logo-pulse">
+              <svg viewBox="0 0 160 100" className="w-7 h-7" fill="none">
+                <defs>
+                  <linearGradient id="sp-logo-g2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#38BDF8" />
+                    <stop offset="100%" stopColor="#EF4444" />
+                  </linearGradient>
+                </defs>
+                <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#sp-logo-g2)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#sp-logo-g2)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="68" cy="20" r="6" fill="#38BDF8" />
+                <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#sp-logo-g2)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div>
+              <span className="font-sora text-white font-extrabold text-sm tracking-tight leading-none block">NiC</span>
+              <span className="text-[9px] font-bold text-purple-400/80 uppercase tracking-widest mt-0.5 block">Seeker Portal</span>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto no-scrollbar px-3 py-5 relative z-10">
+            <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Navigation</span>
+            <nav className="space-y-0.5">
+              {([
+                { id: 'dashboard',    label: 'Dashboard',    icon: Home,          badge: null },
+                { id: 'network',      label: 'Network',      icon: Search,        badge: null },
+                { id: 'my_referrals', label: 'My Referrals', icon: Send,          badge: null },
+                { id: 'messages',     label: 'Messages',     icon: MessageSquare, badge: null },
+                { id: 'saved',        label: 'Saved',        icon: Bookmark,      badge: savedAlumniIds.length > 0 ? savedAlumniIds.length : null },
+                { id: 'accounting',   label: 'Accounting',   icon: ShieldCheck,   badge: null },
+              ] as { id: string; label: string; icon: React.ElementType; badge: number | null }[]).map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id as ActiveTab)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 group relative ${
+                      isActive ? 'bg-purple-500/10 text-white' : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
+                    }`}
+                  >
+                    {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gradient-to-b from-purple-400 to-blue-500 rounded-r-full" />}
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${
+                      isActive
+                        ? 'bg-gradient-to-br from-purple-500/25 to-blue-500/15 text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]'
+                        : 'text-slate-600 group-hover:text-slate-300 group-hover:bg-white/[0.04]'
+                    }`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <span className={`flex-1 text-xs font-semibold ${isActive ? 'text-white font-bold' : ''}`}>{tab.label}</span>
+                    {tab.badge !== null && tab.badge > 0 && (
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold min-w-[20px] text-center ${
+                        isActive ? 'bg-purple-400/20 text-purple-300' : 'bg-white/5 text-slate-400'
+                      }`}>
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+          <div className="px-3 pb-5 border-t border-white/[0.055] pt-4 relative z-10 space-y-0.5">
+            <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Account</span>
+            <button
+              type="button"
+              onClick={() => setActiveTab('profile')}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 group relative ${
+                activeTab === 'profile' ? 'bg-purple-500/10 text-white' : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
+              }`}
+            >
+              {activeTab === 'profile' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gradient-to-b from-purple-400 to-blue-500 rounded-r-full" />}
+              <div className="relative w-8 h-8 shrink-0">
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 32 32">
+                  <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(168,85,247,0.12)" strokeWidth="2.5" />
+                  <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(168,85,247,0.75)" strokeWidth="2.5"
+                    strokeDasharray={`${(getProfileCompletion() / 100) * 81.68} 81.68`} strokeLinecap="round" />
+                </svg>
+                <div className="absolute inset-[3px] rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-[8px] font-black shadow-md">
+                  {profileName ? profileName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'S'}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="block text-xs font-bold text-white truncate leading-tight">{profileName}</span>
+                <span className="block text-[9px] text-purple-400/70 font-medium">{getProfileCompletion()}% complete</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={onLogout}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-600 hover:text-rose-400 hover:bg-rose-500/5 transition-all duration-200 group"
+            >
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-rose-500/10 transition-all">
+                <LogOut className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-semibold">Sign Out</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Mobile nav */}
+        <aside className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#07070a]/95 border-t border-white/5 flex items-center justify-around z-40 px-3 shadow-2xl backdrop-blur-md">
+          {([
+            { id: 'dashboard',    icon: Home },
+            { id: 'network',      icon: Search },
+            { id: 'my_referrals', icon: Send },
+            { id: 'messages',     icon: MessageSquare },
+            { id: 'saved',        icon: Bookmark },
+            { id: 'accounting',   icon: ShieldCheck },
+            { id: 'profile',      icon: User },
+          ] as { id: string; icon: React.ElementType }[]).map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as ActiveTab)}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                  isActive ? 'bg-purple-500/15 text-purple-400 border border-purple-500/20' : 'text-slate-500'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+              </button>
+            );
+          })}
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-24 md:pb-0 flex flex-col relative z-20">
+          <header className="px-6 md:px-8 py-4 border-b border-white/[0.055] bg-[#050508]/85 backdrop-blur-xl flex items-center justify-between text-left shrink-0 sticky top-0 z-20">
+            <div>
+              <h2 className="font-sora text-white text-sm font-extrabold leading-tight">
+                {activeTab === 'dashboard'    && <>Good morning, {profileName.split(' ')[0]} 👋</>}
+                {activeTab === 'network'      && 'Discover Network'}
+                {activeTab === 'my_referrals' && 'My Referrals'}
+                {activeTab === 'messages'     && 'Outreach Messages'}
+                {activeTab === 'saved'        && 'Saved Mentors'}
+                {activeTab === 'accounting'   && 'Accounting'}
+                {activeTab === 'profile'      && 'My Profile'}
+              </h2>
+              <p className="text-[10px] text-slate-600 font-medium mt-0.5">{profileCollege} · Seeker Dashboard</p>
+            </div>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className="text-[10px] text-purple-400 hover:text-purple-300 transition font-semibold flex items-center gap-1.5 bg-purple-500/10 px-3 py-1.5 rounded-full border border-purple-500/20 hover:border-purple-500/40"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+              {getProfileCompletion()}% Complete
+            </button>
+          </header>
+          <div className="flex-1 p-6 md:p-8">
+            {activeTab === 'dashboard' && (
+              <DashboardTab
+                profileCollege={profileCollege}
+                getProfileCompletion={getProfileCompletion}
+                resumeUploaded={resumeUploaded}
+                targetCompanies={targetCompanies}
+                skills={skills}
+                requestsList={requestsList}
+                savedAlumniIds={savedAlumniIds}
+                alumniNetwork={alumniNetwork}
+                setActiveTab={setActiveTab as any}
+                openRequestModal={openRequestModal}
+              />
+            )}
+            {activeTab === 'network' && (
+              <DiscoverTab
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                showSuggestions={showSuggestions}
+                setShowSuggestions={setShowSuggestions}
+                collegeOnlyFilter={collegeOnlyFilter}
+                setCollegeOnlyFilter={setCollegeOnlyFilter}
+                availabilityFilter={availabilityFilter}
+                setAvailabilityFilter={setAvailabilityFilter}
+                aiMatchToggle={aiMatchToggle}
+                setAiMatchToggle={setAiMatchToggle}
+                savedAlumniIds={savedAlumniIds}
+                setSavedAlumniIds={setSavedAlumniIds}
+                openRequestModal={openRequestModal}
+                getFilteredAlumni={getFilteredAlumni}
+                alumniNetwork={alumniNetwork}
+                profileCollege={profileCollege}
+                selectedAlumni={selectedAlumni}
+                setSelectedAlumni={setSelectedAlumni}
+                isRequestModalOpen={isRequestModalOpen}
+                setIsRequestModalOpen={setIsRequestModalOpen}
+                alumniForRequest={alumniForRequest}
+                requestStep={requestStep}
+                setRequestStep={setRequestStep}
+                targetRole={targetRole}
+                setTargetRole={setTargetRole}
+                timeline={timeline}
+                setTimeline={setTimeline}
+                pitchMessage={pitchMessage}
+                setPitchMessage={setPitchMessage}
+                aiTipWarning={aiTipWarning}
+                resumeName={resumeName}
+                submitReferralRequest={submitReferralRequest}
+                selectedCompanyFilter={selectedCompanyFilter}
+                setSelectedCompanyFilter={setSelectedCompanyFilter}
+                selectedRoleFilter={selectedRoleFilter}
+                setSelectedRoleFilter={setSelectedRoleFilter}
+              />
+            )}
+            {activeTab === 'my_referrals' && (
+              <RequestsTab
+                trackerFilter={trackerFilter}
+                setTrackerFilter={setTrackerFilter}
+                requestsList={requestsList}
+                expandedRequest={expandedRequest}
+                setExpandedRequest={setExpandedRequest}
+                resumeName={resumeName}
+                setActiveTab={setActiveTab as any}
+                setActiveChatId={setActiveChatId}
+                setSelectedCompanyFilter={setSelectedCompanyFilter}
+              />
+            )}
+            {activeTab === 'accounting' && (
+              <div className="space-y-6 text-left animate-fade-in-up">
+                <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
+                  <h3 className="font-sora text-white font-extrabold text-sm uppercase tracking-wider mb-4 border-b border-white/5 pb-2">
+                    Seeker Billing & Security
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5">
+                      <div>
+                        <span className="block text-xs font-bold text-white font-space-grotesk">Verification Status</span>
+                        <span className="block text-[10px] text-slate-400 mt-0.5">Academic domain verification level</span>
+                      </div>
+                      <span className="px-3 py-1.5 rounded-full text-[9px] font-black bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 uppercase tracking-widest flex items-center gap-1.5 font-space-grotesk">
+                        ● VERIFIED STUDENT DOMAIN
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5">
+                      <div>
+                        <span className="block text-xs font-bold text-white font-space-grotesk">Active Plan</span>
+                        <span className="block text-[10px] text-slate-400 mt-0.5">Free student placement program</span>
+                      </div>
+                      <span className="px-3 py-1.5 rounded-full text-[9px] font-black bg-purple-500/10 border border-purple-500/20 text-purple-400 uppercase tracking-widest font-space-grotesk">
+                        NIC ESSENTIALS
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5">
+                      <div>
+                        <span className="block text-xs font-bold text-white font-space-grotesk">Network Transparency Settings</span>
+                        <span className="block text-[10px] text-slate-400 mt-0.5">Prioritize matching scores on search view</span>
+                      </div>
+                      <span className="px-3 py-1.5 rounded-full text-[9px] font-black bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 uppercase tracking-widest font-space-grotesk">
+                        ACTIVE (RESTRICT OFF)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {activeTab === 'messages' && (
+              <MessagesTab
+                activeChatId={activeChatId}
+                setActiveChatId={setActiveChatId}
+                chatMessages={chatMessages}
+                newMessageText={newMessageText}
+                setNewMessageText={setNewMessageText}
+                handleSendMessage={handleSendMessage}
+                isSchedulerOpen={isSchedulerOpen}
+                setIsSchedulerOpen={setIsSchedulerOpen}
+                scheduledDate={scheduledDate}
+                setScheduledDate={setScheduledDate}
+                scheduledTime={scheduledTime}
+                setScheduledTime={setScheduledTime}
+                handleScheduleCall={handleScheduleCall}
+                alumniNetwork={alumniNetwork}
+                conversations={conversations}
+                role={role}
+                requestsList={requestsList}
+              />
+            )}
+            {activeTab === 'saved' && (
+              <SavedTab
+                savedAlumniIds={savedAlumniIds}
+                alumniNetwork={alumniNetwork}
+                setSavedAlumniIds={setSavedAlumniIds}
+                openRequestModal={openRequestModal}
+                setSelectedAlumni={setSelectedAlumni}
+              />
+            )}
+            {activeTab === 'profile' && (
+              <ProfileTab
+                isEditMode={isEditMode}
+                setIsEditMode={toggleEditMode as any}
+                profileName={profileName}
+                setProfileName={setProfileName}
+                profileCollege={profileCollege}
+                setProfileCollege={setProfileCollege}
+                profileYear={profileYear}
+                setProfileYear={setProfileYear}
+                profileBranch={profileBranch}
+                setProfileBranch={setProfileBranch}
+                bio={bio}
+                setBio={setBio}
+                githubUrl={githubUrl}
+                setGithubUrl={setGithubUrl}
+                linkedinUrl={linkedinUrl}
+                setLinkedinUrl={setLinkedinUrl}
+                skills={skills}
+                newSkillInput={newSkillInput}
+                setNewSkillInput={setNewSkillInput}
+                handleAddSkill={handleAddSkill}
+                handleRemoveSkill={handleRemoveSkill}
+                skillDetails={skillDetails}
+                setSkillDetails={setSkillDetails}
+                targetCompanies={targetCompanies}
+                newCompanyInput={newCompanyInput}
+                setNewCompanyInput={setNewCompanyInput}
+                handleAddCompany={handleAddCompany}
+                handleRemoveCompany={handleRemoveCompany}
+                resumeUploaded={resumeUploaded}
+                setResumeUploaded={setResumeUploaded}
+                resumeName={resumeName}
+                setResumeName={setResumeName}
+                hoveredSkill={hoveredSkill}
+                setHoveredSkill={setHoveredSkill}
+                privacyCollegeOnly={privacyCollegeOnly}
+                setPrivacyCollegeOnly={setPrivacyCollegeOnly}
+                savedAlumniIds={savedAlumniIds}
+                requestsList={requestsList}
+                getProfileCompletion={getProfileCompletion}
+              />
+            )}
+          </div>
+        </main>
+      </section>
+    );
+  }
+
+  // -- RENDER ALUMNI PORTAL --
+  return (
+    <AlumniDashboard
+      name={profileName}
+      college={profileCollege}
+      company={company}
+      onLogout={onLogout}
+      referralsSentCount={referralsSentCount}
+      requests={requests}
+      handleAction={handleAction}
+      activeChatId={activeChatId}
+      setActiveChatId={setActiveChatId}
+      chatMessages={chatMessages}
+      newMessageText={newMessageText}
+      setNewMessageText={setNewMessageText}
+      handleSendMessage={handleSendMessage}
+      isSchedulerOpen={isSchedulerOpen}
+      setIsSchedulerOpen={setIsSchedulerOpen}
+      scheduledDate={scheduledDate}
+      setScheduledDate={setScheduledDate}
+      scheduledTime={scheduledTime}
+      setScheduledTime={setScheduledTime}
+      handleScheduleCall={handleScheduleCall}
+      conversations={conversations}
+      alumniNetwork={alumniNetwork}
+    />
+  );
+};

@@ -430,14 +430,15 @@ export const HowItWorks: React.FC = () => {
               How Trust Works: A Reassuring Trust Atlas That Replaces the College Gate
             </h2>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               
-              <div className="flex gap-4 items-start">
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+              {/* Trust Card 1 */}
+              <div className="p-5 rounded-2xl border border-white/[0.04] bg-slate-950/40 backdrop-blur-md hover:border-emerald-500/25 hover:bg-slate-950/65 hover:shadow-[0_8px_32px_rgba(16,185,129,0.05)] transition-all duration-300 flex gap-4 items-start group shadow-lg">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1.5 group-hover:text-emerald-450 transition-colors">
                     Verified via Email
                   </h4>
                   <p className="text-[11px] text-slate-350 leading-relaxed font-inter">
@@ -446,12 +447,13 @@ export const HowItWorks: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4 items-start">
-                <div className="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+              {/* Trust Card 2 */}
+              <div className="p-5 rounded-2xl border border-white/[0.04] bg-slate-950/40 backdrop-blur-md hover:border-cyan-500/25 hover:bg-slate-950/65 hover:shadow-[0_8px_32px_rgba(6,182,212,0.05)] transition-all duration-300 flex gap-4 items-start group shadow-lg">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-cyan-500/20 transition-all duration-300">
                   <Activity className="w-4 h-4 text-cyan-400" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1.5 group-hover:text-cyan-450 transition-colors">
                     NIC Reputation Score
                   </h4>
                   <p className="text-[11px] text-slate-350 leading-relaxed font-inter">
@@ -460,12 +462,13 @@ export const HowItWorks: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4 items-start">
-                <div className="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+              {/* Trust Card 3 */}
+              <div className="p-5 rounded-2xl border border-white/[0.04] bg-slate-950/40 backdrop-blur-md hover:border-purple-500/25 hover:bg-slate-950/65 hover:shadow-[0_8px_32px_rgba(168,85,247,0.05)] transition-all duration-300 flex gap-4 items-start group shadow-lg">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-purple-500/20 transition-all duration-300">
                   <Building className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1.5 group-hover:text-purple-450 transition-colors">
                     Work/Campus Verification
                   </h4>
                   <p className="text-[11px] text-slate-350 leading-relaxed font-inter">
@@ -489,60 +492,64 @@ export const HowItWorks: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               
               {/* Step 1: Sent */}
-              <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col justify-between min-h-[140px] relative group hover:border-white/10 transition-colors">
-                <div className="w-6 h-6 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4 text-blue-400 text-[10px] font-black">
+              <div className="p-5 bg-slate-950/50 border border-white/[0.04] rounded-2xl flex flex-col justify-between min-h-[160px] relative group hover:border-blue-500/25 hover:bg-black/60 backdrop-blur-md shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-transparent group-hover:bg-blue-500/5 rounded-2xl blur-xl transition-all duration-500 -z-10 pointer-events-none" />
+                <div className="w-7 h-7 rounded-lg bg-blue-500/15 border border-blue-500/30 flex items-center justify-center mb-4 text-blue-400 text-xs font-black shadow-md group-hover:scale-110 group-hover:bg-blue-500/25 transition-all duration-300">
                   1
                 </div>
                 <div>
-                  <h4 className="text-[10px] font-bold text-white uppercase tracking-wider font-space-grotesk mb-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1.5 group-hover:text-blue-400 transition-colors">
                     Sent
                   </h4>
-                  <p className="text-[9px] text-slate-400 leading-normal font-inter">
+                  <p className="text-[10px] text-slate-400 leading-relaxed font-inter">
                     Request transmitted. Seeker and alumni notified via email.
                   </p>
                 </div>
               </div>
 
               {/* Step 2: Viewed */}
-              <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col justify-between min-h-[140px] relative group hover:border-white/10 transition-colors">
-                <div className="w-6 h-6 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4 text-purple-400 text-[10px] font-black">
+              <div className="p-5 bg-slate-950/50 border border-white/[0.04] rounded-2xl flex flex-col justify-between min-h-[160px] relative group hover:border-purple-500/25 hover:bg-black/60 backdrop-blur-md shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-transparent group-hover:bg-purple-500/5 rounded-2xl blur-xl transition-all duration-500 -z-10 pointer-events-none" />
+                <div className="w-7 h-7 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center mb-4 text-purple-400 text-xs font-black shadow-md group-hover:scale-110 group-hover:bg-purple-500/25 transition-all duration-300">
                   2
                 </div>
                 <div>
-                  <h4 className="text-[10px] font-bold text-white uppercase tracking-wider font-space-grotesk mb-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1.5 group-hover:text-purple-400 transition-colors">
                     Viewed
                   </h4>
-                  <p className="text-[9px] text-slate-400 leading-normal font-inter">
+                  <p className="text-[10px] text-slate-400 leading-relaxed font-inter">
                     Alumni opened request. Reviewing resume, skills & pitch.
                   </p>
                 </div>
               </div>
 
               {/* Step 3: Accepted */}
-              <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col justify-between min-h-[140px] relative group hover:border-white/10 transition-colors">
-                <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-4 text-cyan-400 text-[10px] font-black">
+              <div className="p-5 bg-slate-950/50 border border-white/[0.04] rounded-2xl flex flex-col justify-between min-h-[160px] relative group hover:border-cyan-500/25 hover:bg-black/60 backdrop-blur-md shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-transparent group-hover:bg-cyan-500/5 rounded-2xl blur-xl transition-all duration-500 -z-10 pointer-events-none" />
+                <div className="w-7 h-7 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center mb-4 text-cyan-400 text-xs font-black shadow-md group-hover:scale-110 group-hover:bg-cyan-500/25 transition-all duration-300">
                   3
                 </div>
                 <div>
-                  <h4 className="text-[10px] font-bold text-white uppercase tracking-wider font-space-grotesk mb-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1.5 group-hover:text-cyan-400 transition-colors">
                     Accepted
                   </h4>
-                  <p className="text-[9px] text-slate-400 leading-normal font-inter">
+                  <p className="text-[10px] text-slate-400 leading-relaxed font-inter">
                     Alumni accepted request. Chat and schedule call unlocked.
                   </p>
                 </div>
               </div>
 
               {/* Step 4: Referred */}
-              <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col justify-between min-h-[140px] relative group hover:border-white/10 transition-colors">
-                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4 text-emerald-400 text-[10px] font-black">
+              <div className="p-5 bg-slate-950/50 border border-white/[0.04] rounded-2xl flex flex-col justify-between min-h-[160px] relative group hover:border-emerald-500/25 hover:bg-black/60 backdrop-blur-md shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-transparent group-hover:bg-emerald-500/5 rounded-2xl blur-xl transition-all duration-500 -z-10 pointer-events-none" />
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mb-4 text-emerald-400 text-xs font-black shadow-md group-hover:scale-110 group-hover:bg-emerald-500/25 transition-all duration-300">
                   4
                 </div>
                 <div>
-                  <h4 className="text-[10px] font-bold text-white uppercase tracking-wider font-space-grotesk mb-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider font-space-grotesk mb-1.5 group-hover:text-emerald-400 transition-colors">
                     Referred
                   </h4>
-                  <p className="text-[9px] text-slate-400 leading-normal font-inter">
+                  <p className="text-[10px] text-slate-400 leading-relaxed font-inter">
                     Referral submitted directly to target company system.
                   </p>
                 </div>

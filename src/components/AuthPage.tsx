@@ -362,7 +362,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
               onClick={() => setRole('seeker')}
               className={`flex-1 text-center py-1.5 sm:py-2 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
                 role === 'seeker'
-                  ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md shadow-blue-500/20'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -373,7 +373,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
               onClick={() => setRole('alumni')}
               className={`flex-1 text-center py-1.5 sm:py-2 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
                 role === 'alumni'
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-red-650 to-rose-500 text-white shadow-md shadow-red-500/20'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -567,11 +567,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
               </div>
             )}
 
-            {/* Submit button (Dark premium styling) */}
+            {/* Submit button (Dark premium styling with role-based colors) */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-2.5 lg:py-3 mt-2 rounded-full bg-[#0d0d12] border border-white/10 hover:border-white/25 hover:bg-slate-900 text-white font-sora font-bold text-[11px] lg:text-xs tracking-wider uppercase shrink-0 disabled:opacity-50 disabled:pointer-events-none transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-black/50"
+              className={`w-full py-2.5 lg:py-3 mt-2 rounded-full bg-[#0d0d12] border text-white font-sora font-bold text-[11px] lg:text-xs tracking-wider uppercase shrink-0 disabled:opacity-50 disabled:pointer-events-none transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-black/50
+                ${role === 'seeker' 
+                  ? 'border-blue-500/20 hover:border-blue-500/60 hover:bg-[#1A6BF5] hover:shadow-[0_0_15px_rgba(26,107,245,0.4)]' 
+                  : 'border-red-500/20 hover:border-red-500/60 hover:bg-[#EF4444] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]'
+                }
+              `}
             >
               {isSubmitting ? 'Processing...' : (isLogin ? 'Sign in' : 'Create Account')}
             </button>

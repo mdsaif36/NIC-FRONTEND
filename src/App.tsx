@@ -6,7 +6,7 @@ import { Hero } from './components/Hero';
 import { HowItWorks } from './components/HowItWorks';
 import { Stats } from './components/Stats';
 import { CTABanner } from './components/CTABanner';
-import { Footer } from './components/Footer';
+
 import { AuthPage } from './components/AuthPage';
 import { DashboardPage } from './components/DashboardPage';
 
@@ -124,8 +124,7 @@ function App() {
             {/* Section 4 — CTA Banner */}
             <CTABanner onNavigate={handleNavigate} />
 
-            {/* Footer Section */}
-            <Footer />
+
           </>
         )}
 

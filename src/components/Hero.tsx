@@ -59,8 +59,8 @@ export const Hero: React.FC<HeroProps> = () => {
             </h1>
 
             {/* Subtext description */}
-            <p className="text-slate-350 text-sm md:text-base leading-relaxed max-w-2xl">
-              A referral from an insider multiplies your interview chances by 10×. NextInCampus gives every student access to that inside.
+            <p className="text-slate-400 text-sm md:text-base leading-relaxed max-w-2xl">
+              A referral from an insider multiplies your interview chances by 10×. NexInCampus gives every student access to that inside track.
             </p>
           </div>
 
@@ -71,9 +71,45 @@ export const Hero: React.FC<HeroProps> = () => {
       <div className="w-full relative z-10 border-t border-white/5 bg-slate-950/65 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-6">
           
-          {/* Promo Text Banner */}
-          <div className="flex items-center flex-wrap justify-center gap-x-2 gap-y-1 text-xs text-slate-350 select-none">
-            <span>Verify your college domain to unlock exclusive placement networks</span>
+          {/* CTA Buttons Banner */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+            {/* Primary CTA */}
+            <button
+              onClick={() => {}}
+              className="group relative inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full font-sora font-semibold text-sm text-white overflow-hidden transition-all duration-300"
+              style={{
+                background: 'linear-gradient(135deg, #1a6bf5 0%, #7c3aed 50%, #ef4444 100%)',
+                boxShadow: '0 0 24px rgba(26,107,245,0.35)',
+              }}
+            >
+              <span className="relative z-10">Start for Free</span>
+              <svg className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+              <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
+            </button>
+
+            {/* Alumni CTA */}
+            <button
+              onClick={() => {}}
+              className="group inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full font-sora font-semibold text-sm text-white border border-white/15 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 transition-all duration-300"
+            >
+              <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+              </svg>
+              I am Alumni
+            </button>
+
+            {/* College Verify CTA */}
+            <button
+              onClick={() => {}}
+              className="group inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full font-sora font-semibold text-sm text-white border border-white/15 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 transition-all duration-300"
+            >
+              <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.745 3.745 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.745 3.745 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.745 3.745 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+              </svg>
+              College Verify
+            </button>
           </div>
 
           {/* Grayscale partner logos strip matching the reference design layout */}

@@ -118,12 +118,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
         {/* Auth Buttons */}
         <div className="flex items-center shrink-0">
           {currentPage === 'landing' && (
-            <div className="bg-white rounded-full p-0.5 pl-3.5 pr-0.5 flex items-center gap-3 border border-slate-200/20 shadow-md">
+            <div className="bg-white/5 border border-white/10 rounded-full p-0.5 pl-2.5 pr-0.5 flex items-center gap-2 backdrop-blur-md shadow-sm">
               {/* Login Button */}
               <button
                 type="button"
                 onClick={() => onNavigate('auth', 'login')}
-                className="text-[11px] font-bold text-slate-700 hover:text-black transition-colors py-1 cursor-pointer"
+                className="text-[11px] font-bold text-slate-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-[#38BDF8] hover:to-[#EF4444] transition-all duration-300 py-1 px-3.5 cursor-pointer"
               >
                 Login
               </button>
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
                 id="navbar-signup-btn"
                 type="button"
                 onClick={() => onNavigate('auth', 'signup')}
-                className="px-3.5 py-1 rounded-full bg-black hover:bg-slate-900 text-white text-[11px] font-bold transition-all duration-200 shadow-sm cursor-pointer hover:scale-102 active:scale-98"
+                className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#1A6BF5] via-[#8B5CF6] to-[#EF4444] bg-[length:200%_100%] bg-[0%_0%] hover:bg-[100%_0%] text-white text-[11px] font-bold transition-all duration-500 shadow-[0_0_10px_rgba(26,107,245,0.25)] hover:shadow-[0_0_12px_rgba(239,68,68,0.45)] cursor-pointer hover:scale-103 active:scale-97"
               >
                 Register
               </button>

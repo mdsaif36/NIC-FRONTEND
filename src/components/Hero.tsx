@@ -54,7 +54,7 @@ export const Hero: React.FC<HeroProps> = () => {
       </div>
 
       {/* ── Main Content Container ─────────────────────────────────────── */}
-      <div className="relative z-10 flex-grow flex items-start pt-28 md:pt-36 pb-20">
+      <div className="relative z-10 flex-grow flex items-end pt-20 pb-28 md:pb-36">
         <div className="max-w-4xl mx-auto px-6 w-full flex flex-col items-center justify-center text-center">
           
           {/* Headline & Subtext */}

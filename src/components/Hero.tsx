@@ -16,28 +16,39 @@ export const Hero: React.FC<HeroProps> = () => {
       id="hero"
       className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-transparent select-none"
     >
-      {/* ── Background Gradients & Glow Orbs (No animations, bluish + red, adaptive) ──────────────────────── */}
-      <div className="absolute inset-0 z-0 pointer-events-none select-none" aria-hidden="true">
-        {/* Adaptive Radial Blend */}
-        <div
+      {/* ── Background Image with Premium Lighter-Tone Fade ──────────────────────── */}
+      <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
+        {/* Background Image itself */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url('/vr_bg_hero.png')",
+            opacity: 0.20, // Low-opacity fade to keep the layout premium and clean
+            filter: 'brightness(0.9) contrast(1.1) saturate(1.15)',
+          }}
+        />
+
+        {/* Ambient Left Red Glow (matching the left side of the artwork) */}
+        <div 
+          className="absolute top-1/2 left-[5vw] -translate-y-1/2 w-[45vw] h-[45vw] max-w-[500px] rounded-full blur-[100px] md:blur-[140px]"
+          style={{
+            background: 'radial-gradient(circle, rgba(239,68,68,0.22) 0%, transparent 75%)',
+          }}
+        />
+
+        {/* Ambient Right Blue Glow (matching the right side of the artwork) */}
+        <div 
+          className="absolute top-1/2 right-[5vw] -translate-y-1/2 w-[45vw] h-[45vw] max-w-[500px] rounded-full blur-[100px] md:blur-[140px]"
+          style={{
+            background: 'radial-gradient(circle, rgba(26,107,245,0.25) 0%, transparent 75%)',
+          }}
+        />
+
+        {/* Central dark radial mask for readability and smooth edge blending */}
+        <div 
           className="absolute inset-0"
           style={{
-            background:
-              'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(26,107,245,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 50% 50%, rgba(239,68,68,0.08) 0%, transparent 50%)',
-          }}
-        />
-        {/* Static Adaptive Bluish Glow Orb */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[55vw] h-[55vw] max-w-[600px] max-h-[600px] min-w-[280px] min-h-[280px] rounded-full blur-[100px] md:blur-[140px]"
-          style={{
-            background: 'radial-gradient(circle, rgba(26,107,245,0.28) 0%, transparent 70%)',
-          }}
-        />
-        {/* Static Adaptive Red/Rose Glow Orb */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[45vw] h-[45vw] max-w-[500px] max-h-[500px] min-w-[240px] min-h-[240px] rounded-full blur-[100px] md:blur-[140px]"
-          style={{
-            background: 'radial-gradient(circle, rgba(239,68,68,0.18) 0%, transparent 70%)',
+            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.25) 0%, rgba(2, 2, 5, 0.98) 90%)',
           }}
         />
       </div>
@@ -46,11 +57,11 @@ export const Hero: React.FC<HeroProps> = () => {
       <div className="relative z-10 flex-grow flex items-center pt-32 pb-20">
         <div className="max-w-4xl mx-auto px-6 w-full flex flex-col items-center justify-center text-center">
           
-          {/* Headline & CTA Buttons */}
+          {/* Headline & Subtext */}
           <div className={`flex flex-col items-center justify-center text-center font-inter transition-all duration-1000 transform ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             
             {/* Main Heading */}
-            <h1 className="font-sora font-extrabold text-4xl md:text-5xl lg:text-6xl text-white leading-[1.1] tracking-tight mb-6">
+            <h1 className="font-sora font-extrabold text-4xl md:text-5xl lg:text-6xl text-white leading-[1.1] tracking-tight mb-6 drop-shadow-[0_4px_20px_rgba(0,0,0,0.85)]">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400">
                 Get Referred. Get Hired.
               </span>
@@ -59,7 +70,7 @@ export const Hero: React.FC<HeroProps> = () => {
             </h1>
 
             {/* Subtext description */}
-            <p className="text-slate-400 text-sm md:text-base leading-relaxed max-w-2xl">
+            <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl font-medium drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
               A referral from an insider multiplies your interview chances by 10×. NexInCampus gives every student access to that inside track.
             </p>
           </div>

@@ -5,7 +5,6 @@ import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { HowItWorks } from './components/HowItWorks';
 import { Stats } from './components/Stats';
-import { CTABanner } from './components/CTABanner';
 
 import { AuthPage } from './components/AuthPage';
 import { DashboardPage } from './components/DashboardPage';
@@ -127,10 +126,6 @@ function App() {
 
             {/* Section 3 — Stats & Social Proof */}
             <Stats />
-
-            {/* Section 4 — CTA Banner */}
-            <CTABanner onNavigate={handleNavigate} />
-
 
           </>
         )}

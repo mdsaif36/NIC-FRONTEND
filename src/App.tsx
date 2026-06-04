@@ -93,18 +93,18 @@ function App() {
       className="relative min-h-screen flex flex-col justify-between overflow-x-hidden select-none transition-all duration-200 bg-black text-white"
     >
       {/* Premium Static Aurora Background (No animations, bluish + red, adapts to screen) */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#030307]">
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#020205]">
         {/* Premium Bluish Glow (Top-Left) */}
-        <div className="absolute w-[80vw] h-[80vw] sm:w-[60vw] sm:h-[60vw] md:w-[50vw] md:h-[50vw] max-w-[800px] max-h-[800px] min-w-[300px] min-h-[300px] rounded-full bg-[#1A6BF5]/15 -left-[15%] -top-[15%] blur-[120px] sm:blur-[160px] md:blur-[220px]" />
+        <div className="absolute w-[80vw] h-[80vw] sm:w-[60vw] sm:h-[60vw] md:w-[50vw] md:h-[50vw] max-w-[800px] max-h-[800px] min-w-[300px] min-h-[300px] rounded-full bg-[#1A6BF5]/26 -left-[15%] -top-[15%] blur-[120px] sm:blur-[160px] md:blur-[220px]" />
         
         {/* Premium Red Glow (Bottom-Right) */}
-        <div className="absolute w-[90vw] h-[90vw] sm:w-[70vw] sm:h-[70vw] md:w-[55vw] md:h-[55vw] max-w-[900px] max-h-[900px] min-w-[350px] min-h-[350px] rounded-full bg-[#EF4444]/12 -right-[15%] -bottom-[15%] blur-[120px] sm:blur-[160px] md:blur-[220px]" />
+        <div className="absolute w-[90vw] h-[90vw] sm:w-[70vw] sm:h-[70vw] md:w-[55vw] md:h-[55vw] max-w-[900px] max-h-[900px] min-w-[350px] min-h-[350px] rounded-full bg-[#EF4444]/22 -right-[15%] -bottom-[15%] blur-[120px] sm:blur-[160px] md:blur-[220px]" />
         
         {/* Purple Depth Blend Transition Glow */}
-        <div className="absolute w-[45vw] h-[45vw] rounded-full bg-purple-600/6 left-[30%] top-[20%] blur-[110px] md:blur-[180px]" />
+        <div className="absolute w-[45vw] h-[45vw] rounded-full bg-purple-600/12 left-[30%] top-[20%] blur-[110px] md:blur-[180px]" />
         
         {/* Matte Frosted Ice Glass Overlay */}
-        <div className="absolute inset-0 bg-[#030307]/20 backdrop-blur-[110px] md:backdrop-blur-[160px]" />
+        <div className="absolute inset-0 bg-[#020205]/10 backdrop-blur-[110px] md:backdrop-blur-[160px]" />
       </div>
 
       {/* Navbar Header Section (Only on Landing Page) */}

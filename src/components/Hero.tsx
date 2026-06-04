@@ -95,14 +95,14 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         <div
           className="absolute -top-16 -right-16 w-[55vw] h-[55vw] max-w-[600px] max-h-[600px] min-w-[280px] min-h-[280px] rounded-full blur-[100px] md:blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(26,107,245,0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(26,107,245,0.28) 0%, transparent 70%)',
           }}
         />
         {/* Static Adaptive Red/Rose Glow Orb */}
         <div
           className="absolute -bottom-16 -left-16 w-[45vw] h-[45vw] max-w-[500px] max-h-[500px] min-w-[240px] min-h-[240px] rounded-full blur-[100px] md:blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(239,68,68,0.1) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(239,68,68,0.18) 0%, transparent 70%)',
           }}
         />
       </div>

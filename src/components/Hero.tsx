@@ -18,12 +18,11 @@ export const Hero: React.FC<HeroProps> = () => {
     >
       {/* ── Background Image with Premium Lighter-Tone Fade ──────────────────────── */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
-        {/* Background Image itself */}
+        {/* Background Image itself (Responsive opacity for mobile vs desktop) */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25 md:opacity-45"
           style={{
             backgroundImage: "url('/starry_referral_bg.png')",
-            opacity: 0.45, // Clearly visible backdrop artwork as requested
             filter: 'brightness(0.9) contrast(1.1) saturate(1.15)',
           }}
         />
@@ -60,8 +59,8 @@ export const Hero: React.FC<HeroProps> = () => {
           {/* Headline & Subtext */}
           <div className={`flex flex-col items-center justify-center text-center font-inter transition-all duration-1000 transform ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             
-            {/* Main Heading */}
-            <h1 className="font-sora font-extrabold text-4xl md:text-5xl lg:text-6xl text-white leading-[1.1] tracking-tight mb-6 drop-shadow-[0_4px_20px_rgba(0,0,0,0.85)]">
+            {/* Main Heading (Responsive text size to fit small mobile screens) */}
+            <h1 className="font-sora font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-[1.1] tracking-tight mb-6 drop-shadow-[0_4px_20px_rgba(0,0,0,0.85)]">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400">
                 Get Referred. Get Hired.
               </span>

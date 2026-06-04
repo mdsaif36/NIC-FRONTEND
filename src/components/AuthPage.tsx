@@ -39,12 +39,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
   React.useEffect(() => {
     setIsLogin(initialMode === 'login');
     setShowPassword(false);
+    setEmail('');
     setPassword('');
+    setError(null);
   }, [initialMode]);
 
   React.useEffect(() => {
+    setEmail('');
     setPassword('');
     setShowPassword(false);
+    setError(null);
   }, [isLogin, role]);
   
   // Testimonial slider state
@@ -355,6 +359,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={role === 'seeker' ? "name@college.edu" : "name@company.com"}
+                      autoComplete="off"
                       className="w-full pl-9 pr-4 py-2 sm:py-2.5 bg-black hover:bg-slate-950/80 rounded-full text-white placeholder-slate-500 focus:outline-none transition text-xs font-inter relative z-0"
                     />
                   </div>
@@ -370,7 +375,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter password"
-                      autoComplete="current-password"
+                      autoComplete="new-password"
                       className="w-full pl-9 pr-10 py-2 sm:py-2.5 bg-black hover:bg-slate-950/80 rounded-full text-white placeholder-slate-500 focus:outline-none transition text-xs font-inter relative z-0"
                     />
                     <button

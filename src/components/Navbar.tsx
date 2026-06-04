@@ -49,8 +49,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
       className="fixed left-1/2 -translate-x-1/2 z-50 top-6 transition-all duration-300 font-inter w-auto px-4"
     >
       <div className={`
-        flex items-center gap-4 justify-center backdrop-blur-2xl px-5 py-2 rounded-full border border-white/10 shadow-lg transition-all duration-300
-        ${isScrolled ? 'bg-slate-950/80 shadow-2xl py-1.5 px-4' : 'bg-slate-950/40'}
+        floating-navbar-pill flex items-center gap-4 justify-center backdrop-blur-2xl rounded-full shadow-lg transition-all duration-300
+        ${isScrolled ? 'py-1.5 px-4' : 'py-2 px-5'}
       `}>
         {/* Logo */}
         <a

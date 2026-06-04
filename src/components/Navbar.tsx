@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 
 const NAV_LINKS = [
   { label: 'Home', href: '#hero' },
-  { label: 'About', href: '#about' },
 ] as const;
 
 interface NavbarProps {
@@ -21,14 +20,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
 
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
-      const aboutEl = document.querySelector('#about');
-      if (aboutEl) {
-        const rect = aboutEl.getBoundingClientRect();
-        if (rect.top <= 150) {
-          setActiveSection('about');
-          return;
-        }
-      }
       setActiveSection('home');
     };
     window.addEventListener('scroll', handleScroll, { passive: true });

@@ -22,7 +22,7 @@ export const Hero: React.FC<HeroProps> = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/vr_bg_hero.png')",
+            backgroundImage: "url('/starry_referral_bg.png')",
             opacity: 0.45, // Clearly visible backdrop artwork as requested
             filter: 'brightness(0.9) contrast(1.1) saturate(1.15)',
           }}

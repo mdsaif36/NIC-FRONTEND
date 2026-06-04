@@ -128,15 +128,27 @@ function App() {
             <Stats />
 
             {/* Giant Brand Watermark (Restored as requested) */}
-            <div className="w-full overflow-hidden select-none pointer-events-none mt-16 mb-24 flex justify-center items-center relative h-36 md:h-52" aria-hidden="true">
+            <div className="w-full overflow-hidden select-none pointer-events-none mt-12 mb-20 flex justify-center items-center relative h-32 md:h-44" aria-hidden="true">
+              <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes watermarkShimmer {
+                  0% { background-position: 0% 50%; }
+                  50% { background-position: 100% 50%; }
+                  100% { background-position: 0% 50%; }
+                }
+                .animate-watermark-shimmer {
+                  background-size: 200% auto !important;
+                  animation: watermarkShimmer 7s ease-in-out infinite;
+                }
+              `}} />
               <span
+                className="animate-watermark-shimmer"
                 style={{
                   fontFamily: "'Sora', sans-serif",
-                  fontSize: 'clamp(3.5rem, 13vw, 12rem)',
+                  fontSize: 'clamp(2.5rem, 9vw, 8rem)',
                   fontWeight: 900,
                   letterSpacing: '-0.03em',
                   lineHeight: 1,
-                  background: 'linear-gradient(110deg, rgba(56,189,248,0.08) 0%, rgba(139,92,246,0.07) 50%, rgba(244,63,94,0.08) 100%)',
+                  background: 'linear-gradient(90deg, rgba(56,189,248,0.24) 0%, rgba(139,92,246,0.18) 25%, rgba(244,63,94,0.24) 50%, rgba(139,92,246,0.18) 75%, rgba(56,189,248,0.24) 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',

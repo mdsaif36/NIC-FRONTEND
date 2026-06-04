@@ -117,10 +117,10 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             {/* Main Heading */}
             <h1 className="font-sora font-extrabold text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-white leading-[1.1] tracking-tight mb-6">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400">
-                Alumni referrals
+                Get Referred. Get Hired.
               </span>
               <br />
-              for real-time placements
+              No connections needed.
             </h1>
 
             {/* Subtext description */}

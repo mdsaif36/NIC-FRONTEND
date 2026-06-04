@@ -97,7 +97,9 @@ function App() {
         className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
         style={{ opacity: 0.85 }}
       >
-        <AnimatedBackground showOrbs={false} />
+        <AnimatedBackground showOrbs={true} />
+        {/* Blurry Ice glassmorphism overlay */}
+        <div className="absolute inset-0 bg-[#060a16]/20 backdrop-blur-[95px]" />
       </div>
 
       {/* Navbar Header Section (Only on Landing Page) */}

@@ -185,7 +185,7 @@ class AmbientOrb {
 
 export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
   particleCount = 60,
-  lineColorRgb = '99, 102, 241',
+  lineColorRgb = '186, 242, 255',
   maxDistance = 120,
   className = 'absolute inset-0 w-full h-full z-0 pointer-events-none overflow-hidden',
   showOrbs = true,
@@ -214,14 +214,12 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
     // Initialize ambient smoke orbs with higher opacity for vibrant smoke animation
     if (showOrbs) {
       const minDimension = Math.min(width, height);
-      // Neon Blues (Cyan-indigo tint)
-      orbs.push(new AmbientOrb(width, height, 'rgba(34, 211, 238, 0.28)', minDimension * 0.95)); // cyan
-      orbs.push(new AmbientOrb(width, height, 'rgba(59, 130, 246, 0.24)', minDimension * 0.75)); // sapphire blue
-      // Neon Reds/Pink (Rose-red tint)
-      orbs.push(new AmbientOrb(width, height, 'rgba(239, 68, 68, 0.24)', minDimension * 0.85));  // rose red
-      orbs.push(new AmbientOrb(width, height, 'rgba(244, 63, 94, 0.20)', minDimension * 0.80));  // hot pink
-      // Purple transitions
-      orbs.push(new AmbientOrb(width, height, 'rgba(139, 92, 246, 0.20)', minDimension * 0.90));  // purple
+      // Icy/Cold Colors (Cyan, Silver, Light Teal, Frosted White, Sky Blue)
+      orbs.push(new AmbientOrb(width, height, 'rgba(186, 242, 255, 0.22)', minDimension * 0.95)); // Light cyan
+      orbs.push(new AmbientOrb(width, height, 'rgba(224, 242, 254, 0.20)', minDimension * 0.75)); // Sky blue
+      orbs.push(new AmbientOrb(width, height, 'rgba(238, 242, 255, 0.18)', minDimension * 0.85)); // Frosted silver/lavender
+      orbs.push(new AmbientOrb(width, height, 'rgba(56, 189, 248, 0.16)', minDimension * 0.80));  // Sky ice blue
+      orbs.push(new AmbientOrb(width, height, 'rgba(204, 251, 241, 0.14)', minDimension * 0.90));  // Light minty ice/teal
     }
 
     const mouse = { x: 0, y: 0, active: false };

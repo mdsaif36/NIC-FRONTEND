@@ -114,29 +114,24 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           {/* ── Left Column: Headline & CTA Buttons (Column Span 5) ── */}
           <div className={`flex flex-col items-start font-inter lg:col-span-5 transition-all duration-1000 transform ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             
-            {/* Logo Badge (Rendered on Page) */}
-            <div className="flex items-center gap-2.5 mb-6 select-none bg-white/5 border border-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-md">
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg">
-                <svg viewBox="0 0 100 100" className="w-4.5 h-4.5" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="logo-grad-dark-hero" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#090D1A" />
-                      <stop offset="100%" stopColor="#1E293B" />
-                    </linearGradient>
-                  </defs>
-                  <path 
-                    d="M30 72V28L70 72V28" 
-                    stroke="url(#logo-grad-dark-hero)" 
-                    strokeWidth="14" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                  />
-                  <circle cx="70" cy="28" r="7.5" fill="#38BDF8" />
-                </svg>
-              </div>
-              <span className="font-sora font-extrabold text-sm tracking-tight text-white">
-                NiC <span className="text-cyan-400 font-semibold text-xs pl-0.5 tracking-wide uppercase">NextInCampus</span>
-              </span>
+            {/* Logo Badge (Original vector logo restored as requested) */}
+            <div className="flex items-center mb-5 select-none">
+              <svg viewBox="0 0 160 100" className="w-24 h-16 filter drop-shadow-[0_0_8px_rgba(56,189,248,0.2)]" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="logo-grad-ni-hero" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#38BDF8" />
+                    <stop offset="100%" stopColor="#8B5CF6" />
+                  </linearGradient>
+                  <linearGradient id="logo-grad-c-hero" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#38BDF8" />
+                    <stop offset="100%" stopColor="#EF4444" />
+                  </linearGradient>
+                </defs>
+                <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#logo-grad-ni-hero)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#logo-grad-ni-hero)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="68" cy="20" r="6.5" fill="#38BDF8" />
+                <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#logo-grad-c-hero)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
 
             {/* Main Heading */}

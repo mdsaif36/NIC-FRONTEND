@@ -127,8 +127,8 @@ function App() {
             {/* Section 3 — About NexInCampus */}
             <About />
 
-            {/* Giant Brand Watermark (Restored as requested) */}
-            <div className="w-full overflow-hidden select-none pointer-events-none mt-12 mb-20 flex justify-center items-center relative h-32 md:h-44" aria-hidden="true">
+            {/* Giant Brand Watermark with Tagline */}
+            <div className="w-full overflow-hidden select-none pointer-events-none mt-12 mb-20 flex flex-col justify-center items-center relative" aria-hidden="true">
               <style dangerouslySetInnerHTML={{ __html: `
                 @keyframes watermarkShimmer {
                   0% { background-position: 0% 50%; }
@@ -159,6 +159,9 @@ function App() {
                 }}
               >
                 NextInCampus
+              </span>
+              <span className="text-[9px] sm:text-[10px] md:text-xs font-bold tracking-[0.35em] uppercase text-slate-500/35 text-center px-4 font-space-grotesk mt-[-10px] md:mt-[-15px]">
+                where your college network becomes your career
               </span>
             </div>
 

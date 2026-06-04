@@ -133,9 +133,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
                 id="navbar-signup-btn"
                 type="button"
                 onClick={() => onNavigate('auth', 'signup')}
-                className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#1A6BF5] via-[#8B5CF6] to-[#EF4444] bg-[length:200%_100%] bg-[0%_0%] hover:bg-[100%_0%] text-white text-[11px] font-bold transition-all duration-500 shadow-[0_0_10px_rgba(26,107,245,0.25)] hover:shadow-[0_0_12px_rgba(239,68,68,0.45)] cursor-pointer hover:scale-103 active:scale-97"
+                className="relative px-4 py-1.5 rounded-full text-white text-[11px] font-bold transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.05)] hover:shadow-[0_0_12px_rgba(239,68,68,0.45)] overflow-hidden cursor-pointer hover:scale-103 active:scale-97 group"
               >
-                Register
+                {/* Shifting Gradient Background (Visible on Hover) */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#1A6BF5] via-[#8B5CF6] to-[#EF4444] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
+                
+                {/* Little Black Background (Default) */}
+                <div className="absolute inset-0 bg-[#0e0e12] border border-white/10 rounded-full group-hover:opacity-0 transition-opacity duration-300 z-0" />
+                
+                {/* Text Label */}
+                <span className="relative z-10">Register</span>
               </button>
             </div>
           )}

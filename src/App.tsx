@@ -127,6 +127,29 @@ function App() {
             {/* Section 3 — Stats & Social Proof */}
             <Stats />
 
+            {/* Giant Brand Watermark (Restored as requested) */}
+            <div className="w-full overflow-hidden select-none pointer-events-none mt-16 mb-24 flex justify-center items-center relative h-36 md:h-52" aria-hidden="true">
+              <span
+                style={{
+                  fontFamily: "'Sora', sans-serif",
+                  fontSize: 'clamp(3.5rem, 13vw, 12rem)',
+                  fontWeight: 900,
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1,
+                  background: 'linear-gradient(110deg, rgba(56,189,248,0.08) 0%, rgba(139,92,246,0.07) 50%, rgba(244,63,94,0.08) 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  userSelect: 'none',
+                  pointerEvents: 'none',
+                  whiteSpace: 'nowrap',
+                  display: 'block',
+                }}
+              >
+                NextInCampus
+              </span>
+            </div>
+
           </>
         )}
 

@@ -23,32 +23,32 @@ export const Hero: React.FC<HeroProps> = () => {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: "url('/vr_bg_hero.png')",
-            opacity: 0.20, // Low-opacity fade to keep the layout premium and clean
+            opacity: 0.45, // Clearly visible backdrop artwork as requested
             filter: 'brightness(0.9) contrast(1.1) saturate(1.15)',
           }}
         />
 
-        {/* Ambient Left Red Glow (matching the left side of the artwork) */}
+        {/* Ambient Left Red Glow (blends with the left side of the artwork) */}
         <div 
-          className="absolute top-1/2 left-[5vw] -translate-y-1/2 w-[45vw] h-[45vw] max-w-[500px] rounded-full blur-[100px] md:blur-[140px]"
+          className="absolute top-1/2 left-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[120px]"
           style={{
-            background: 'radial-gradient(circle, rgba(239,68,68,0.22) 0%, transparent 75%)',
+            background: 'radial-gradient(circle, rgba(239,68,68,0.25) 0%, transparent 80%)',
           }}
         />
 
-        {/* Ambient Right Blue Glow (matching the right side of the artwork) */}
+        {/* Ambient Right Blue Glow (blends with the right side of the artwork) */}
         <div 
-          className="absolute top-1/2 right-[5vw] -translate-y-1/2 w-[45vw] h-[45vw] max-w-[500px] rounded-full blur-[100px] md:blur-[140px]"
+          className="absolute top-1/2 right-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[120px]"
           style={{
-            background: 'radial-gradient(circle, rgba(26,107,245,0.25) 0%, transparent 75%)',
+            background: 'radial-gradient(circle, rgba(26,107,245,0.28) 0%, transparent 80%)',
           }}
         />
 
-        {/* Central dark radial mask for readability and smooth edge blending */}
+        {/* Dark radial overlay to vignette the edges and keep the text readable */}
         <div 
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.25) 0%, rgba(2, 2, 5, 0.98) 90%)',
+            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.15) 0%, rgba(2, 2, 5, 0.95) 90%)',
           }}
         />
       </div>

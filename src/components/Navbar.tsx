@@ -61,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
           }}
           className="flex items-center select-none shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
         >
-          <svg viewBox="0 0 160 100" className="w-9 h-6 filter drop-shadow-[0_0_4px_rgba(56,189,248,0.25)]" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 160 100" className="w-13 h-8 filter drop-shadow-[0_0_5px_rgba(56,189,248,0.25)]" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="logo-grad-ni-nav" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#38BDF8" />
@@ -80,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
         </a>
 
         {/* Separator Line */}
-        <div className="w-[1px] h-4 bg-white/10 shrink-0" />
+        <div className="w-[1px] h-5 bg-white/10 shrink-0" />
 
         {/* Links */}
         <nav className="flex items-center gap-1">

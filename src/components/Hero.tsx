@@ -114,26 +114,6 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           {/* ── Left Column: Headline & CTA Buttons (Column Span 5) ── */}
           <div className={`flex flex-col items-start font-inter lg:col-span-5 transition-all duration-1000 transform ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             
-            {/* Logo Badge (Original vector logo restored as requested) */}
-            <div className="flex items-center mb-5 select-none">
-              <svg viewBox="0 0 160 100" className="w-24 h-16 filter drop-shadow-[0_0_8px_rgba(56,189,248,0.2)]" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="logo-grad-ni-hero" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#38BDF8" />
-                    <stop offset="100%" stopColor="#8B5CF6" />
-                  </linearGradient>
-                  <linearGradient id="logo-grad-c-hero" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#38BDF8" />
-                    <stop offset="100%" stopColor="#EF4444" />
-                  </linearGradient>
-                </defs>
-                <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#logo-grad-ni-hero)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#logo-grad-ni-hero)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="68" cy="20" r="6.5" fill="#38BDF8" />
-                <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#logo-grad-c-hero)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-
             {/* Main Heading */}
             <h1 className="font-sora font-extrabold text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-white leading-[1.1] tracking-tight mb-6">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400">

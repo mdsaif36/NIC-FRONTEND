@@ -49,9 +49,39 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
       className="fixed left-1/2 -translate-x-1/2 z-50 top-6 transition-all duration-300 font-inter w-auto px-4"
     >
       <div className={`
-        flex items-center gap-6 justify-center backdrop-blur-2xl px-5 py-2 rounded-full border border-white/10 shadow-lg transition-all duration-300
+        flex items-center gap-4 justify-center backdrop-blur-2xl px-5 py-2 rounded-full border border-white/10 shadow-lg transition-all duration-300
         ${isScrolled ? 'bg-slate-950/80 shadow-2xl py-1.5 px-4' : 'bg-slate-950/40'}
       `}>
+        {/* Logo */}
+        <a
+          href="#hero"
+          onClick={(e) => {
+            e.preventDefault();
+            handleLinkClick('#hero');
+          }}
+          className="flex items-center select-none shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
+        >
+          <svg viewBox="0 0 160 100" className="w-9 h-6 filter drop-shadow-[0_0_4px_rgba(56,189,248,0.25)]" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logo-grad-ni-nav" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#38BDF8" />
+                <stop offset="100%" stopColor="#8B5CF6" />
+              </linearGradient>
+              <linearGradient id="logo-grad-c-nav" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#38BDF8" />
+                <stop offset="100%" stopColor="#EF4444" />
+              </linearGradient>
+            </defs>
+            <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#logo-grad-ni-nav)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#logo-grad-ni-nav)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="68" cy="20" r="6.5" fill="#38BDF8" />
+            <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#logo-grad-c-nav)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </a>
+
+        {/* Separator Line */}
+        <div className="w-[1px] h-4 bg-white/10 shrink-0" />
+
         {/* Links */}
         <nav className="flex items-center gap-1">
           {currentPage === 'landing' && NAV_LINKS.map(({ label, href }) => {

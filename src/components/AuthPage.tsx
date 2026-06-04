@@ -567,16 +567,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
               </div>
             )}
 
-            {/* Submit button (Dark premium styling with role-based colors) */}
+            {/* Submit button (Dark premium styling) */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-2.5 lg:py-3 mt-2 rounded-full bg-[#0d0d12] border text-white font-sora font-bold text-[11px] lg:text-xs tracking-wider uppercase shrink-0 disabled:opacity-50 disabled:pointer-events-none transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-black/50
-                ${role === 'seeker' 
-                  ? 'border-blue-500/20 hover:border-blue-500/60 hover:bg-[#1A6BF5] hover:shadow-[0_0_15px_rgba(26,107,245,0.4)]' 
-                  : 'border-red-500/20 hover:border-red-500/60 hover:bg-[#EF4444] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]'
-                }
-              `}
+              className="w-full py-2.5 lg:py-3 mt-2 rounded-full bg-[#0d0d12] border border-white/10 text-white font-sora font-bold text-[11px] lg:text-xs tracking-wider uppercase shrink-0 disabled:opacity-50 disabled:pointer-events-none transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-black/50"
             >
               {isSubmitting ? 'Processing...' : (isLogin ? 'Sign in' : 'Create Account')}
             </button>

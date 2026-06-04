@@ -81,26 +81,28 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         .waveform-bar:nth-child(8) { animation-delay: 0.5s; }
       `}} />
 
-      {/* ── Background Gradients & Glow Orbs ──────────────────────── */}
+      {/* ── Background Gradients & Glow Orbs (No animations, bluish + red, adaptive) ──────────────────────── */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none" aria-hidden="true">
+        {/* Adaptive Radial Blend */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 80% 60% at 20% 30%, rgba(56,189,248,0.15) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 40%, rgba(239,68,68,0.12) 0%, transparent 50%)',
+              'radial-gradient(ellipse 70% 50% at 20% 30%, rgba(26,107,245,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 85% 45%, rgba(239,68,68,0.08) 0%, transparent 50%)',
           }}
         />
+        {/* Static Adaptive Bluish Glow Orb */}
         <div
-          className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full animate-pulse-glow"
+          className="absolute -top-16 -right-16 w-[55vw] h-[55vw] max-w-[600px] max-h-[600px] min-w-[280px] min-h-[280px] rounded-full blur-[100px] md:blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(56,189,248,0.18) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(26,107,245,0.15) 0%, transparent 70%)',
           }}
         />
+        {/* Static Adaptive Red/Rose Glow Orb */}
         <div
-          className="absolute -bottom-24 -left-24 w-[500px] h-[500px] rounded-full animate-pulse-glow"
+          className="absolute -bottom-16 -left-16 w-[45vw] h-[45vw] max-w-[500px] max-h-[500px] min-w-[240px] min-h-[240px] rounded-full blur-[100px] md:blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(239,68,68,0.12) 0%, transparent 70%)',
-            animationDelay: '2.5s',
+            background: 'radial-gradient(circle, rgba(239,68,68,0.1) 0%, transparent 70%)',
           }}
         />
       </div>

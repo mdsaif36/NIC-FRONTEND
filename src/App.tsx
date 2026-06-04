@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import { AnimatedBackground } from './components/AnimatedBackground';
+
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { HowItWorks } from './components/HowItWorks';
@@ -92,14 +92,19 @@ function App() {
     <div 
       className="relative min-h-screen flex flex-col justify-between overflow-x-hidden select-none transition-all duration-200 bg-black text-white"
     >
-      {/* Dynamic Animated Particle Mesh Canvas Background - always visible, renders starry layout */}
-      <div 
-        className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
-        style={{ opacity: 0.85 }}
-      >
-        <AnimatedBackground showOrbs={true} />
-        {/* Blurry Ice glassmorphism overlay */}
-        <div className="absolute inset-0 bg-[#060a16]/20 backdrop-blur-[95px]" />
+      {/* Premium Static Aurora Background (No animations, bluish + red, adapts to screen) */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#030307]">
+        {/* Premium Bluish Glow (Top-Left) */}
+        <div className="absolute w-[80vw] h-[80vw] sm:w-[60vw] sm:h-[60vw] md:w-[50vw] md:h-[50vw] max-w-[800px] max-h-[800px] min-w-[300px] min-h-[300px] rounded-full bg-[#1A6BF5]/15 -left-[15%] -top-[15%] blur-[120px] sm:blur-[160px] md:blur-[220px]" />
+        
+        {/* Premium Red Glow (Bottom-Right) */}
+        <div className="absolute w-[90vw] h-[90vw] sm:w-[70vw] sm:h-[70vw] md:w-[55vw] md:h-[55vw] max-w-[900px] max-h-[900px] min-w-[350px] min-h-[350px] rounded-full bg-[#EF4444]/12 -right-[15%] -bottom-[15%] blur-[120px] sm:blur-[160px] md:blur-[220px]" />
+        
+        {/* Purple Depth Blend Transition Glow */}
+        <div className="absolute w-[45vw] h-[45vw] rounded-full bg-purple-600/6 left-[30%] top-[20%] blur-[110px] md:blur-[180px]" />
+        
+        {/* Matte Frosted Ice Glass Overlay */}
+        <div className="absolute inset-0 bg-[#030307]/20 backdrop-blur-[110px] md:backdrop-blur-[160px]" />
       </div>
 
       {/* Navbar Header Section (Only on Landing Page) */}

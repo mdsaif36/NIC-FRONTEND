@@ -51,6 +51,62 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
     setError(null);
   }, [isLogin, role]);
   
+  
+  // Load Google GSI client library dynamically
+  React.useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      const scriptElement = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (scriptElement && document.body.contains(scriptElement)) {
+        document.body.removeChild(scriptElement);
+      }
+    };
+  }, []);
+
+  // Handle GitHub OAuth Redirect Code
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    if (code) {
+      // Clear URL params so it doesn't trigger again on reload
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      const storedRole = (localStorage.getItem('auth_role') as 'seeker' | 'alumni') || 'seeker';
+      
+      const handleGithubCallback = async () => {
+        setError(null);
+        setIsSubmitting(true);
+        try {
+          const res = await fetch('/api/auth/github', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code, role: storedRole })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            onSuccess(data.token, data.user);
+          } else {
+            setError(data.message || 'GitHub login failed.');
+          }
+        } catch (err) {
+          setError('Failed to authenticate with GitHub.');
+        } finally {
+          setIsSubmitting(false);
+          localStorage.removeItem('auth_role');
+        }
+      };
+      
+      handleGithubCallback();
+    }
+  }, [onSuccess]);
+
   // Testimonial slider state
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
@@ -72,6 +128,102 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleMockSocialLogin = async (provider: 'google' | 'github') => {
+    setError(null);
+    setIsSubmitting(true);
+    
+    const emailInput = prompt(
+      `[Developer Testing Mode] Enter email to sign up/login with ${provider}:`,
+      provider === 'google' ? 'mock_google_user@kiit.ac.in' : 'mock_github_user@kiit.ac.in'
+    );
+    if (emailInput === null) {
+      setIsSubmitting(false);
+      return;
+    }
+    
+    const nameInput = prompt(
+      `[Developer Testing Mode] Enter name for this profile:`,
+      provider === 'google' ? 'Mock Google User' : 'Mock GitHub User'
+    );
+    if (nameInput === null) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const endpoint = provider === 'google' ? '/api/auth/google' : '/api/auth/github';
+      const payload = provider === 'google' 
+        ? { token: 'mock-google-token', role, email: emailInput, name: nameInput }
+        : { code: 'mock-github-code', role, email: emailInput, name: nameInput };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        onSuccess(data.token, data.user);
+      } else {
+        setError(data.message || `${provider} authentication failed.`);
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Connection to backend failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    const googleClientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID;
+    if (googleClientId && (window as any).google?.accounts?.id) {
+      (window as any).google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: async (response: any) => {
+          setError(null);
+          setIsSubmitting(true);
+          try {
+            const res = await fetch('/api/auth/google', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ token: response.credential, role })
+            });
+            const data = await res.json();
+            if (res.ok) {
+              onSuccess(data.token, data.user);
+            } else {
+              setError(data.message || 'Google authentication failed.');
+            }
+          } catch (err) {
+            setError('Connection to backend failed.');
+          } finally {
+            setIsSubmitting(false);
+          }
+        }
+      });
+      (window as any).google.accounts.id.prompt();
+    } else {
+      handleMockSocialLogin('google');
+    }
+  };
+
+  const handleGithubLogin = () => {
+    const githubClientId = (import.meta as any).env.VITE_GITHUB_CLIENT_ID;
+    if (githubClientId) {
+      localStorage.setItem('auth_role', role);
+      const redirectUri = window.location.origin;
+      window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user:email`;
+    } else {
+      handleMockSocialLogin('github');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -415,11 +567,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
               </div>
             )}
 
-            {/* Submit gradient button matching mockup styling */}
+            {/* Submit button (Dark premium styling) */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-2.5 lg:py-3 mt-1 sm:mt-2 rounded-full premium-neon-btn text-white font-sora font-bold text-[11px] lg:text-xs tracking-wider uppercase shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+              className="w-full py-2.5 lg:py-3 mt-2 rounded-full bg-[#0d0d12] border border-white/10 hover:border-white/25 hover:bg-slate-900 text-white font-sora font-bold text-[11px] lg:text-xs tracking-wider uppercase shrink-0 disabled:opacity-50 disabled:pointer-events-none transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-black/50"
             >
               {isSubmitting ? 'Processing...' : (isLogin ? 'Sign in' : 'Create Account')}
             </button>
@@ -443,7 +595,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
               {/* Google */}
               <button 
                 type="button" 
+                onClick={handleGoogleLogin}
                 className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-white flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition"
+                title="Login with Google"
               >
                 <svg className="w-4 h-4 lg:w-5 lg:h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -455,19 +609,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
               {/* GitHub */}
               <button 
                 type="button" 
+                onClick={handleGithubLogin}
                 className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-white flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition"
+                title="Login with GitHub"
               >
                 <svg className="w-4 h-4 lg:w-5 lg:h-5" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
                   <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-                </svg>
-              </button>
-              {/* Facebook */}
-              <button 
-                type="button" 
-                className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-white flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition"
-              >
-                <svg className="w-4 h-4 lg:w-5 lg:h-5" viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </button>
             </div>

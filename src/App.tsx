@@ -3,6 +3,8 @@ import './App.css';
 
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
+import { HowItWorks } from './components/HowItWorks';
+import { Stats } from './components/Stats';
 
 import { AuthPage } from './components/AuthPage';
 import { DashboardPage } from './components/DashboardPage';
@@ -118,6 +120,12 @@ function App() {
           <>
             {/* Section 1 — Hero */}
             <Hero onNavigate={handleNavigate} />
+
+            {/* Section 2 — How It Works */}
+            <HowItWorks />
+
+            {/* Section 3 — Stats & Social Proof */}
+            <Stats />
 
             {/* Giant Brand Watermark (Restored as requested) */}
             <div className="w-full overflow-hidden select-none pointer-events-none mt-12 mb-20 flex justify-center items-center relative h-32 md:h-44" aria-hidden="true">

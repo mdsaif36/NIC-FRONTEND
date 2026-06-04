@@ -75,7 +75,7 @@ export const About: React.FC = () => {
             <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] hover:border-white/10 transition-all duration-300 flex flex-col gap-4 relative overflow-hidden">
               <div className="absolute -bottom-12 -right-12 w-24 h-24 rounded-full bg-rose-500/5 blur-xl pointer-events-none" />
               
-              <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-455 select-none">
+              <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 select-none">
                 <Compass className="w-4 h-4" />
               </div>
               <h3 className="font-sora font-bold text-sm text-slate-200">The Solution</h3>

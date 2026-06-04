@@ -111,7 +111,7 @@ export const Footer: React.FC = () => {
                     NiC
                   </span>
                   <span className="text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] tracking-wider uppercase font-extrabold mt-0.5">
-                    NextInCampus
+                    NexInCampus
                   </span>
                 </div>
               </div>
@@ -150,7 +150,7 @@ export const Footer: React.FC = () => {
         <div className="border-t border-white/5 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
             <p className="text-center md:text-left">
-              © {new Date().getFullYear()} NextInCampus. All rights reserved.
+              © {new Date().getFullYear()} NexInCampus. All rights reserved.
             </p>
             <p className="text-center md:text-right">
               Empowering next-gen leaders through peer mentorship.

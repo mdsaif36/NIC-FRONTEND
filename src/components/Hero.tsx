@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { ArrowRight } from 'lucide-react';
 
 interface HeroProps {
   onNavigate: (page: 'landing' | 'auth', mode?: 'login' | 'signup') => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
+export const Hero: React.FC<HeroProps> = () => {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -60,46 +59,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             </h1>
 
             {/* Subtext description */}
-            <p className="text-slate-350 text-sm md:text-base leading-relaxed max-w-2xl mb-8">
+            <p className="text-slate-350 text-sm md:text-base leading-relaxed max-w-2xl">
               A referral from an insider multiplies your interview chances by 10×. NextInCampus gives every student access to that inside.
             </p>
-
-            {/* Custom Pill Button Row */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-8">
-              {/* Start for free pill with nested arrow circle */}
-              <button
-                id="hero-start-free-btn"
-                onClick={() => onNavigate('auth', 'signup')}
-                className="w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 hover:opacity-95 text-white font-bold text-sm tracking-wide transition-all duration-300 hover:scale-105 shadow-[0_4px_20px_rgba(168,85,247,0.3)] shrink-0"
-              >
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                  <ArrowRight className="w-3.5 h-3.5 text-white" />
-                </div>
-                <span>Start for free</span>
-              </button>
-
-              {/* I'm an Alumni outline pill */}
-              <button
-                id="hero-alumni-btn"
-                onClick={() => onNavigate('auth', 'signup')}
-                className="w-full sm:w-auto px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-slate-200 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 bg-white/5 hover:bg-white/10 hover:scale-105"
-              >
-                I'm an Alumni
-              </button>
-            </div>
-
-            {/* Bulleted trust indicators */}
-            <div className="flex flex-wrap items-center justify-center gap-y-2 gap-x-5 text-[11px] text-slate-400 font-medium select-none">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" /> College-verified
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" /> No credit card required
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-400" /> Cancel anytime
-              </span>
-            </div>
           </div>
 
         </div>
@@ -112,13 +74,6 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           {/* Promo Text Banner */}
           <div className="flex items-center flex-wrap justify-center gap-x-2 gap-y-1 text-xs text-slate-350 select-none">
             <span>Verify your college domain to unlock exclusive placement networks</span>
-            <button
-              onClick={() => onNavigate('auth', 'signup')}
-              className="text-white font-bold hover:underline inline-flex items-center gap-1 transition-all duration-200 group"
-            >
-              Find your college 
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </button>
           </div>
 
           {/* Grayscale partner logos strip matching the reference design layout */}

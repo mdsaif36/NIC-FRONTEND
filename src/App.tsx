@@ -4,14 +4,13 @@ import './App.css';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { HowItWorks } from './components/HowItWorks';
-import { Stats } from './components/Stats';
 
 import { AuthPage } from './components/AuthPage';
 import { DashboardPage } from './components/DashboardPage';
-import { AboutPage } from './components/AboutPage';
+import { About } from './components/About';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard' | 'about'>('landing');
+  const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard'>('landing');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [session, setSession] = useState<{
     id: number;
@@ -60,7 +59,7 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'instant' as any });
   }, [currentPage]);
 
-  const handleNavigate = (page: 'landing' | 'auth' | 'about', mode: 'login' | 'signup' = 'login') => {
+  const handleNavigate = (page: 'landing' | 'auth', mode: 'login' | 'signup' = 'login') => {
     setAuthMode(mode);
     setCurrentPage(page);
   };
@@ -107,8 +106,8 @@ function App() {
         <div className="absolute inset-0 bg-[#020205]/10 backdrop-blur-[110px] md:backdrop-blur-[160px]" />
       </div>
 
-      {/* Navbar Header Section (On Landing or About Page) */}
-      {(currentPage === 'landing' || currentPage === 'about') && (
+      {/* Navbar Header Section (Only on Landing Page) */}
+      {currentPage === 'landing' && (
         <Navbar 
           currentPage={currentPage}
           onNavigate={handleNavigate}
@@ -125,8 +124,8 @@ function App() {
             {/* Section 2 — How It Works */}
             <HowItWorks />
 
-            {/* Section 3 — Stats & Social Proof */}
-            <Stats />
+            {/* Section 3 — About NexInCampus */}
+            <About />
 
             {/* Giant Brand Watermark (Restored as requested) */}
             <div className="w-full overflow-hidden select-none pointer-events-none mt-12 mb-20 flex justify-center items-center relative h-32 md:h-44" aria-hidden="true">
@@ -182,12 +181,6 @@ function App() {
             college={session.college}
             company={session.company}
             onLogout={handleLogout}
-          />
-        )}
-
-        {currentPage === 'about' && (
-          <AboutPage 
-            onBack={() => handleNavigate('landing')}
           />
         )}
       </main>

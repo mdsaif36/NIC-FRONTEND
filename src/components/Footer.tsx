@@ -60,7 +60,7 @@ const socialLinks = [
 const studentLinks = [
   { href: '#hero', label: 'Home', id: 'footer-link-home' },
   { href: '#how-it-works', label: 'How It Works', id: 'footer-link-how-it-works' },
-  { href: '#stats', label: 'Stats', id: 'footer-link-stats' },
+  { href: '#about', label: 'About', id: 'footer-link-about' },
 ];
 
 const alumniLinks = [

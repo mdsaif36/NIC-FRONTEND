@@ -6,8 +6,8 @@ const NAV_LINKS = [
 ] as const;
 
 interface NavbarProps {
-  currentPage: 'landing' | 'about' | 'auth' | 'dashboard';
-  onNavigate: (page: 'landing' | 'auth' | 'about', mode?: 'login' | 'signup') => void;
+  currentPage: 'landing' | 'auth' | 'dashboard';
+  onNavigate: (page: 'landing' | 'auth', mode?: 'login' | 'signup') => void;
   onLogout: () => void;
 }
 
@@ -21,6 +21,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
 
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+      const aboutEl = document.querySelector('#about');
+      if (aboutEl) {
+        const rect = aboutEl.getBoundingClientRect();
+        if (rect.top <= 150) {
+          setActiveSection('about');
+          return;
+        }
+      }
       setActiveSection('home');
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -28,10 +36,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
   }, [currentPage]);
 
   const handleLinkClick = (href: string) => {
-    if (href === '#about') {
-      onNavigate('about');
-      return;
-    }
     if (currentPage !== 'landing') {
       onNavigate('landing');
       setTimeout(() => {
@@ -89,9 +93,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
 
         {/* Links */}
         <nav className="flex items-center gap-1">
-          {(currentPage === 'landing' || currentPage === 'about') && NAV_LINKS.map(({ label, href }) => {
-            const isActive = (currentPage === 'about' && href === '#about') ||
-                             (currentPage === 'landing' && href === '#hero' && activeSection === 'home');
+          {currentPage === 'landing' && NAV_LINKS.map(({ label, href }) => {
+            const isActive = activeSection === href.replace('#', '') || (href === '#hero' && activeSection === 'home');
             return (
               <a
                 key={label}
@@ -123,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
 
         {/* Auth Buttons */}
         <div className="flex items-center shrink-0">
-          {(currentPage === 'landing' || currentPage === 'about') && (
+          {currentPage === 'landing' && (
             <div className="bg-white/5 border border-white/10 rounded-full p-0.5 pl-2.5 pr-0.5 flex items-center gap-2 backdrop-blur-md shadow-sm">
               {/* Login Button */}
               <button

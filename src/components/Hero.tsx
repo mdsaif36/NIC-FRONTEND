@@ -114,6 +114,31 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           {/* ── Left Column: Headline & CTA Buttons (Column Span 5) ── */}
           <div className={`flex flex-col items-start font-inter lg:col-span-5 transition-all duration-1000 transform ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             
+            {/* Logo Badge (Rendered on Page) */}
+            <div className="flex items-center gap-2.5 mb-6 select-none bg-white/5 border border-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-md">
+              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg">
+                <svg viewBox="0 0 100 100" className="w-4.5 h-4.5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="logo-grad-dark-hero" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#090D1A" />
+                      <stop offset="100%" stopColor="#1E293B" />
+                    </linearGradient>
+                  </defs>
+                  <path 
+                    d="M30 72V28L70 72V28" 
+                    stroke="url(#logo-grad-dark-hero)" 
+                    strokeWidth="14" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                  />
+                  <circle cx="70" cy="28" r="7.5" fill="#38BDF8" />
+                </svg>
+              </div>
+              <span className="font-sora font-extrabold text-sm tracking-tight text-white">
+                NiC <span className="text-cyan-400 font-semibold text-xs pl-0.5 tracking-wide uppercase">NextInCampus</span>
+              </span>
+            </div>
+
             {/* Main Heading */}
             <h1 className="font-sora font-extrabold text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-white leading-[1.1] tracking-tight mb-6">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400">

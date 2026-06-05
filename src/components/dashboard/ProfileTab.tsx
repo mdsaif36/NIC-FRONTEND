@@ -121,6 +121,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   const [dragActive, setDragActive] = React.useState(false);
   const [uploadStatus, setUploadStatus] = React.useState<{ type: 'success' | 'error', message: string } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [previewingResume, setPreviewingResume] = React.useState<ResumeHistoryItem | null>(null);
+
 
   React.useEffect(() => {
     if (resumeUploaded && resumeName && !resumesHistory.some(item => item.name === resumeName)) {
@@ -1226,10 +1228,22 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                     {/* Left: Active Showcase & Upload Area */}
                     <div className="md:col-span-7 space-y-4">
                       {/* Active Showcase */}
-                      <div className="p-4 rounded-xl border border-purple-500/15 bg-slate-950/40 flex items-center justify-between gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
+                      <div 
+                        onClick={() => {
+                          const activeItem = resumesHistory.find(r => r.name.trim().toLowerCase() === resumeName.trim().toLowerCase()) || {
+                            id: 'res-default',
+                            name: resumeName,
+                            size: '1.2 MB',
+                            uploadedAt: '3 days ago'
+                          };
+                          setPreviewingResume(activeItem);
+                        }}
+                        className="p-4 rounded-xl border border-purple-500/15 bg-slate-950/40 flex items-center justify-between gap-4 relative overflow-hidden group hover:border-purple-500/30 cursor-pointer transition-all duration-300"
+                        title="Click to preview active resume"
+                      >
                         <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-full blur-xl pointer-events-none" />
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-rose-500/10 rounded-xl border border-rose-500/20 animate-pulse">
+                          <div className="p-2 bg-rose-500/10 rounded-xl border border-rose-500/20 group-hover:scale-105 transition-transform duration-350">
                             <FileText className="w-6 h-6 text-rose-500" />
                           </div>
                           <div>
@@ -1237,12 +1251,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                               {resumeName}
                             </span>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[8px] text-slate-500">
-                                {resumesHistory.find(r => r.name === resumeName)?.size || '1.2 MB'}
+                              <span className="text-[8px] text-slate-500 font-mono">
+                                {resumesHistory.find(r => r.name.trim().toLowerCase() === resumeName.trim().toLowerCase())?.size || '1.2 MB'}
                               </span>
                               <span className="text-slate-700 text-[8px]">·</span>
-                              <span className="text-[8px] text-slate-500">
-                                {resumesHistory.find(r => r.name === resumeName)?.uploadedAt || '3 days ago'}
+                              <span className="text-[8px] text-slate-500 font-mono">
+                                {resumesHistory.find(r => r.name.trim().toLowerCase() === resumeName.trim().toLowerCase())?.uploadedAt || '3 days ago'}
                               </span>
                             </div>
                           </div>
@@ -1255,7 +1269,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                           </span>
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setUploadStatus({
                                 type: 'success',
                                 message: `Opening encrypted document download stream for "${resumeName}"...`
@@ -1269,6 +1284,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                           </button>
                         </div>
                       </div>
+
 
                       {/* Interactive Drag & Drop Upload Zone */}
                       <div 
@@ -1310,7 +1326,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
                         <div className="max-h-[210px] overflow-y-auto space-y-2 pr-1 no-scrollbar">
                           {resumesHistory.map((item) => {
-                            const isActive = item.name === resumeName;
+                            const isActive = item.name.trim().toLowerCase() === resumeName.trim().toLowerCase();
                             return (
                               <div 
                                 key={item.id}
@@ -1320,8 +1336,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                                     : 'border-white/5 bg-slate-900/30 hover:border-white/10 hover:bg-slate-900/50'
                                 }`}
                               >
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <FileText className={`w-4 h-4 shrink-0 ${isActive ? 'text-rose-500' : 'text-slate-600'}`} />
+                                <div 
+                                  onClick={() => setPreviewingResume(item)}
+                                  className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-95 transition-all"
+                                  title="Click to preview this resume"
+                                >
+                                  <FileText className={`w-4 h-4 shrink-0 ${isActive ? 'text-rose-500 animate-pulse' : 'text-slate-600'}`} />
                                   <div className="min-w-0">
                                     <span 
                                       className={`block text-[10px] font-bold truncate max-w-[130px] sm:max-w-[180px] ${isActive ? 'text-white' : 'text-slate-350'}`}
@@ -1422,6 +1442,192 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
               )}
 
+
+      {/* 8. RESUME VIEW OVERLAY DRAWER */}
+      {previewingResume && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 md:p-6 animate-fade-in">
+          {/* Main Container: Icy blurry with vertical neon edge stripe */}
+          <div className="bg-[#07070a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl w-full max-w-2xl h-[85vh] flex flex-col justify-between overflow-hidden relative shadow-[0_0_50px_rgba(0,0,0,0.8)] animate-scale-up">
+            
+            {/* Neon edge side gradient border (left side) */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 via-indigo-500 to-blue-500 shadow-[0_0_15px_rgba(168,85,247,0.8)]" />
+
+            {/* Header section */}
+            <div className="p-5 pl-7 border-b border-white/5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-rose-500/10 rounded-xl border border-rose-500/20">
+                  <FileText className="w-5 h-5 text-rose-500" />
+                </div>
+                <div>
+                  <h3 className="font-sora text-sm font-bold text-white truncate max-w-[280px] sm:max-w-[400px]">
+                    {previewingResume.name}
+                  </h3>
+                  <p className="text-[9px] text-slate-500 mt-0.5">
+                    Size: {previewingResume.size} · Uploaded: {previewingResume.uploadedAt}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {previewingResume.name.trim().toLowerCase() === resumeName.trim().toLowerCase() && (
+                  <span className="px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                    <span className="w-1 h-1 rounded-full bg-emerald-450 animate-ping" />
+                    Active
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setPreviewingResume(null)}
+                  className="p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/5 hover:border-white/10 transition active:scale-95"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Simulated Live Sheet Document View */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-950/20 no-scrollbar">
+              <div className="w-full max-w-xl mx-auto bg-[#0b0c14] border border-white/5 p-8 rounded-xl shadow-inner font-inter text-left text-slate-350 space-y-6">
+                
+                {/* Header Information */}
+                <div className="text-center space-y-2">
+                  <h2 className="font-space-grotesk text-xl font-extrabold text-white tracking-wide">
+                    {profileName}
+                  </h2>
+                  <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[9px] font-medium text-slate-400 font-mono">
+                    <span>{profileName.toLowerCase().replace(/\s+/g, '')}@{profileCollege.toLowerCase().replace(/[^a-z0-9]/g, '')}.edu</span>
+                    <span className="text-slate-700">|</span>
+                    <span className="hover:text-purple-400 transition cursor-pointer">{linkedinUrl.replace('https://', '')}</span>
+                    <span className="text-slate-700">|</span>
+                    <span className="hover:text-purple-400 transition cursor-pointer">{githubUrl.replace('https://', '')}</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-white/5" />
+
+                {/* Professional Statement */}
+                <div className="space-y-1.5">
+                  <h4 className="text-[10px] font-extrabold text-purple-400 uppercase tracking-widest font-space-grotesk">Professional Objective</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    {bio || 'Software engineering student passionate about designing high-performance systems, verified networking, and scalable web solutions.'}
+                  </p>
+                </div>
+
+                {/* Education */}
+                <div className="space-y-2.5">
+                  <h4 className="text-[10px] font-extrabold text-purple-400 uppercase tracking-widest font-space-grotesk">Education</h4>
+                  <div className="flex justify-between items-start text-xs">
+                    <div>
+                      <span className="block font-bold text-white">{profileCollege}</span>
+                      <span className="block text-[10px] text-slate-400 mt-0.5">Bachelor of Technology in {profileBranch}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-bold font-mono">{profileYear}</span>
+                  </div>
+                </div>
+
+                {/* Experience */}
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-extrabold text-purple-400 uppercase tracking-widest font-space-grotesk">Experience</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-white">
+                        <span>Software Engineering Intern</span>
+                        <span className="font-mono text-[10px] font-normal text-slate-400">Summer 2025</span>
+                      </div>
+                      <span className="block text-[10px] text-purple-400 font-bold">{targetCompanies[0] || 'Google'}</span>
+                      <ul className="list-disc list-inside text-[10px] text-slate-400 mt-1.5 space-y-1 leading-relaxed">
+                        <li>Collaborated with design and analytics teams to overhaul verified student request pipelines.</li>
+                        <li>Reduced page latency metric by 30% through bundle code splitting and asset vignettes.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-white">
+                        <span>Web Development Lead</span>
+                        <span className="font-mono text-[10px] font-normal text-slate-400">2024 - Present</span>
+                      </div>
+                      <span className="block text-[10px] text-purple-400 font-bold">Open-Source & Freelance</span>
+                      <ul className="list-disc list-inside text-[10px] text-slate-400 mt-1.5 space-y-1 leading-relaxed">
+                        <li>Designed dynamic three-dimensional canvas globe widgets for seeker telemetry profiling.</li>
+                        <li>Automated local storage syncing state architectures, decreasing profile load overheads.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Technical Projects */}
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-extrabold text-purple-400 uppercase tracking-widest font-space-grotesk">Technical Projects</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-white">
+                        <span>NexInCampus Client Platform</span>
+                        <a href={githubUrl} target="_blank" rel="noreferrer" className="text-[9px] text-purple-400 font-mono underline hover:text-purple-300">GitHub Link</a>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                        Developed a responsive React portal utilizing WebSockets for live chat, simulated drag-and-drop file upload, and custom 3D projection charts.
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-white">
+                        <span>Distributed Automatch Routing</span>
+                        <span className="text-[9px] text-slate-500 font-mono">Independent</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                        Built a secure back-channel router capable of encrypting user resume packets and indexing target alumni with 90%+ match rates.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Skills Section */}
+                <div className="space-y-2.5">
+                  <h4 className="text-[10px] font-extrabold text-purple-400 uppercase tracking-widest font-space-grotesk">Technical Skills</h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {skills.map(skill => (
+                      <span key={skill} className="px-2 py-0.5 rounded bg-slate-900 border border-white/5 text-[9px] font-medium text-slate-300 font-mono">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Footer buttons */}
+            <div className="p-5 pl-7 border-t border-white/5 bg-slate-950/40 flex items-center justify-between">
+              <span className="text-[9px] font-bold text-slate-500 font-space-grotesk uppercase tracking-wider">
+                Verifiable Resume Sheet
+              </span>
+              
+              <div className="flex items-center gap-3">
+                {previewingResume.name.trim().toLowerCase() !== resumeName.trim().toLowerCase() && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleActivateResume(previewingResume.name);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-purple-650 hover:bg-purple-600 text-white font-bold text-[10px] uppercase tracking-wider transition active:scale-95 shadow-md flex items-center gap-1.5"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    Use this resume
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setPreviewingResume(null)}
+                  className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold text-[10px] uppercase tracking-wider transition"
+                >
+                  Close Preview
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
             </div>
   );
 };

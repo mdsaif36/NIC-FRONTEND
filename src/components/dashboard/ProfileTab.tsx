@@ -768,11 +768,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                     <div className="flex items-center justify-between pb-2 border-b border-white/5 mb-4">
                       <h4 className="font-sora text-white text-xs font-bold uppercase tracking-wider font-space-grotesk flex items-center gap-1.5">
                         <Calendar className="w-4 h-4 text-purple-400" />
-                        Alumni Git Commit Verification
+                        Alumni Active Days Verification
                       </h4>
                       <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        Active Stream Validation
+                        Active Days Tracking
                       </span>
                     </div>
 
@@ -819,11 +819,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
                             // Mock tooltip text
                             const tooltips = [
-                              "No validation logging",
-                              "1 reference signal confirmed",
-                              "3 target connection checks",
-                              "5 referral validations active",
-                              "8+ interactive endorsements completed"
+                              "Inactive day",
+                              "Active day (Low activity)",
+                              "Active day (Moderate activity)",
+                              "Active day (High activity)",
+                              "Active day (Very high activity)"
                             ];
 
                             return (
@@ -845,7 +845,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
                   <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1 font-space-grotesk text-[8px] text-slate-500 font-bold">
                     <span className="flex items-center gap-1">
-                      47 validation actions in last 6 months
+                      47 active days in last 6 months
                     </span>
                     <div className="flex items-center gap-1 select-none">
                       <span>Less</span>

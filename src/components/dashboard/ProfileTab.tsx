@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Activity, Award, Briefcase, Calendar, CheckCircle, CheckSquare, Edit, FileText, Fingerprint, Globe, Lock, Network, Plus, Send, Settings, ShieldCheck, TrendingUp, X
+  Activity, Award, Briefcase, Calendar, CheckCircle, CheckSquare, Edit, FileText, Fingerprint, Globe, Lock, Network, Plus, Send, Settings, ShieldCheck, TrendingUp, X, UploadCloud, Check, Trash2, Download
 } from 'lucide-react';
 import { SkillGlobe } from './SkillGlobe';
 
@@ -44,6 +44,7 @@ interface ProfileTabProps {
   skillDetails: { [key: string]: { proficiency: number; type: 'technical' | 'soft' | 'domain' } };
   skills: string[];
   targetCompanies: string[];
+  userId: number;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
@@ -85,9 +86,178 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   setSkillDetails,
   skillDetails,
   skills,
-  targetCompanies
+  targetCompanies,
+  userId
 }) => {
+  interface ResumeHistoryItem {
+    id: string;
+    name: string;
+    size: string;
+    uploadedAt: string;
+  }
+
+  const [resumesHistory, setResumesHistory] = React.useState<ResumeHistoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(`resumes_history_${userId}`);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("Error loading resume history from localStorage:", e);
+    }
+    if (resumeUploaded && resumeName) {
+      return [
+        {
+          id: 'res-default',
+          name: resumeName,
+          size: '1.2 MB',
+          uploadedAt: '3 days ago'
+        }
+      ];
+    }
+    return [];
+  });
+
+  const [dragActive, setDragActive] = React.useState(false);
+  const [uploadStatus, setUploadStatus] = React.useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (resumeUploaded && resumeName && !resumesHistory.some(item => item.name === resumeName)) {
+      const newItem: ResumeHistoryItem = {
+        id: `res-${Date.now()}`,
+        name: resumeName,
+        size: '1.2 MB',
+        uploadedAt: 'Just now'
+      };
+      const updated = [newItem, ...resumesHistory];
+      setResumesHistory(updated);
+      localStorage.setItem(`resumes_history_${userId}`, JSON.stringify(updated));
+    }
+  }, [resumeName, resumeUploaded, userId]);
+
+  const saveHistory = (history: ResumeHistoryItem[]) => {
+    setResumesHistory(history);
+    localStorage.setItem(`resumes_history_${userId}`, JSON.stringify(history));
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processFile(e.target.files[0]);
+    }
+  };
+
+  const processFile = (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (!['pdf', 'docx', 'doc'].includes(ext || '')) {
+      setUploadStatus({
+        type: 'error',
+        message: 'Invalid file format. Please upload PDF, DOCX, or DOC documents.'
+      });
+      setTimeout(() => setUploadStatus(null), 4000);
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadStatus({
+        type: 'error',
+        message: 'File size exceeds 5MB limit. Please upload a smaller document.'
+      });
+      setTimeout(() => setUploadStatus(null), 4000);
+      return;
+    }
+
+    const name = file.name;
+    const rawSize = file.size;
+    let sizeStr = '0 KB';
+    if (rawSize >= 1024 * 1024) {
+      sizeStr = `${(rawSize / (1024 * 1024)).toFixed(1)} MB`;
+    } else {
+      sizeStr = `${(rawSize / 1024).toFixed(0)} KB`;
+    }
+
+    const timeStr = new Date().toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const newItem: ResumeHistoryItem = {
+      id: `res-${Date.now()}`,
+      name: name,
+      size: sizeStr,
+      uploadedAt: timeStr
+    };
+
+    const updated = [newItem, ...resumesHistory.filter(item => item.name !== name)];
+    saveHistory(updated);
+    setResumeName(name);
+    setResumeUploaded(true);
+
+    setUploadStatus({
+      type: 'success',
+      message: `Successfully uploaded and activated "${name}"!`
+    });
+    setTimeout(() => setUploadStatus(null), 4000);
+  };
+
+  const handleActivateResume = (name: string) => {
+    setResumeName(name);
+    setResumeUploaded(true);
+    setUploadStatus({
+      type: 'success',
+      message: `Switched active resume to "${name}"!`
+    });
+    setTimeout(() => setUploadStatus(null), 3000);
+  };
+
+  const handleDeleteResume = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const itemToDelete = resumesHistory.find(item => item.id === id);
+    if (!itemToDelete) return;
+
+    if (itemToDelete.name === resumeName) {
+      setUploadStatus({
+        type: 'error',
+        message: "Cannot remove the active resume. Switch active resumes first."
+      });
+      setTimeout(() => setUploadStatus(null), 3000);
+      return;
+    }
+
+    const updated = resumesHistory.filter(item => item.id !== id);
+    saveHistory(updated);
+    setUploadStatus({
+      type: 'success',
+      message: `Removed "${itemToDelete.name}" from history.`
+    });
+    setTimeout(() => setUploadStatus(null), 3000);
+  };
+
   return (
+
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up text-left pb-16 font-inter">
               
               {/* 1. TOP ROW: VERIFICATION STATUS CARDS (3 columns) */}
@@ -294,10 +464,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                       {/* Item 2 */}
                       <div 
                         onClick={() => {
-                          const newName = prompt('Enter CV file name:', resumeName);
-                          if (newName) {
-                            setResumeName(newName);
-                            setResumeUploaded(true);
+                          const element = document.getElementById('resume-section');
+                          if (element) {
+                            element.scrollIntoView({ behavior: 'smooth' });
+                            setTimeout(() => {
+                              if (fileInputRef.current) {
+                                fileInputRef.current.click();
+                              }
+                            }, 500);
                           }
                         }}
                         className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/40 border border-white/5 hover:border-purple-500/20 cursor-pointer transition-colors"
@@ -1020,30 +1194,183 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   )}
                 </div>
 
-                <div>
-                  <h4 className="font-sora text-white text-xs font-bold uppercase tracking-wider pb-2 border-b border-white/5 mb-3 font-space-grotesk">Resume Section</h4>
-                  <div className="p-4 rounded-xl border border-white/5 bg-slate-950/40 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-8 h-8 text-rose-500 animate-pulse" />
-                      <div>
-                        <span className="block font-bold text-white text-xs">{resumeName}</span>
-                        <span className="block text-[8px] text-slate-500 mt-0.5">Last updated: 3 days ago</span>
+                <div id="resume-section" className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                    <h4 className="font-sora text-white text-xs font-bold uppercase tracking-wider font-space-grotesk flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-rose-500" />
+                      Resume Portfolio
+                    </h4>
+                    <span className="text-[9px] font-bold text-slate-500 font-mono">
+                      Stored Profiles: {resumesHistory.length}
+                    </span>
+                  </div>
+
+                  {uploadStatus && (
+                    <div className={`p-3 py-2.5 rounded-xl border text-[10px] leading-relaxed font-semibold transition-all duration-300 flex items-center justify-between gap-3 animate-fade-in ${
+                      uploadStatus.type === 'success' 
+                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                        : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                    }`}>
+                      <span>{uploadStatus.message}</span>
+                      <button 
+                        type="button"
+                        onClick={() => setUploadStatus(null)} 
+                        className="text-[9px] opacity-75 hover:opacity-100 uppercase tracking-wider font-bold"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    {/* Left: Active Showcase & Upload Area */}
+                    <div className="md:col-span-7 space-y-4">
+                      {/* Active Showcase */}
+                      <div className="p-4 rounded-xl border border-purple-500/15 bg-slate-950/40 flex items-center justify-between gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
+                        <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-full blur-xl pointer-events-none" />
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-rose-500/10 rounded-xl border border-rose-500/20 animate-pulse">
+                            <FileText className="w-6 h-6 text-rose-500" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-white text-xs truncate max-w-[200px] sm:max-w-[280px]" title={resumeName}>
+                              {resumeName}
+                            </span>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[8px] text-slate-500">
+                                {resumesHistory.find(r => r.name === resumeName)?.size || '1.2 MB'}
+                              </span>
+                              <span className="text-slate-700 text-[8px]">·</span>
+                              <span className="text-[8px] text-slate-500">
+                                {resumesHistory.find(r => r.name === resumeName)?.uploadedAt || '3 days ago'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-450 animate-ping" />
+                            Active
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUploadStatus({
+                                type: 'success',
+                                message: `Opening encrypted document download stream for "${resumeName}"...`
+                              });
+                              setTimeout(() => setUploadStatus(null), 3000);
+                            }}
+                            className="p-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-slate-300 transition"
+                            title="Download Active Resume"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Interactive Drag & Drop Upload Zone */}
+                      <div 
+                        onDragEnter={handleDrag}
+                        onDragOver={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDrop={handleDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[140px] select-none ${
+                          dragActive 
+                            ? 'border-purple-500 bg-purple-950/15 shadow-[0_0_15px_rgba(168,85,247,0.1)]' 
+                            : 'border-white/10 hover:border-purple-500/30 bg-slate-950/20'
+                        }`}
+                      >
+                        <input 
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileChange}
+                          accept=".pdf,.docx,.doc"
+                          className="hidden"
+                        />
+                        <UploadCloud className={`w-8 h-8 mb-2 transition-transform duration-300 ${dragActive ? 'scale-110 text-purple-400' : 'text-slate-500 group-hover:scale-105'}`} />
+                        <span className="block text-xs font-bold text-white leading-relaxed">
+                          {dragActive ? 'Drop your resume here' : 'Drag & drop your resume, or click to browse'}
+                        </span>
+                        <span className="block text-[9px] text-slate-500 mt-1 font-semibold">
+                          PDF, DOCX, or DOC formats up to 5MB
+                        </span>
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newName = prompt('Enter CV file name:', resumeName);
-                        if (newName) {
-                          setResumeName(newName);
-                          setResumeUploaded(true);
-                        }
-                      }}
-                      className="px-4 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white font-semibold text-[9px] uppercase tracking-wider transition active:scale-95"
-                    >
-                      Replace File
-                    </button>
+                    {/* Right: Upload History List */}
+                    <div className="md:col-span-5 p-4 rounded-xl border border-white/5 bg-slate-950/20 flex flex-col justify-between min-h-[296px] h-full">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between pb-1.5 border-b border-white/5">
+                          <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider font-space-grotesk">Uploaded Resumes History</span>
+                          <span className="text-[8px] font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.2 rounded">Unlimited updates</span>
+                        </div>
+
+                        <div className="max-h-[210px] overflow-y-auto space-y-2 pr-1 no-scrollbar">
+                          {resumesHistory.map((item) => {
+                            const isActive = item.name === resumeName;
+                            return (
+                              <div 
+                                key={item.id}
+                                className={`p-2.5 rounded-lg border transition-all duration-200 flex items-center justify-between gap-3 ${
+                                  isActive 
+                                    ? 'border-purple-500/20 bg-purple-950/5' 
+                                    : 'border-white/5 bg-slate-900/30 hover:border-white/10 hover:bg-slate-900/50'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <FileText className={`w-4 h-4 shrink-0 ${isActive ? 'text-rose-500' : 'text-slate-600'}`} />
+                                  <div className="min-w-0">
+                                    <span 
+                                      className={`block text-[10px] font-bold truncate max-w-[130px] sm:max-w-[180px] ${isActive ? 'text-white' : 'text-slate-350'}`}
+                                      title={item.name}
+                                    >
+                                      {item.name}
+                                    </span>
+                                    <span className="block text-[7.5px] text-slate-500 mt-0.5 font-medium">
+                                      {item.size} · {item.uploadedAt}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {isActive ? (
+                                    <span className="p-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                      <Check className="w-3 h-3" />
+                                    </span>
+                                  ) : (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleActivateResume(item.name)}
+                                        className="px-2 py-0.5 rounded text-[8px] font-bold bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 uppercase tracking-wider transition"
+                                      >
+                                        Use
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => handleDeleteResume(item.id, e)}
+                                        className="p-1 rounded bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/10 text-rose-450 transition"
+                                        title="Delete resume"
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t border-white/5 mt-3 text-center">
+                        <span className="text-[7.5px] text-slate-500 leading-relaxed font-semibold italic font-space-grotesk">
+                          * Keep multiple resumes tailored for different target roles (e.g. Frontend vs ML).
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

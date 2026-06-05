@@ -436,6 +436,38 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     }
   };
 
+  const handleSetResumeNameAndUploaded = async (name: string, uploaded: boolean) => {
+    setResumeName(name);
+    setResumeUploaded(uploaded);
+    
+    const token = localStorage.getItem('token');
+    try {
+      await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: profileName,
+          college: profileCollege,
+          year: profileYear,
+          branch: profileBranch,
+          bio,
+          githubUrl,
+          linkedinUrl,
+          skills,
+          skillDetails,
+          targetCompanies,
+          resumeUploaded: uploaded,
+          resumeName: name
+        })
+      });
+    } catch (err) {
+      console.error("Error auto-saving resume name:", err);
+    }
+  };
+
   // Wrapped edit mode toggler to auto-save to DB
   const toggleEditMode = (mode: boolean) => {
     if (isEditMode && !mode) {
@@ -910,10 +942,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 setNewCompanyInput={setNewCompanyInput}
                 handleAddCompany={handleAddCompany}
                 handleRemoveCompany={handleRemoveCompany}
+                userId={id}
                 resumeUploaded={resumeUploaded}
-                setResumeUploaded={setResumeUploaded}
+                setResumeUploaded={(uploaded) => handleSetResumeNameAndUploaded(resumeName, uploaded)}
                 resumeName={resumeName}
-                setResumeName={setResumeName}
+                setResumeName={(name) => handleSetResumeNameAndUploaded(name, true)}
+
                 hoveredSkill={hoveredSkill}
                 setHoveredSkill={setHoveredSkill}
                 privacyCollegeOnly={privacyCollegeOnly}

@@ -4,6 +4,70 @@ import {
 } from 'lucide-react';
 import { SkillGlobe } from './SkillGlobe';
 
+const dbName = "NexInCampus_ResumesDB";
+const storeName = "resumes";
+
+const openDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(dbName, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+const storeFileInDB = async (name: string, file: File): Promise<void> => {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+    store.put(file, name);
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) {
+    console.error("Error storing file in IndexedDB:", e);
+  }
+};
+
+const getFileFromDB = async (name: string): Promise<File | null> => {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(storeName, "readonly");
+    const store = tx.objectStore(storeName);
+    const request = store.get(name);
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (e) {
+    console.error("Error retrieving file from IndexedDB:", e);
+    return null;
+  }
+};
+
+const deleteFileFromDB = async (name: string): Promise<void> => {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+    store.delete(name);
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) {
+    console.error("Error deleting file from IndexedDB:", e);
+  }
+};
+
+
 interface ProfileTabProps {
   bio: string;
   getProfileCompletion: () => number;
@@ -126,7 +190,45 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
 
   React.useEffect(() => {
-    if (resumeUploaded && resumeName && !resumesHistory.some(item => item.name === resumeName)) {
+    let active = true;
+    const loadAllFiles = async () => {
+      const map: {[key: string]: string} = {};
+      const namesToLoad = new Set<string>();
+      
+      for (const item of resumesHistory) {
+        if (item.name.toLowerCase().endsWith('.pdf')) {
+          namesToLoad.add(item.name);
+        }
+      }
+      if (resumeName && resumeName.toLowerCase().endsWith('.pdf')) {
+        namesToLoad.add(resumeName);
+      }
+
+      for (const name of namesToLoad) {
+        const file = await getFileFromDB(name);
+        if (file && active) {
+          const lowerName = name.trim().toLowerCase();
+          map[lowerName] = URL.createObjectURL(file);
+        }
+      }
+
+      if (active) {
+        setFileUrlsMap(prev => {
+          Object.values(prev).forEach(url => URL.revokeObjectURL(url));
+          return map;
+        });
+      }
+    };
+
+    loadAllFiles();
+    
+    return () => {
+      active = false;
+    };
+  }, [resumesHistory, resumeName]);
+
+  React.useEffect(() => {
+    if (resumeUploaded && resumeName && !resumesHistory.some(item => item.name.trim().toLowerCase() === resumeName.trim().toLowerCase())) {
       const newItem: ResumeHistoryItem = {
         id: `res-${Date.now()}`,
         name: resumeName,
@@ -134,8 +236,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         uploadedAt: 'Just now'
       };
       const updated = [newItem, ...resumesHistory];
-      setResumesHistory(updated);
-      localStorage.setItem(`resumes_history_${userId}`, JSON.stringify(updated));
+      saveHistory(updated);
     }
   }, [resumeName, resumeUploaded, userId]);
 
@@ -170,7 +271,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     }
   };
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     const ext = file.name.split('.').pop()?.toLowerCase();
     if (!['pdf', 'docx', 'doc'].includes(ext || '')) {
       setUploadStatus({
@@ -207,14 +308,19 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       minute: '2-digit'
     });
 
+    if (ext === 'pdf') {
+      await storeFileInDB(name, file);
+    }
+
     const objectUrl = URL.createObjectURL(file);
+    const key = name.trim().toLowerCase();
     setFileUrlsMap(prev => {
-      if (prev[name]) {
-        URL.revokeObjectURL(prev[name]);
+      if (prev[key]) {
+        URL.revokeObjectURL(prev[key]);
       }
       return {
         ...prev,
-        [name]: objectUrl
+        [key]: objectUrl
       };
     });
 
@@ -247,7 +353,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     setTimeout(() => setUploadStatus(null), 3000);
   };
 
-  const handleDeleteResume = (id: string, e: React.MouseEvent) => {
+  const handleDeleteResume = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const itemToDelete = resumesHistory.find(item => item.id === id);
     if (!itemToDelete) return;
@@ -263,6 +369,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
     const updated = resumesHistory.filter(item => item.id !== id);
     saveHistory(updated);
+
+    if (itemToDelete.name.toLowerCase().endsWith('.pdf')) {
+      await deleteFileFromDB(itemToDelete.name);
+    }
+
     setUploadStatus({
       type: 'success',
       message: `Removed "${itemToDelete.name}" from history.`
@@ -1499,10 +1610,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
             {/* Simulated Live Sheet Document View */}
             <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-950/20 no-scrollbar">
-              {fileUrlsMap[previewingResume.name] && previewingResume.name.toLowerCase().endsWith('.pdf') ? (
+              {fileUrlsMap[previewingResume.name.trim().toLowerCase()] && previewingResume.name.toLowerCase().endsWith('.pdf') ? (
                 <div className="w-full h-full min-h-[500px] border border-white/10 rounded-xl overflow-hidden bg-slate-950/40">
                   <iframe 
-                    src={fileUrlsMap[previewingResume.name]} 
+                    src={fileUrlsMap[previewingResume.name.trim().toLowerCase()]} 
                     className="w-full h-full border-none"
                     title="Actual PDF Preview"
                   />

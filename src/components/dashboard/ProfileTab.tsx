@@ -170,6 +170,129 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [previewingResume, setPreviewingResume] = React.useState<ResumeHistoryItem | null>(null);
   const [fileUrlsMap, setFileUrlsMap] = React.useState<{[key: string]: string}>({});
+  const [activityMap, setActivityMap] = React.useState<Record<string, number>>({});
+  const [loadingActivity, setLoadingActivity] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!userId) return;
+    
+    let isMounted = true;
+    setLoadingActivity(true);
+    
+    const token = localStorage.getItem('token');
+    fetch(`/api/users/activity/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (isMounted && Array.isArray(data)) {
+          const map: Record<string, number> = {};
+          data.forEach((act: any) => {
+            map[act.date] = act.count;
+          });
+          setActivityMap(map);
+        }
+      })
+      .catch(err => console.error('Error fetching user activity:', err))
+      .finally(() => {
+        if (isMounted) setLoadingActivity(false);
+      });
+      
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
+
+  const calendarCells = React.useMemo(() => {
+    const cells = [];
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    // Find Monday of the current week
+    const currentDay = today.getDay();
+    const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
+    const currentWeekMonday = new Date(today);
+    currentWeekMonday.setDate(today.getDate() - distanceToMonday);
+    currentWeekMonday.setHours(0, 0, 0, 0);
+
+    const start = new Date(currentWeekMonday);
+    start.setDate(start.getDate() - 23 * 7);
+
+    let activeCount = 0;
+
+    for (let idx = 0; idx < 168; idx++) {
+      const col = Math.floor(idx / 7);
+      const row = idx % 7;
+      
+      const cellDate = new Date(start);
+      cellDate.setDate(start.getDate() + col * 7 + row);
+      
+      const year = cellDate.getFullYear();
+      const month = String(cellDate.getMonth() + 1).padStart(2, '0');
+      const day = String(cellDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      const count = activityMap[dateStr] || 0;
+      const isFuture = cellDate > today;
+      
+      let level = 0;
+      if (isFuture) {
+        level = 0;
+      } else if (count >= 1 && count <= 2) {
+        level = 1;
+      } else if (count >= 3 && count <= 5) {
+        level = 2;
+      } else if (count >= 6 && count <= 9) {
+        level = 3;
+      } else if (count >= 10) {
+        level = 4;
+      }
+
+      if (count > 0 && !isFuture) {
+        activeCount++;
+      }
+
+      const dateFormatted = cellDate.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+
+      let tooltipText = `${dateFormatted}: No activity`;
+      if (isFuture) {
+        tooltipText = `${dateFormatted} (Future day)`;
+      } else if (count > 0) {
+        const levelNames = [
+          'No activity',
+          'Low activity',
+          'Moderate activity',
+          'High activity',
+          'Very high activity'
+        ];
+        tooltipText = `${dateFormatted}: ${count} activity event${count > 1 ? 's' : ''} (${levelNames[level]})`;
+      }
+
+      cells.push({
+        dateStr,
+        level,
+        tooltipText,
+        isFuture
+      });
+    }
+
+    // Month Headers calculation (at weeks 0, 4, 8, 12, 16, 20)
+    const monthHeaders = [];
+    const indices = [0, 4, 8, 12, 16, 20];
+    for (const col of indices) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + col * 7);
+      monthHeaders.push(date.toLocaleDateString(undefined, { month: 'short' }));
+    }
+
+    return { cells, activeCount, monthHeaders };
+  }, [activityMap]);
 
   const handleDownloadResume = async (name: string) => {
     try {
@@ -788,26 +911,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                       <div className="flex-1 flex flex-col gap-1 overflow-hidden">
                         {/* Month Headers */}
                         <div className="flex justify-between text-[8px] text-slate-500 font-bold px-1 select-none font-space-grotesk mb-0.5">
-                          <span>Jan</span>
-                          <span>Feb</span>
-                          <span>Mar</span>
-                          <span>Apr</span>
-                          <span>May</span>
-                          <span>Jun</span>
+                          {calendarCells.monthHeaders.map((m, i) => (
+                            <span key={i}>{m}</span>
+                          ))}
                         </div>
 
                         {/* Calendar cells (arranged 7 rows, 24 cols) */}
                         <div className="grid grid-flow-col grid-rows-7 gap-[3.5px] overflow-x-auto no-scrollbar">
-                          {Array.from({ length: 168 }).map((_, idx) => {
-                            // Generate mock levels of green shades representing validation check density
-                            let level = 0;
-                            // Pseudo-random distribution of validation commits
-                            if ((idx * 3) % 19 === 0) level = 4;
-                            else if ((idx * 7) % 13 === 0) level = 3;
-                            else if ((idx * 5) % 11 === 0) level = 2;
-                            else if ((idx * 11) % 7 === 0) level = 1;
-                            else if (idx % 2 === 0) level = 0;
-
+                          {calendarCells.cells.map((cell, idx) => {
                             // Dynamic tailwind bg and shadow classes
                             const levelStyles = [
                               'bg-slate-900 border border-white/5', // 0
@@ -817,23 +928,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                               'bg-emerald-400 border border-emerald-400/50 shadow-[0_0_8px_rgba(52,211,153,0.3)]' // 4
                             ];
 
-                            // Mock tooltip text
-                            const tooltips = [
-                              "Inactive day",
-                              "Active day (Low activity)",
-                              "Active day (Moderate activity)",
-                              "Active day (High activity)",
-                              "Active day (Very high activity)"
-                            ];
-
                             return (
                               <div
                                 key={idx}
-                                className={`w-[9px] h-[9px] rounded-[1.5px] ${levelStyles[level]} hover:scale-130 transition-transform duration-100 cursor-help group/cell relative`}
+                                className={`w-[9px] h-[9px] rounded-[1.5px] ${levelStyles[cell.level]} hover:scale-130 transition-transform duration-100 cursor-help group/cell relative`}
                               >
                                 {/* Tooltip display on hover */}
                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/cell:block bg-slate-900 border border-white/10 px-2 py-1 rounded text-[8px] font-bold text-white whitespace-nowrap z-50 shadow-2xl">
-                                  {tooltips[level]}
+                                  {cell.tooltipText}
                                 </div>
                               </div>
                             );
@@ -845,7 +947,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
                   <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1 font-space-grotesk text-[8px] text-slate-500 font-bold">
                     <span className="flex items-center gap-1">
-                      47 active days in last 6 months
+                      {loadingActivity ? (
+                        <span>Loading activity logs...</span>
+                      ) : (
+                        <span>{calendarCells.activeCount} active days in last 6 months</span>
+                      )}
                     </span>
                     <div className="flex items-center gap-1 select-none">
                       <span>Less</span>

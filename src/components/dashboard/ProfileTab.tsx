@@ -171,6 +171,104 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   const [previewingResume, setPreviewingResume] = React.useState<ResumeHistoryItem | null>(null);
   const [fileUrlsMap, setFileUrlsMap] = React.useState<{[key: string]: string}>({});
 
+  const handleDownloadResume = async (name: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/users/resume/download/${userId}/${encodeURIComponent(name)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(objectUrl);
+      } else {
+        const file = await getFileFromDB(name);
+        if (file) {
+          const objectUrl = URL.createObjectURL(file);
+          const a = document.createElement('a');
+          a.href = objectUrl;
+          a.download = name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(objectUrl);
+        } else {
+          setUploadStatus({
+            type: 'error',
+            message: 'Failed to download the resume.'
+          });
+          setTimeout(() => setUploadStatus(null), 4000);
+        }
+      }
+    } catch (err) {
+      console.error("Error downloading resume:", err);
+    }
+  };
+
+  const handleViewResume = async (name: string) => {
+    setUploadStatus({
+      type: 'success',
+      message: `Fetching secure document stream for "${name}"...`
+    });
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/users/resume/download/${userId}/${encodeURIComponent(name)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const newTab = window.open(objectUrl, '_blank');
+        if (!newTab) {
+          setUploadStatus({
+            type: 'error',
+            message: 'Popup blocked. Please allow popups to view the resume.'
+          });
+          setTimeout(() => setUploadStatus(null), 4000);
+          return;
+        }
+        setUploadStatus(null);
+      } else {
+        const file = await getFileFromDB(name);
+        if (file) {
+          const objectUrl = URL.createObjectURL(file);
+          window.open(objectUrl, '_blank');
+          setUploadStatus(null);
+        } else {
+          setUploadStatus({
+            type: 'error',
+            message: 'Failed to retrieve the resume file from the server or local storage.'
+          });
+          setTimeout(() => setUploadStatus(null), 4000);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      const file = await getFileFromDB(name);
+      if (file) {
+        const objectUrl = URL.createObjectURL(file);
+        window.open(objectUrl, '_blank');
+        setUploadStatus(null);
+      } else {
+        setUploadStatus({
+          type: 'error',
+          message: 'Error connecting to the server.'
+        });
+        setTimeout(() => setUploadStatus(null), 4000);
+      }
+    }
+  };
+
 
   React.useEffect(() => {
     let active = true;
@@ -1349,17 +1447,9 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                     <div className="md:col-span-7 space-y-4">
                       {/* Active Showcase */}
                       <div 
-                        onClick={() => {
-                          const activeItem = resumesHistory.find(r => r.name.trim().toLowerCase() === resumeName.trim().toLowerCase()) || {
-                            id: 'res-default',
-                            name: resumeName,
-                            size: '1.2 MB',
-                            uploadedAt: '3 days ago'
-                          };
-                          setPreviewingResume(activeItem);
-                        }}
+                        onClick={() => handleViewResume(resumeName)}
                         className="p-4 rounded-xl border border-purple-500/15 bg-slate-950/40 flex items-center justify-between gap-4 relative overflow-hidden group hover:border-purple-500/30 cursor-pointer transition-all duration-300"
-                        title="Click to preview active resume"
+                        title="Click to view active resume"
                       >
                         <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-full blur-xl pointer-events-none" />
                         <div className="flex items-center gap-3">
@@ -1384,18 +1474,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-450 animate-ping" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                             Active
                           </span>
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setUploadStatus({
-                                type: 'success',
-                                message: `Opening encrypted document download stream for "${resumeName}"...`
-                              });
-                              setTimeout(() => setUploadStatus(null), 3000);
+                              handleDownloadResume(resumeName);
                             }}
                             className="p-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-slate-300 transition"
                             title="Download Active Resume"
@@ -1457,9 +1543,9 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                                 }`}
                               >
                                 <div 
-                                  onClick={() => setPreviewingResume(item)}
+                                  onClick={() => handleViewResume(item.name)}
                                   className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-95 transition-all"
-                                  title="Click to preview this resume"
+                                  title="Click to view this resume"
                                 >
                                   <FileText className={`w-4 h-4 shrink-0 ${isActive ? 'text-rose-500 animate-pulse' : 'text-slate-600'}`} />
                                   <div className="min-w-0">

@@ -53,6 +53,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
   const [resumeName, setResumeName] = useState('arjun_resume.pdf');
   const [resumeUploaded, setResumeUploaded] = useState(true);
+  const [resumesHistory, setResumesHistory] = useState<any[]>([]);
   const [bio, setBio] = useState('CSE Junior passionate about building highly interactive web apps and AI systems.');
   const [githubUrl, setGithubUrl] = useState('https://github.com/arjun');
   const [linkedinUrl, setLinkedinUrl] = useState('https://linkedin.com/in/arjun');
@@ -122,6 +123,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           setTargetCompanies(data.targetCompanies || []);
           setResumeUploaded(data.resumeUploaded);
           setResumeName(data.resumeName || '');
+          setResumesHistory(data.resumesHistory || []);
         } else {
           setReferralsSentCount(data.referralsSentCount);
         }
@@ -199,7 +201,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             score: '94% Match',
             message: r.pitchMessage,
             status: r.status,
-            seekerId: r.seekerId
+            seekerId: r.seekerId,
+            resumeName: r.seeker?.resumeName || '',
+            resumeUploaded: r.seeker?.resumeUploaded || false
           }));
           setRequests(formatted);
         }
@@ -429,6 +433,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           setTargetCompanies(data.targetCompanies);
           setResumeUploaded(data.resumeUploaded);
           setResumeName(data.resumeName);
+          setResumesHistory(data.resumesHistory || []);
         }
       }
     } catch (err) {
@@ -442,7 +447,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     
     const token = localStorage.getItem('token');
     try {
-      await fetch('/api/users/profile', {
+      const res = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -463,6 +468,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           resumeName: name
         })
       });
+      if (res.ok) {
+        const data = await res.json();
+        setResumesHistory(data.resumesHistory || []);
+      }
     } catch (err) {
       console.error("Error auto-saving resume name:", err);
     }
@@ -483,7 +492,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
         skillDetails,
         targetCompanies,
         resumeUploaded,
-        resumeName
+        resumeName,
+        resumesHistory
       });
     }
     setIsEditMode(mode);
@@ -947,6 +957,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 setResumeUploaded={(uploaded) => handleSetResumeNameAndUploaded(resumeName, uploaded)}
                 resumeName={resumeName}
                 setResumeName={(name) => handleSetResumeNameAndUploaded(name, true)}
+                resumesHistory={resumesHistory}
+                setResumesHistory={setResumesHistory}
 
                 hoveredSkill={hoveredSkill}
                 setHoveredSkill={setHoveredSkill}

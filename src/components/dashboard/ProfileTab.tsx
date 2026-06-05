@@ -68,6 +68,13 @@ const deleteFileFromDB = async (name: string): Promise<void> => {
 };
 
 
+interface ResumeHistoryItem {
+  id: string;
+  name: string;
+  size: string;
+  uploadedAt: string;
+}
+
 interface ProfileTabProps {
   bio: string;
   getProfileCompletion: () => number;
@@ -109,6 +116,8 @@ interface ProfileTabProps {
   skills: string[];
   targetCompanies: string[];
   userId: number;
+  resumesHistory: ResumeHistoryItem[];
+  setResumesHistory: React.Dispatch<React.SetStateAction<ResumeHistoryItem[]>>;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
@@ -151,36 +160,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   skillDetails,
   skills,
   targetCompanies,
-  userId
+  userId,
+  resumesHistory,
+  setResumesHistory
 }) => {
-  interface ResumeHistoryItem {
-    id: string;
-    name: string;
-    size: string;
-    uploadedAt: string;
-  }
-
-  const [resumesHistory, setResumesHistory] = React.useState<ResumeHistoryItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(`resumes_history_${userId}`);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error("Error loading resume history from localStorage:", e);
-    }
-    if (resumeUploaded && resumeName) {
-      return [
-        {
-          id: 'res-default',
-          name: resumeName,
-          size: '1.2 MB',
-          uploadedAt: '3 days ago'
-        }
-      ];
-    }
-    return [];
-  });
 
   const [dragActive, setDragActive] = React.useState(false);
   const [uploadStatus, setUploadStatus] = React.useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -240,9 +223,23 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     }
   }, [resumeName, resumeUploaded, userId]);
 
-  const saveHistory = (history: ResumeHistoryItem[]) => {
+  const saveHistory = async (history: ResumeHistoryItem[]) => {
     setResumesHistory(history);
-    localStorage.setItem(`resumes_history_${userId}`, JSON.stringify(history));
+    const token = localStorage.getItem('token');
+    try {
+      await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          resumesHistory: history
+        })
+      });
+    } catch (err) {
+      console.error("Error syncing resume history to server:", err);
+    }
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -1568,21 +1565,21 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
       {/* 8. RESUME VIEW OVERLAY DRAWER */}
       {previewingResume && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 md:p-6 animate-fade-in">
-          {/* Main Container: Icy blurry with vertical neon edge stripe */}
-          <div className="bg-[#07070a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl w-full max-w-2xl h-[85vh] flex flex-col justify-between overflow-hidden relative shadow-[0_0_50px_rgba(0,0,0,0.8)] animate-scale-up">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 animate-fade-in">
+          {/* Main Container: Icy blurry with vertical neon edge stripe - Expanded width to make PDF readable, responsive height */}
+          <div className="bg-[#07070a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl w-full max-w-4xl lg:max-w-5xl h-[92vh] md:h-[88vh] flex flex-col justify-between overflow-hidden relative shadow-[0_0_50px_rgba(0,0,0,0.8)] animate-scale-up">
             
             {/* Neon edge side gradient border (left side) */}
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 via-indigo-500 to-blue-500 shadow-[0_0_15px_rgba(168,85,247,0.8)]" />
 
             {/* Header section */}
-            <div className="p-5 pl-7 border-b border-white/5 flex items-center justify-between gap-4">
+            <div className="p-4 sm:p-5 pl-6 sm:pl-7 border-b border-white/5 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-rose-500/10 rounded-xl border border-rose-500/20">
                   <FileText className="w-5 h-5 text-rose-500" />
                 </div>
                 <div>
-                  <h3 className="font-sora text-sm font-bold text-white truncate max-w-[280px] sm:max-w-[400px]">
+                  <h3 className="font-sora text-xs sm:text-sm font-bold text-white truncate max-w-[150px] xs:max-w-[220px] sm:max-w-[350px] md:max-w-[500px]">
                     {previewingResume.name}
                   </h3>
                   <p className="text-[9px] text-slate-500 mt-0.5">
@@ -1594,7 +1591,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <div className="flex items-center gap-3">
                 {previewingResume.name.trim().toLowerCase() === resumeName.trim().toLowerCase() && (
                   <span className="px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                    <span className="w-1 h-1 rounded-full bg-emerald-450 animate-ping" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                     Active
                   </span>
                 )}
@@ -1608,17 +1605,19 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               </div>
             </div>
 
-            {/* Simulated Live Sheet Document View */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-950/20 no-scrollbar">
-              {fileUrlsMap[previewingResume.name.trim().toLowerCase()] && previewingResume.name.toLowerCase().endsWith('.pdf') ? (
-                <div className="w-full h-full min-h-[500px] border border-white/10 rounded-xl overflow-hidden bg-slate-950/40">
+            {/* Body content: for PDF, we render a flex column that stretches to full height; for text, we render an overflow-y-auto scrollable page */}
+            {fileUrlsMap[previewingResume.name.trim().toLowerCase()] && previewingResume.name.toLowerCase().endsWith('.pdf') ? (
+              <div className="flex-1 flex flex-col p-3 sm:p-4 md:p-6 bg-slate-950/20 overflow-hidden">
+                <div className="w-full flex-1 border border-white/10 rounded-xl overflow-hidden bg-slate-950/40">
                   <iframe 
                     src={fileUrlsMap[previewingResume.name.trim().toLowerCase()]} 
                     className="w-full h-full border-none"
                     title="Actual PDF Preview"
                   />
                 </div>
-              ) : (
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-950/20 no-scrollbar">
                 <div className="w-full max-w-xl mx-auto bg-[#0b0c14] border border-white/5 p-8 rounded-xl shadow-inner font-inter text-left text-slate-350 space-y-6">
                   
                   {/* Header Information */}
@@ -1726,8 +1725,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   </div>
 
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Footer buttons */}
             <div className="p-5 pl-7 border-t border-white/5 bg-slate-950/40 flex items-center justify-between">

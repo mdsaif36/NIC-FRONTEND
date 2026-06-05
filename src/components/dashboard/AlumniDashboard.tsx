@@ -4,7 +4,7 @@ import {
   Home, LogOut, MessageSquare, ShieldCheck, TrendingUp,
   UserCheck, Users, XCircle, Send, Bell, Star,
   ChevronRight, Activity, Award, Zap, Settings, Briefcase,
-  Sparkles, Filter, Trash2, Plus, ChevronDown
+  Sparkles, Filter, Trash2, Plus, ChevronDown, X, Download
 } from 'lucide-react';
 import { MessagesTab } from './MessagesTab.js';
 
@@ -158,6 +158,47 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
   // Local tab filters
   const [inboxFilter, setInboxFilter] = useState<'All' | 'Pending' | 'Referred' | 'Info' | 'Declined'>('Pending');
+  const [previewingResume, setPreviewingResume] = useState<{ seekerId: number; resumeName: string; studentName: string } | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [isLoadingFile, setIsLoadingFile] = useState(false);
+
+  const handleViewResume = async (seekerId: number, resumeName: string, studentName: string) => {
+    setIsLoadingFile(true);
+    setPreviewingResume({ seekerId, resumeName, studentName });
+    
+    if (fileUrl) {
+      URL.revokeObjectURL(fileUrl);
+      setFileUrl(null);
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/users/resume/download/${seekerId}/${encodeURIComponent(resumeName)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        setFileUrl(objectUrl);
+      } else {
+        console.error("Failed to load resume file from backend.");
+      }
+    } catch (err) {
+      console.error("Error fetching resume:", err);
+    } finally {
+      setIsLoadingFile(false);
+    }
+  };
+
+  const handleClosePreview = () => {
+    setPreviewingResume(null);
+    if (fileUrl) {
+      URL.revokeObjectURL(fileUrl);
+      setFileUrl(null);
+    }
+  };
   const [collegeTierFilter, setCollegeTierFilter] = useState<'All' | 'Top-tier' | 'State' | 'Private'>('All');
   const [declineReasonOpenId, setDeclineReasonOpenId] = useState<number | null>(null);
 
@@ -665,10 +706,18 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                               </div>
                               <div className="p-3 rounded-xl bg-black/30 border border-white/5">
                                 <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Resume</span>
-                                <button type="button" onClick={(e) => e.preventDefault()} className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-slate-300 hover:text-white transition">
-                                  <FileText className="w-3.5 h-3.5 text-rose-400" />
-                                  {req.studentName.toLowerCase().replace(/\s+/g, '_')}_cv.pdf
-                                </button>
+                                {req.resumeUploaded && req.resumeName ? (
+                                  <button 
+                                    type="button" 
+                                    onClick={() => handleViewResume(req.seekerId, req.resumeName, req.studentName)} 
+                                    className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-purple-400 hover:text-purple-355 transition"
+                                  >
+                                    <FileText className="w-3.5 h-3.5 text-rose-500" />
+                                    {req.resumeName}
+                                  </button>
+                                ) : (
+                                  <span className="text-[10px] text-slate-500 italic">No resume uploaded</span>
+                                )}
                               </div>
                             </div>
 
@@ -1308,6 +1357,95 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
         </div>
       </main>
+
+      {/* ── Premium Resume Viewer Overlay Drawer ── */}
+      {previewingResume && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="relative w-full max-w-4xl h-[85vh] rounded-[2rem] border border-white/10 bg-[#08080b] p-6 shadow-2xl flex flex-col justify-between animate-fade-in-up">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/5 shrink-0">
+              <div>
+                <h3 className="font-sora text-white text-base font-extrabold flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-rose-500" />
+                  {previewingResume.studentName}'s Resume
+                </h3>
+                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                  File: {previewingResume.resumeName}
+                </p>
+              </div>
+              <button 
+                onClick={handleClosePreview}
+                className="w-8 h-8 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Viewer Area */}
+            <div className="flex-1 my-5 rounded-xl border border-white/5 bg-slate-950/40 relative overflow-hidden flex items-center justify-center p-4 min-h-[300px]">
+              {isLoadingFile ? (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin" />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Loading PDF from server...</span>
+                </div>
+              ) : fileUrl ? (
+                previewingResume.resumeName.toLowerCase().endsWith('.pdf') ? (
+                  <iframe 
+                    src={fileUrl} 
+                    className="w-full h-full rounded-xl border border-white/10"
+                    title="Resume PDF Preview"
+                  />
+                ) : (
+                  <div className="text-center p-8">
+                    <FileText className="w-12 h-12 text-slate-500 mx-auto mb-3" />
+                    <p className="text-xs text-slate-400 font-semibold mb-3">
+                      Word Documents (.docx/.doc) cannot be previewed directly in the browser.
+                    </p>
+                    <a
+                      href={fileUrl}
+                      download={previewingResume.resumeName}
+                      className="px-4 py-2 rounded-xl bg-purple-650 hover:bg-purple-600 text-white font-bold text-xs uppercase tracking-wider inline-flex items-center gap-1.5"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download to View
+                    </a>
+                  </div>
+                )
+              ) : (
+                <div className="text-center p-8">
+                  <XCircle className="w-12 h-12 text-rose-500/40 mx-auto mb-3" />
+                  <p className="text-xs text-slate-400">Failed to load resume file. It might have been deleted or moved.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer actions */}
+            <div className="flex items-center justify-between pt-3 border-t border-white/5 shrink-0">
+              <span className="text-[9px] text-slate-550 leading-relaxed max-w-sm italic">
+                * NextInCampus secures all document channels. Keep document details confidential.
+              </span>
+              <div className="flex gap-3">
+                {fileUrl && (
+                  <a
+                    href={fileUrl}
+                    download={previewingResume.resumeName}
+                    className="px-4 py-2 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-300 transition flex items-center gap-1.5"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download File
+                  </a>
+                )}
+                <button
+                  onClick={handleClosePreview}
+                  className="px-4 py-2 rounded-xl bg-purple-650 hover:bg-purple-600 text-white font-bold text-xs uppercase tracking-wider transition"
+                >
+                  Close Viewer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

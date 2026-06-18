@@ -22,7 +22,7 @@ export const Hero: React.FC<HeroProps> = () => {
         <div 
           className="absolute top-1/2 left-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(239,68,68,0.08) 0%, transparent 80%)',
+            background: 'radial-gradient(circle, rgba(239,68,68,0.06) 0%, transparent 80%)',
           }}
         />
 
@@ -30,27 +30,27 @@ export const Hero: React.FC<HeroProps> = () => {
         <div 
           className="absolute top-1/2 right-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(26,107,245,0.1) 0%, transparent 80%)',
+            background: 'radial-gradient(circle, rgba(26,107,245,0.08) 0%, transparent 80%)',
           }}
         />
 
         {/* Static Referral Flow Background Image (Flat, non-3D) */}
         <div className={`absolute inset-0 w-full h-full transition-all duration-1000 transform ${isMounted ? 'opacity-100' : 'opacity-0'}`}>
           <img 
-            src="/referral_flow_bg.jpg" 
+            src="/referral_flow_bg_v2.jpg" 
             alt="NextInCampus Referral Flow Background" 
-            className="w-full h-full object-cover opacity-35 md:opacity-50 select-none pointer-events-none"
+            className="w-full h-full object-contain opacity-75 md:opacity-90 select-none pointer-events-none"
           />
         </div>
 
         {/* Dark radial overlay to vignette the edges and keep the text perfectly readable */}
         <div 
-          className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50"
+          className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/60"
         />
         <div 
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.4) 0%, rgba(2, 2, 5, 0.98) 95%)',
+            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.15) 0%, rgba(2, 2, 5, 0.85) 95%)',
           }}
         />
       </div>

@@ -14,54 +14,46 @@ export const LiveReferralGlobe: React.FC = () => {
   const speedY = 0.001;
 
   // Seeker & Alumni positions on the sphere (lat, lon)
-  // Seeker in the left hemisphere, Alumni in the right hemisphere
   const seekerPos = { lat: 0.0, lon: -1.1 };
   const alumniPos = { lat: 0.0, lon: 0.9 };
 
   // Dotted map points list
   const spherePointsRef = useRef<{ x: number; y: number; z: number; isLand: boolean }[]>([]);
+  // Background stars list
+  const bgStarsRef = useRef<{ x: number; y: number; size: number; alpha: number; speed: number }[]>([]);
 
-  // Generate sphere points on mount
+  // Generate sphere points and stars on mount
   useEffect(() => {
     const points: { x: number; y: number; z: number; isLand: boolean }[] = [];
-    const numPoints = 2200; // High density for recognizable Earth shape
+    const numPoints = 2200; 
 
     // Earth geographic continent builder
     const checkIsLand = (lat: number, lon: number) => {
-      // lat is in [-PI/2, PI/2], lon is in [-PI, PI]
-
-      // North America
       const dNA1 = Math.hypot(lat - 0.7, lon + 1.7); // Canada/USA
       const dNA2 = Math.hypot(lat - 1.0, lon + 2.3); // Alaska
       const dNA3 = Math.hypot(lat - 0.2, lon + 1.4); // Mexico / Central America
       
-      // South America
       const dSA1 = Math.hypot(lat + 0.2, lon + 1.0); // Brazil
       const dSA2 = Math.hypot(lat + 0.6, lon + 1.1); // Argentina/Chile
       
-      // Greenland
       const dGreenland = Math.hypot(lat - 1.2, lon + 0.7);
 
-      // Africa
       const dAF1 = Math.hypot(lat - 0.1, lon - 0.3); // West Africa
       const dAF2 = Math.hypot(lat - 0.1, lon - 0.7); // Horn of Africa / East
       const dAF3 = Math.hypot(lat + 0.4, lon - 0.4); // South Africa
       const dMadagascar = Math.hypot(lat + 0.3, lon - 0.8); // Madagascar
 
-      // Europe
       const dEU1 = Math.hypot(lat - 0.8, lon - 0.3); // Central Europe
       const dEU2 = Math.hypot(lat - 1.1, lon - 0.4); // Scandinavia
       const dUK = Math.hypot(lat - 0.9, lon - 0.1); // United Kingdom
 
-      // Asia
       const dAS1 = Math.hypot(lat - 0.9, lon - 1.6); // Siberia
       const dAS2 = Math.hypot(lat - 0.5, lon - 1.7); // China / East Asia
       const dAS3 = Math.hypot(lat - 0.3, lon - 1.4); // India
       const dAS4 = Math.hypot(lat - 0.4, lon - 0.8); // Middle East
-      const dAS5 = Math.hypot(lat - 0.2, lon - 1.9); // Indochina / South East Asia
+      const dAS5 = Math.hypot(lat - 0.2, lon - 1.9); // Indochina
       const dJapan = Math.hypot(lat - 0.6, lon - 2.4); // Japan
 
-      // Australia
       const dAU1 = Math.hypot(lat + 0.45, lon - 2.3); // Australia
       const dNZ = Math.hypot(lat + 0.7, lon - 2.9); // New Zealand
 
@@ -77,7 +69,6 @@ export const LiveReferralGlobe: React.FC = () => {
     };
 
     for (let i = 0; i < numPoints; i++) {
-      // Golden Spiral distribution
       const zFraction = 1 - (2 * i) / (numPoints - 1 || 1);
       const radiusFraction = Math.sqrt(1 - zFraction * zFraction);
       const phi = i * 2.39996; // Golden angle
@@ -86,7 +77,6 @@ export const LiveReferralGlobe: React.FC = () => {
       const y0 = radiusFraction * Math.sin(phi);
       const z0 = zFraction;
 
-      // Convert to spherical coords
       const lat = Math.asin(y0);
       const lon = Math.atan2(x0, z0);
 
@@ -95,6 +85,19 @@ export const LiveReferralGlobe: React.FC = () => {
     }
 
     spherePointsRef.current = points;
+
+    // Generate space stars
+    const stars = [];
+    for (let i = 0; i < 70; i++) {
+      stars.push({
+        x: Math.random() * 420,
+        y: Math.random() * 420,
+        size: Math.random() * 1.5 + 0.5,
+        alpha: Math.random() * 0.7 + 0.1,
+        speed: Math.random() * 0.02 + 0.01
+      });
+    }
+    bgStarsRef.current = stars;
   }, []);
 
   // Animation & Rendering loop
@@ -112,11 +115,9 @@ export const LiveReferralGlobe: React.FC = () => {
     // Helper: Draw user icon inside nodes
     const drawUserIcon = (c: CanvasRenderingContext2D, cx: number, cy: number, r: number) => {
       c.fillStyle = '#FFFFFF';
-      // Head
       c.beginPath();
       c.arc(cx, cy - r * 0.22, r * 0.28, 0, 2 * Math.PI);
       c.fill();
-      // Shoulders
       c.beginPath();
       c.arc(cx, cy + r * 0.62, r * 0.5, Math.PI, 2 * Math.PI);
       c.fill();
@@ -134,28 +135,111 @@ export const LiveReferralGlobe: React.FC = () => {
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
 
-      // 1. Bounding Glow and Orbit Rings
+      // ── 1. Twinkling Space Stars Background ───────────────────────────────
       ctx.shadowBlur = 0;
-      ctx.globalAlpha = 1.0;
+      bgStarsRef.current.forEach(star => {
+        star.alpha += star.speed;
+        if (star.alpha > 0.8 || star.alpha < 0.1) {
+          star.speed = -star.speed;
+        }
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, Math.min(1, star.alpha))})`;
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+      });
 
-      // Draw Orbiting Rings
-      ctx.strokeStyle = 'rgba(30, 64, 255, 0.08)'; // Blue Ring
-      ctx.lineWidth = 1.2;
+      // ── 2. Bilateral Ambient Glows (Vibrant Atmosphere) ───────────────────
+      // Left side Seeker Red Glow
+      const leftAura = ctx.createRadialGradient(cx - R * 0.8, cy, 0, cx - R * 0.8, cy, R * 1.5);
+      leftAura.addColorStop(0, 'rgba(255, 30, 60, 0.13)');
+      leftAura.addColorStop(1, 'rgba(255, 30, 60, 0.0)');
+      ctx.fillStyle = leftAura;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 1.6, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Right side Alumni Blue Glow
+      const rightAura = ctx.createRadialGradient(cx + R * 0.8, cy, 0, cx + R * 0.8, cy, R * 1.5);
+      rightAura.addColorStop(0, 'rgba(30, 64, 255, 0.15)');
+      rightAura.addColorStop(1, 'rgba(30, 64, 255, 0.0)');
+      ctx.fillStyle = rightAura;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 1.6, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // ── 3. Draw Orbiting Rings (Tech aesthetics) ────────────────────────
+      ctx.strokeStyle = 'rgba(30, 64, 255, 0.06)'; // Blue Ring
+      ctx.lineWidth = 1.0;
       ctx.beginPath();
       ctx.ellipse(cx, cy, R * 1.25, R * 0.45, -0.25, 0, 2 * Math.PI);
       ctx.stroke();
 
-      ctx.strokeStyle = 'rgba(255, 30, 60, 0.06)'; // Red Ring
+      ctx.strokeStyle = 'rgba(255, 30, 60, 0.04)'; // Red Ring
       ctx.beginPath();
       ctx.ellipse(cx, cy, R * 1.35, R * 0.35, 0.3, 0, 2 * Math.PI);
       ctx.stroke();
 
-      // Rotate sphere points in 3D
+      // ── 4. Draw 3D Rotating Latitude & Longitude Wireframe Grid ─────────
+      const numGridPoints = 40;
+      
+      // Latitudes
+      const latGridAngles = [-Math.PI / 4, 0, Math.PI / 4];
+      latGridAngles.forEach(latAngle => {
+        ctx.beginPath();
+        for (let i = 0; i <= numGridPoints; i++) {
+          const lon = (i / numGridPoints) * 2 * Math.PI - Math.PI;
+          const x0 = Math.cos(latAngle) * Math.sin(lon);
+          const y0 = Math.sin(latAngle);
+          const z0 = Math.cos(latAngle) * Math.cos(lon);
+
+          let x1 = x0 * Math.cos(localRotY) - z0 * Math.sin(localRotY);
+          let z1 = x0 * Math.sin(localRotY) + z0 * Math.cos(localRotY);
+          let y2 = y0 * Math.cos(localRotX) - z1 * Math.sin(localRotX);
+          let z2 = y0 * Math.sin(localRotX) + z1 * Math.cos(localRotX);
+
+          const scale = 300 / (300 - z2 * R);
+          const sx = cx + x1 * R * scale;
+          const sy = cy + y2 * R * scale;
+
+          const op = (z2 + R) / (2 * R) * 0.035 + 0.005;
+          ctx.strokeStyle = `rgba(148, 163, 184, ${op})`;
+
+          if (i === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+      });
+
+      // Longitudes
+      const lonGridAngles = [-Math.PI / 3, 0, Math.PI / 3];
+      lonGridAngles.forEach(lonAngle => {
+        ctx.beginPath();
+        for (let i = 0; i <= numGridPoints; i++) {
+          const lat = (i / numGridPoints) * Math.PI - Math.PI / 2;
+          const x0 = Math.cos(lat) * Math.sin(lonAngle);
+          const y0 = Math.sin(lat);
+          const z0 = Math.cos(lat) * Math.cos(lonAngle);
+
+          let x1 = x0 * Math.cos(localRotY) - z0 * Math.sin(localRotY);
+          let z1 = x0 * Math.sin(localRotY) + z0 * Math.cos(localRotY);
+          let y2 = y0 * Math.cos(localRotX) - z1 * Math.sin(localRotX);
+          let z2 = y0 * Math.sin(localRotX) + z1 * Math.cos(localRotX);
+
+          const scale = 300 / (300 - z2 * R);
+          const sx = cx + x1 * R * scale;
+          const sy = cy + y2 * R * scale;
+
+          const op = (z2 + R) / (2 * R) * 0.035 + 0.005;
+          ctx.strokeStyle = `rgba(148, 163, 184, ${op})`;
+
+          if (i === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+      });
+
+      // ── 5. Rotate and Project Sphere Particles ──────────────────────────
       const projectedDots = spherePointsRef.current.map(pt => {
-        // Rot Y
         let x1 = pt.x * Math.cos(localRotY) - pt.z * Math.sin(localRotY);
         let z1 = pt.x * Math.sin(localRotY) + pt.z * Math.cos(localRotY);
-        // Rot X
         let y2 = pt.y * Math.cos(localRotX) - z1 * Math.sin(localRotX);
         let z2 = pt.y * Math.sin(localRotX) + z1 * Math.cos(localRotX);
 
@@ -170,22 +254,20 @@ export const LiveReferralGlobe: React.FC = () => {
       // Sort dots by depth
       projectedDots.sort((a, b) => a.z - b.z);
 
-      // Draw digital grid dots representing Earth continents & oceans
+      // Draw digital particles representing continents & oceans
       projectedDots.forEach(d => {
         const depthOpacity = (d.z + R) / (2 * R) * 0.55 + 0.15;
         
         if (d.isLand) {
-          // Digital square landmass dots: larger and glowing
           ctx.globalAlpha = depthOpacity * 0.85;
           if (d.x1 < 0) {
-            ctx.fillStyle = '#FF1E3C'; // Red seeker hemisphere
+            ctx.fillStyle = '#FF1E3C'; // Red hemisphere
           } else {
-            ctx.fillStyle = '#1E40FF'; // Blue alumni hemisphere
+            ctx.fillStyle = '#1E40FF'; // Blue hemisphere
           }
           const size = 2.4 * d.scale;
           ctx.fillRect(d.sx - size / 2, d.sy - size / 2, size, size);
         } else {
-          // Ocean particles: smaller and fainter to outline the sphere shape
           ctx.globalAlpha = depthOpacity * 0.14;
           ctx.fillStyle = 'rgba(148, 163, 184, 0.35)';
           const size = 1.0 * d.scale;
@@ -193,26 +275,24 @@ export const LiveReferralGlobe: React.FC = () => {
         }
       });
 
-      // Reset global opacity
       ctx.globalAlpha = 1.0;
 
-      // 2. Volumetric Atmosphere Rim Glow
+      // ── 6. Volumetric Atmosphere Rim Glow Overlay ────────────────────────
       const rimGrad = ctx.createRadialGradient(cx, cy, R * 0.88, cx, cy, R * 1.04);
       rimGrad.addColorStop(0, 'rgba(139, 92, 246, 0.0)');
-      rimGrad.addColorStop(0.7, 'rgba(139, 92, 246, 0.06)');
-      rimGrad.addColorStop(1.0, 'rgba(30, 64, 255, 0.16)');
+      rimGrad.addColorStop(0.7, 'rgba(139, 92, 246, 0.05)');
+      rimGrad.addColorStop(1.0, 'rgba(30, 64, 255, 0.15)');
       ctx.fillStyle = rimGrad;
       ctx.beginPath();
       ctx.arc(cx, cy, R * 1.04, 0, 2 * Math.PI);
       ctx.fill();
 
-      // 3. Seeker and Alumni Nodes 3D projections
-      // Seeker coords
+      // ── 7. Seeker and Alumni Nodes Projections ──────────────────────────
+      // Seeker
       const skX0 = Math.cos(seekerPos.lat) * Math.sin(seekerPos.lon);
       const skY0 = Math.sin(seekerPos.lat);
       const skZ0 = Math.cos(seekerPos.lat) * Math.cos(seekerPos.lon);
 
-      // Seeker rotation
       const skX1 = skX0 * Math.cos(localRotY) - skZ0 * Math.sin(localRotY);
       const skZ1 = skX0 * Math.sin(localRotY) + skZ0 * Math.cos(localRotY);
       const skY2 = skY0 * Math.cos(localRotX) - skZ1 * Math.sin(localRotX);
@@ -222,12 +302,11 @@ export const LiveReferralGlobe: React.FC = () => {
       const skSx = cx + skX1 * R * skScale;
       const skSy = cy + skY2 * R * skScale;
 
-      // Alumni coords
+      // Alumni
       const alX0 = Math.cos(alumniPos.lat) * Math.sin(alumniPos.lon);
       const alY0 = Math.sin(alumniPos.lat);
       const alZ0 = Math.cos(alumniPos.lat) * Math.cos(alumniPos.lon);
 
-      // Alumni rotation
       const alX1 = alX0 * Math.cos(localRotY) - alZ0 * Math.sin(localRotY);
       const alZ1 = alX0 * Math.sin(localRotY) + alZ0 * Math.cos(localRotY);
       const alY2 = alY0 * Math.cos(localRotX) - alZ1 * Math.sin(localRotX);
@@ -237,11 +316,10 @@ export const LiveReferralGlobe: React.FC = () => {
       const alSx = cx + alX1 * R * alScale;
       const alSy = cy + alY2 * R * alScale;
 
-      // 4. Draw Connecting Arc (Quadratic Bezier Curve in 3D)
+      // ── 8. Draw Connecting Arc ──────────────────────────────────────────
       const vSeeker = { x: skX0, y: skY0, z: skZ0 };
       const vAlumni = { x: alX0, y: alY0, z: alZ0 };
 
-      // Midpoint on sphere surface
       const vMidRaw = {
         x: (vSeeker.x + vAlumni.x) * 0.5,
         y: (vSeeker.y + vAlumni.y) * 0.5,
@@ -256,7 +334,6 @@ export const LiveReferralGlobe: React.FC = () => {
         z: vMidRaw.z + vNormal.z * arcHeight
       };
 
-      // Generate points along the 3D Bezier curve
       const numCurvePoints = 35;
       const curve2DPoints: { sx: number; sy: number; z: number }[] = [];
 
@@ -266,7 +343,6 @@ export const LiveReferralGlobe: React.FC = () => {
         const by = (1 - t) * (1 - t) * vSeeker.y + 2 * (1 - t) * t * vControl.y + t * t * vAlumni.y;
         const bz = (1 - t) * (1 - t) * vSeeker.z + 2 * (1 - t) * t * vControl.z + t * t * vAlumni.z;
 
-        // Rotate in 3D
         const rx = bx * Math.cos(localRotY) - bz * Math.sin(localRotY);
         const rz = bx * Math.sin(localRotY) + bz * Math.cos(localRotY);
         const ry = by * Math.cos(localRotX) - rz * Math.sin(localRotX);
@@ -279,14 +355,13 @@ export const LiveReferralGlobe: React.FC = () => {
         curve2DPoints.push({ sx: bsx, sy: bsy, z: rzFinal * R });
       }
 
-      // Draw the connecting Arc with linear gradient (Red to Blue)
       ctx.lineWidth = 2.8;
       ctx.shadowBlur = 10;
       
       const grad = ctx.createLinearGradient(skSx, skSy, alSx, alSy);
-      grad.addColorStop(0, 'rgba(255, 30, 60, 0.9)'); // Red
-      grad.addColorStop(0.5, 'rgba(139, 92, 246, 0.75)'); // Purple
-      grad.addColorStop(1, 'rgba(30, 64, 255, 0.9)'); // Blue
+      grad.addColorStop(0, 'rgba(255, 30, 60, 0.9)'); 
+      grad.addColorStop(0.5, 'rgba(139, 92, 246, 0.75)'); 
+      grad.addColorStop(1, 'rgba(30, 64, 255, 0.9)'); 
       ctx.strokeStyle = grad;
       ctx.shadowColor = 'rgba(139, 92, 246, 0.45)';
 
@@ -298,14 +373,13 @@ export const LiveReferralGlobe: React.FC = () => {
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      // 5. Animate Referral Pulse Particle traveling along the Arc
+      // Animate Pulse Particle
       const elapsed = performance.now() * 0.001;
       const pulseT = (elapsed * 0.35) % 1.0; 
       const pulseIdx = Math.floor(pulseT * numCurvePoints);
       
       if (pulseIdx >= 0 && pulseIdx < curve2DPoints.length) {
         const pulsePt = curve2DPoints[pulseIdx];
-        
         ctx.shadowBlur = 12;
         ctx.shadowColor = '#FFFFFF';
         ctx.fillStyle = '#FFFFFF';
@@ -315,18 +389,18 @@ export const LiveReferralGlobe: React.FC = () => {
         ctx.shadowBlur = 0;
       }
 
-      // 6. Draw Seeker Node (Left / Red)
+      // ── 9. Draw Seeker Node ─────────────────────────────────────────────
       if (skZ2 > -0.7) {
         const nodeRadius = 14.5 * skScale;
 
-        // Outer Glow Ring
+        // Glow Ring
         ctx.strokeStyle = 'rgba(255, 30, 60, 0.32)';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(skSx, skSy, nodeRadius + 5.5, 0, 2 * Math.PI);
         ctx.stroke();
 
-        // Solid Node Circle
+        // Node Circle
         ctx.fillStyle = '#FF1E3C';
         ctx.shadowBlur = 14;
         ctx.shadowColor = 'rgba(255, 30, 60, 0.7)';
@@ -335,36 +409,58 @@ export const LiveReferralGlobe: React.FC = () => {
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Inner User Icon
+        // User Icon
         drawUserIcon(ctx, skSx, skSy, nodeRadius * 0.85);
 
-        // Seeker Callout Label
+        // Seeker Pointer Line
         ctx.strokeStyle = 'rgba(255, 30, 60, 0.45)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.moveTo(skSx - nodeRadius, skSy);
-        ctx.lineTo(skSx - nodeRadius - 20, skSy - 15);
-        ctx.lineTo(skSx - nodeRadius - 100, skSy - 15);
+        ctx.lineTo(skSx - nodeRadius - 22, skSy - 22);
+        ctx.lineTo(skSx - nodeRadius - 100, skSy - 22);
         ctx.stroke();
 
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 9.5px "Space Grotesk", sans-serif';
+        // Seeker Glassmorphic Callout Pill (High fidelity styling)
+        const badgeX = skSx - nodeRadius - 100;
+        const badgeY = skSy - 22;
+
+        ctx.fillStyle = 'rgba(12, 10, 15, 0.88)';
+        ctx.strokeStyle = 'rgba(255, 30, 60, 0.5)';
+        ctx.lineWidth = 1.2;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        
+        // Draw round rect for card
+        ctx.beginPath();
+        ctx.roundRect(badgeX - 100, badgeY - 20, 100, 36, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Text inside card
+        ctx.font = 'bold 9px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#FF1E3C';
         ctx.textAlign = 'left';
-        ctx.fillText('SEEKER (Sending Request)', skSx - nodeRadius - 95, skSy - 22);
+        ctx.fillText('SEEKER', badgeX - 90, badgeY - 6);
+        
+        ctx.font = '500 8.5px "Inter", sans-serif';
+        ctx.fillStyle = '#E2E8F0';
+        ctx.fillText('Sending Request', badgeX - 90, badgeY + 8);
       }
 
-      // 7. Draw Alumni Node (Right / Blue)
+      // ── 10. Draw Alumni Node ────────────────────────────────────────────
       if (alZ2 > -0.7) {
         const nodeRadius = 14.5 * alScale;
 
-        // Outer Glow Ring
+        // Glow Ring
         ctx.strokeStyle = 'rgba(30, 64, 255, 0.32)';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(alSx, alSy, nodeRadius + 5.5, 0, 2 * Math.PI);
         ctx.stroke();
 
-        // Solid Node Circle
+        // Node Circle
         ctx.fillStyle = '#1E40FF';
         ctx.shadowBlur = 14;
         ctx.shadowColor = 'rgba(30, 64, 255, 0.7)';
@@ -373,22 +469,43 @@ export const LiveReferralGlobe: React.FC = () => {
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Inner User Icon
+        // User Icon
         drawUserIcon(ctx, alSx, alSy, nodeRadius * 0.85);
 
-        // Alumni Callout Label
+        // Alumni Pointer Line
         ctx.strokeStyle = 'rgba(30, 64, 255, 0.45)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.moveTo(alSx + nodeRadius, alSy);
-        ctx.lineTo(alSx + nodeRadius + 20, alSy + 15);
-        ctx.lineTo(alSx + nodeRadius + 100, alSy + 15);
+        ctx.lineTo(alSx + nodeRadius + 22, alSy + 22);
+        ctx.lineTo(alSx + nodeRadius + 100, alSy + 22);
         ctx.stroke();
 
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 9.5px "Space Grotesk", sans-serif';
+        // Alumni Glassmorphic Callout Pill (High fidelity styling)
+        const badgeX = alSx + nodeRadius + 100;
+        const badgeY = alSy + 22;
+
+        ctx.fillStyle = 'rgba(10, 12, 20, 0.88)';
+        ctx.strokeStyle = 'rgba(30, 64, 255, 0.5)';
+        ctx.lineWidth = 1.2;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        
+        ctx.beginPath();
+        ctx.roundRect(badgeX, badgeY - 16, 100, 36, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Text inside card
+        ctx.font = 'bold 9px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#38BDF8';
         ctx.textAlign = 'left';
-        ctx.fillText('ALUMNI (Giving Referral)', alSx + nodeRadius + 20, alSy + 28);
+        ctx.fillText('ALUMNI', badgeX + 10, badgeY - 2);
+        
+        ctx.font = '500 8.5px "Inter", sans-serif';
+        ctx.fillStyle = '#E2E8F0';
+        ctx.fillText('Giving Referral', badgeX + 10, badgeY + 12);
       }
 
       animationFrameId = requestAnimationFrame(render);

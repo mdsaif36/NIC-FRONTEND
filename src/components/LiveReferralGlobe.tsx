@@ -24,25 +24,55 @@ export const LiveReferralGlobe: React.FC = () => {
   // Generate sphere points on mount
   useEffect(() => {
     const points: { x: number; y: number; z: number; isLand: boolean }[] = [];
-    const numPoints = 1400; // Increased density for a full, rich look
+    const numPoints = 2200; // High density for recognizable Earth shape
 
-    // Continental clustering math
+    // Earth geographic continent builder
     const checkIsLand = (lat: number, lon: number) => {
       // lat is in [-PI/2, PI/2], lon is in [-PI, PI]
-      const dNA = Math.hypot(lat - 0.5, lon + 1.8);
-      const dSA = Math.hypot(lat + 0.3, lon + 1.0);
-      const dEU = Math.hypot(lat - 0.7, lon - 0.2);
-      const dAF = Math.hypot(lat - 0.0, lon - 0.4);
-      const dAS = Math.hypot(lat - 0.5, lon - 1.8);
-      const dAU = Math.hypot(lat + 0.5, lon - 2.4);
+
+      // North America
+      const dNA1 = Math.hypot(lat - 0.7, lon + 1.7); // Canada/USA
+      const dNA2 = Math.hypot(lat - 1.0, lon + 2.3); // Alaska
+      const dNA3 = Math.hypot(lat - 0.2, lon + 1.4); // Mexico / Central America
+      
+      // South America
+      const dSA1 = Math.hypot(lat + 0.2, lon + 1.0); // Brazil
+      const dSA2 = Math.hypot(lat + 0.6, lon + 1.1); // Argentina/Chile
+      
+      // Greenland
+      const dGreenland = Math.hypot(lat - 1.2, lon + 0.7);
+
+      // Africa
+      const dAF1 = Math.hypot(lat - 0.1, lon - 0.3); // West Africa
+      const dAF2 = Math.hypot(lat - 0.1, lon - 0.7); // Horn of Africa / East
+      const dAF3 = Math.hypot(lat + 0.4, lon - 0.4); // South Africa
+      const dMadagascar = Math.hypot(lat + 0.3, lon - 0.8); // Madagascar
+
+      // Europe
+      const dEU1 = Math.hypot(lat - 0.8, lon - 0.3); // Central Europe
+      const dEU2 = Math.hypot(lat - 1.1, lon - 0.4); // Scandinavia
+      const dUK = Math.hypot(lat - 0.9, lon - 0.1); // United Kingdom
+
+      // Asia
+      const dAS1 = Math.hypot(lat - 0.9, lon - 1.6); // Siberia
+      const dAS2 = Math.hypot(lat - 0.5, lon - 1.7); // China / East Asia
+      const dAS3 = Math.hypot(lat - 0.3, lon - 1.4); // India
+      const dAS4 = Math.hypot(lat - 0.4, lon - 0.8); // Middle East
+      const dAS5 = Math.hypot(lat - 0.2, lon - 1.9); // Indochina / South East Asia
+      const dJapan = Math.hypot(lat - 0.6, lon - 2.4); // Japan
+
+      // Australia
+      const dAU1 = Math.hypot(lat + 0.45, lon - 2.3); // Australia
+      const dNZ = Math.hypot(lat + 0.7, lon - 2.9); // New Zealand
 
       return (
-        dNA < 0.7 ||
-        dSA < 0.65 ||
-        dEU < 0.45 ||
-        dAF < 0.6 ||
-        dAS < 0.85 ||
-        dAU < 0.4
+        dNA1 < 0.52 || dNA2 < 0.35 || dNA3 < 0.22 ||
+        dSA1 < 0.45 || dSA2 < 0.32 ||
+        dGreenland < 0.25 ||
+        dAF1 < 0.45 || dAF2 < 0.3 || dAF3 < 0.35 || dMadagascar < 0.12 ||
+        dEU1 < 0.35 || dEU2 < 0.22 || dUK < 0.15 ||
+        dAS1 < 0.6 || dAS2 < 0.52 || dAS3 < 0.35 || dAS4 < 0.32 || dAS5 < 0.32 || dJapan < 0.15 ||
+        dAU1 < 0.32 || dNZ < 0.12
       );
     };
 
@@ -140,35 +170,33 @@ export const LiveReferralGlobe: React.FC = () => {
       // Sort dots by depth
       projectedDots.sort((a, b) => a.z - b.z);
 
-      // Draw dots representing sphere continents & oceans
+      // Draw digital grid dots representing Earth continents & oceans
       projectedDots.forEach(d => {
         const depthOpacity = (d.z + R) / (2 * R) * 0.55 + 0.15;
         
         if (d.isLand) {
-          // Landmass particles: larger and brighter
+          // Digital square landmass dots: larger and glowing
           ctx.globalAlpha = depthOpacity * 0.85;
           if (d.x1 < 0) {
-            ctx.fillStyle = '#FF1E3C'; // Red hemisphere
+            ctx.fillStyle = '#FF1E3C'; // Red seeker hemisphere
           } else {
-            ctx.fillStyle = '#1E40FF'; // Blue hemisphere
+            ctx.fillStyle = '#1E40FF'; // Blue alumni hemisphere
           }
-          ctx.beginPath();
-          ctx.arc(d.sx, d.sy, 1.8 * d.scale, 0, 2 * Math.PI);
-          ctx.fill();
+          const size = 2.4 * d.scale;
+          ctx.fillRect(d.sx - size / 2, d.sy - size / 2, size, size);
         } else {
-          // Ocean particles: smaller and fainter to fill the sphere shapes
-          ctx.globalAlpha = depthOpacity * 0.15;
-          ctx.fillStyle = 'rgba(148, 163, 184, 0.4)'; // Faint slate blue
-          ctx.beginPath();
-          ctx.arc(d.sx, d.sy, 0.85 * d.scale, 0, 2 * Math.PI);
-          ctx.fill();
+          // Ocean particles: smaller and fainter to outline the sphere shape
+          ctx.globalAlpha = depthOpacity * 0.14;
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.35)';
+          const size = 1.0 * d.scale;
+          ctx.fillRect(d.sx - size / 2, d.sy - size / 2, size, size);
         }
       });
 
       // Reset global opacity
       ctx.globalAlpha = 1.0;
 
-      // 2. Volumetric Atmosphere Rim Glow (Tech aesthetics like the image)
+      // 2. Volumetric Atmosphere Rim Glow
       const rimGrad = ctx.createRadialGradient(cx, cy, R * 0.88, cx, cy, R * 1.04);
       rimGrad.addColorStop(0, 'rgba(139, 92, 246, 0.0)');
       rimGrad.addColorStop(0.7, 'rgba(139, 92, 246, 0.06)');

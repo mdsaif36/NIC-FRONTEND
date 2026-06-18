@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { LiveReferralGlobe } from './LiveReferralGlobe';
 
 interface HeroProps {
   onNavigate: (page: 'landing' | 'auth', mode?: 'login' | 'signup') => void;
@@ -17,21 +16,21 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       id="hero"
       className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-transparent select-none"
     >
-      {/* ── Background Image with Premium Lighter-Tone Fade ──────────────────────── */}
+      {/* ── Background Ambient Glows (Dim light theme) ──────────────────────── */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
-        {/* Ambient Left Red Glow (blends with the left side of the artwork) */}
+        {/* Ambient Left Red Glow (very dim) */}
         <div 
-          className="absolute top-1/2 left-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[120px]"
+          className="absolute top-1/2 left-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(239,68,68,0.25) 0%, transparent 80%)',
+            background: 'radial-gradient(circle, rgba(239,68,68,0.12) 0%, transparent 80%)',
           }}
         />
 
-        {/* Ambient Right Blue Glow (blends with the right side of the artwork) */}
+        {/* Ambient Right Blue Glow (very dim) */}
         <div 
-          className="absolute top-1/2 right-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[120px]"
+          className="absolute top-1/2 right-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(26,107,245,0.28) 0%, transparent 80%)',
+            background: 'radial-gradient(circle, rgba(26,107,245,0.15) 0%, transparent 80%)',
           }}
         />
 
@@ -39,7 +38,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         <div 
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.15) 0%, rgba(2, 2, 5, 0.95) 90%)',
+            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.05) 0%, rgba(2, 2, 5, 0.98) 95%)',
           }}
         />
       </div>
@@ -104,9 +103,20 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* 3D Globe Column */}
-          <div className={`lg:col-span-5 flex items-center justify-center transition-all duration-1000 delay-300 transform ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-            <LiveReferralGlobe />
+          {/* 3D Brand Logo Column with Dim Spotlight Glow */}
+          <div className={`lg:col-span-5 flex flex-col items-center justify-center relative transition-all duration-1000 delay-300 transform ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+            {/* Dim spotlight glow behind the logo */}
+            <div className="absolute w-[280px] h-[280px] rounded-full bg-gradient-to-tr from-[#FF1E3C]/6 via-purple-600/4 to-[#1E40FF]/8 blur-[110px] pointer-events-none z-0" />
+            
+            {/* Reflective bottom blur accent */}
+            <div className="absolute bottom-4 w-[180px] h-[8px] bg-gradient-to-r from-blue-500/10 to-transparent blur-md rounded-full pointer-events-none" />
+
+            {/* Glowing 3D Brand Logo image */}
+            <img 
+              src="/nic_3d_logo.png" 
+              alt="NextInCampus 3D Logo" 
+              className="relative z-10 w-full max-w-[280px] aspect-[3/4] object-contain animate-float drop-shadow-[0_15px_30px_rgba(30,64,255,0.2)] select-none pointer-events-none"
+            />
           </div>
 
         </div>

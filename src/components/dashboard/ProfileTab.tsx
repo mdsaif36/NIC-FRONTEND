@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Activity, Award, Briefcase, Calendar, CheckCircle, CheckSquare, Edit, FileText, Fingerprint, Globe, Lock, Network, Plus, Send, Settings, ShieldCheck, TrendingUp, X, UploadCloud, Check, Trash2, Download
+  Activity, Briefcase, Calendar, CheckCircle, CheckSquare, Edit, FileText, Fingerprint, Globe, Lock, Network, Plus, Send, Settings, ShieldCheck, TrendingUp, X, UploadCloud, Check, Trash2, Download
 } from 'lucide-react';
 
 
@@ -125,14 +125,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   getProfileCompletion,
   githubUrl,
   handleAddCompany,
-  handleAddSkill,
+  handleAddSkill: _handleAddSkill,
   handleRemoveCompany,
-  handleRemoveSkill,
-  hoveredSkill,
+  handleRemoveSkill: _handleRemoveSkill,
+  hoveredSkill: _hoveredSkill,
   isEditMode,
   linkedinUrl,
   newCompanyInput,
-  newSkillInput,
+  newSkillInput: _newSkillInput,
   privacyCollegeOnly,
   profileBranch,
   profileCollege,
@@ -144,11 +144,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   savedAlumniIds,
   setBio,
   setGithubUrl,
-  setHoveredSkill,
+  setHoveredSkill: _setHoveredSkill,
   setIsEditMode,
   setLinkedinUrl,
   setNewCompanyInput,
-  setNewSkillInput,
+  setNewSkillInput: _setNewSkillInput,
   setPrivacyCollegeOnly,
   setProfileBranch,
   setProfileCollege,
@@ -156,8 +156,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   setProfileYear,
   setResumeName,
   setResumeUploaded,
-  setSkillDetails,
-  skillDetails,
+  setSkillDetails: _setSkillDetails,
+  skillDetails: _skillDetails,
   skills,
   targetCompanies,
   userId,
@@ -600,7 +600,6 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   };
 
   return (
-
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up text-left pb-16 font-inter">
               
               {/* 1. TOP ROW: VERIFICATION STATUS CARDS (3 columns) */}
@@ -967,6 +966,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 {/* Target Companies & Verified Connections */}
                 <div className="p-6 rounded-2xl border border-white/5 bg-[#08080b]/90 space-y-4 shadow-[0_4px_25px_rgba(0,0,0,0.4)]">
@@ -1807,6 +1807,6 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </div>
         </div>
       )}
-            </div>
+    </div>
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  AlertCircle, Bookmark, FileText, Search, ShieldCheck, Sparkles, X
+  AlertCircle, Bookmark, FileText, Search, ShieldCheck, Sparkles, X, MessageSquare
 } from 'lucide-react';
 
 interface DiscoverTabProps {
@@ -15,7 +15,6 @@ interface DiscoverTabProps {
   openRequestModal: (alumni: any) => void;
   pitchMessage: string;
   profileCollege: string;
-  requestStep: number;
   resumeName: string;
   savedAlumniIds: number[];
   searchQuery: string;
@@ -27,7 +26,6 @@ interface DiscoverTabProps {
   setCollegeOnlyFilter: (filter: boolean) => void;
   setIsRequestModalOpen: (open: boolean) => void;
   setPitchMessage: (message: string) => void;
-  setRequestStep: (step: number) => void;
   setSavedAlumniIds: React.Dispatch<React.SetStateAction<number[]>>;
   setSearchQuery: (query: string) => void;
   setSelectedAlumni: (alumni: any | null) => void;
@@ -40,6 +38,8 @@ interface DiscoverTabProps {
   submitReferralRequest: (e: React.FormEvent) => void;
   targetRole: string;
   timeline: string;
+  setActiveTab?: (tab: any) => void;
+  setActiveChatId?: (id: number | null) => void;
 }
 
 export const DiscoverTab: React.FC<DiscoverTabProps> = ({
@@ -54,7 +54,6 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
   openRequestModal,
   pitchMessage,
   profileCollege,
-  requestStep,
   resumeName,
   savedAlumniIds,
   searchQuery,
@@ -66,7 +65,6 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
   setCollegeOnlyFilter,
   setIsRequestModalOpen,
   setPitchMessage,
-  setRequestStep,
   setSavedAlumniIds,
   setSearchQuery,
   setSelectedAlumni,
@@ -78,7 +76,9 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
   showSuggestions,
   submitReferralRequest,
   targetRole,
-  timeline
+  timeline,
+  setActiveTab,
+  setActiveChatId
 }) => {
   return (
     <>
@@ -335,11 +335,11 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                 {/* Right Profile Drawer Detail */}
                 {selectedAlumni && (
                   <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-end animate-fade-in">
-                    <div className="w-full max-w-md bg-[#07070a] border-l border-white/5 h-full p-6 md:p-8 overflow-y-auto no-scrollbar shadow-2xl relative text-left flex flex-col justify-between">
+                    <div className="w-full max-w-md bg-[#07070a] border-l border-white/5 h-full p-4 overflow-y-auto no-scrollbar shadow-2xl relative text-left flex flex-col justify-between">
                       
                       <div>
                         {/* Close button */}
-                        <div className="flex items-center justify-between pb-6 border-b border-white/5 mb-6">
+                        <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
                           <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest font-space-grotesk">Alumni Profile Details</span>
                           <button 
                             onClick={() => setSelectedAlumni(null)} 
@@ -348,55 +348,59 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                             <X className="w-4 h-4" />
                           </button>
                         </div>
-
+ 
                         {/* Info Card Layout */}
-                        <div className="flex items-center gap-4 mb-6">
-                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${selectedAlumni.color} flex items-center justify-center font-bold text-white text-base uppercase shadow-lg`}>
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${selectedAlumni.color} flex items-center justify-center font-bold text-white text-sm uppercase shadow-lg`}>
                             {selectedAlumni.initial}
                           </div>
                           <div>
-                            <h3 className="font-sora text-white text-base font-extrabold flex items-center gap-1.5">
+                            <h3 className="font-sora text-white text-sm font-extrabold flex items-center gap-1">
                               {selectedAlumni.name}
-                              <ShieldCheck className="w-4 h-4 text-blue-400" />
+                              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
                             </h3>
-                            <p className="text-[11px] text-slate-350 mt-1 font-semibold">{selectedAlumni.role} at {selectedAlumni.company}</p>
-                            <p className="text-[10px] text-slate-500 mt-0.5">{selectedAlumni.college} Network</p>
+                            <p className="text-[10px] text-slate-350 mt-0.5 font-semibold">{selectedAlumni.role} at {selectedAlumni.company}</p>
+                            <p className="text-[9px] text-slate-500 mt-0.5">{selectedAlumni.college}</p>
                           </div>
                         </div>
-
+ 
                         {/* Telemetry Stats */}
-                        <div className="grid grid-cols-2 gap-4 mb-6 p-4 rounded-xl border border-white/5 bg-slate-950/40 font-inter">
+                        <div className="grid grid-cols-2 gap-3 mb-4 p-3 rounded-xl border border-white/5 bg-slate-950/40 font-inter">
                           <div>
-                            <span className="block text-[9px] font-bold text-slate-550 uppercase tracking-wider">Response Rate</span>
-                            <span className="block text-sm font-bold text-white mt-1">{selectedAlumni.responseRate}</span>
+                            <span className="block text-[8px] font-bold text-slate-550 uppercase tracking-wider">Response Rate</span>
+                            <span className="block text-xs font-bold text-white mt-0.5">{selectedAlumni.responseRate}</span>
                             <span className="block text-[8px] text-slate-500 mt-0.5">{selectedAlumni.responseSpeed}</span>
                           </div>
                           <div>
-                            <span className="block text-[9px] font-bold text-slate-555 uppercase tracking-wider">Referral success</span>
-                            <span className="block text-sm font-bold text-white mt-1">{selectedAlumni.successRate.split(' ')[0]} Referred</span>
+                            <span className="block text-[8px] font-bold text-slate-555 uppercase tracking-wider">Referral success</span>
+                            <span className="block text-xs font-bold text-white mt-0.5">{selectedAlumni.successRate.split(' ')[0]} Referred</span>
                             <span className="block text-[8px] text-emerald-450 mt-0.5">Active track records</span>
                           </div>
                         </div>
-
+ 
                         {/* Bio details */}
-                        <div className="space-y-4 mb-6 font-inter">
+                        <div className="space-y-3 mb-4 font-inter">
                           <div>
-                            <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">About Mentor</span>
-                            <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                              {selectedAlumni.bio}
-                            </p>
+                            <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">About Mentor</span>
+                            <div className="max-h-[90px] overflow-y-auto no-scrollbar pr-1 bg-white/[0.01] rounded-lg p-2 border border-white/[0.02]">
+                              <p className="text-[11px] text-slate-350 leading-normal font-medium">
+                                {selectedAlumni.bio}
+                              </p>
+                            </div>
                           </div>
                           <div>
-                            <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">Referral Success Wall</span>
-                            <p className="text-xs text-slate-400 leading-relaxed italic">
-                              "Alumni referred {selectedAlumni.successRate.split(' ')[0]} students to {selectedAlumni.company} recently with high success rates."
-                            </p>
+                            <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">Referral Success Wall</span>
+                            <div className="bg-white/[0.01] rounded-lg p-2 border border-white/[0.02]">
+                              <p className="text-[11px] text-slate-400 leading-normal italic font-medium">
+                                "Alumni referred {selectedAlumni.successRate.split(' ')[0]} students to {selectedAlumni.company} recently with high success rates."
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
-
+ 
                       {/* Actions footer */}
-                      <div className="pt-6 border-t border-white/5 grid grid-cols-2 gap-4 mt-auto">
+                      <div className="pt-3 border-t border-white/5 grid grid-cols-3 gap-2 mt-auto">
                         <button
                           type="button"
                           onClick={() => {
@@ -405,9 +409,24 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                               isSaved ? prev.filter(id => id !== selectedAlumni.id) : [...prev, selectedAlumni.id]
                             );
                           }}
-                          className="py-3 rounded-full border border-white/10 bg-white/5 text-slate-200 font-sora font-semibold text-[10px] uppercase tracking-wider hover:bg-white/10 transition"
+                          className="py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-200 font-sora font-semibold text-[9px] uppercase tracking-wider hover:bg-white/10 transition"
                         >
                           {savedAlumniIds.includes(selectedAlumni.id) ? 'Saved' : 'Bookmark'}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (setActiveChatId && setActiveTab) {
+                              setActiveChatId(selectedAlumni.id);
+                              setActiveTab('messages');
+                              setSelectedAlumni(null);
+                            }
+                          }}
+                          className="py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-200 font-sora font-semibold text-[9px] uppercase tracking-wider hover:bg-white/10 transition flex items-center justify-center gap-1"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          Chat
                         </button>
                         
                         <button
@@ -417,59 +436,61 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                             setSelectedAlumni(null);
                             openRequestModal(targetAlum);
                           }}
-                          className="py-3 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition shadow-md"
+                          className="py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[9px] uppercase tracking-wider transition shadow-md"
                         >
-                          Request Referral
+                          Request
                         </button>
                       </div>
-
+ 
                     </div>
                   </div>
                 )}
 
               </div>
-
-            {/* ========================================== */}
-            {/* SCREEN 3: REFERRAL MODAL (INLINE CONDITIONAL) */}
+            {/* SCREEN 3: REFERRAL MODAL (SINGLE PAGE FORM) */}
             {isRequestModalOpen && alumniForRequest && (
-              <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-                <div className="w-full max-w-lg bg-[#07070a] border border-white/10 p-6 md:p-8 rounded-[2rem] shadow-2xl relative text-left">
+              <div 
+                className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in cursor-pointer"
+                onClick={() => setIsRequestModalOpen(false)}
+              >
+                <div 
+                  className="w-full max-w-md bg-[#07070a] border border-white/10 p-5 rounded-2xl shadow-2xl relative text-left flex flex-col max-h-[90vh] overflow-hidden animate-modal-scale-in cursor-default"
+                  onClick={e => e.stopPropagation()}
+                >
                   
                   {/* Close Button */}
                   <button 
                     onClick={() => setIsRequestModalOpen(false)}
-                    className="absolute top-6 right-6 p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/5 transition"
+                    className="absolute top-4 right-4 p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/5 transition"
                   >
                     <X className="w-4 h-4" />
                   </button>
 
                   {/* Modal Header */}
-                  <div className="flex items-center gap-3 pb-4 border-b border-white/5 mb-6">
-                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${alumniForRequest.color} flex items-center justify-center font-bold text-white text-[10px] uppercase`}>
+                  <div className="flex items-center gap-3 pb-3 border-b border-white/5 mb-3 shrink-0">
+                    <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${alumniForRequest.color} flex items-center justify-center font-bold text-white text-[10px] uppercase`}>
                       {alumniForRequest.initial}
                     </div>
                     <div>
-                      <h3 className="font-sora text-sm font-bold text-white">
-                        Referral Request Flow
+                      <h3 className="font-sora text-xs font-bold text-white">
+                        Request Referral
                       </h3>
-                      <p className="text-[10px] text-slate-400">To {alumniForRequest.name} · {alumniForRequest.role} at {alumniForRequest.company}</p>
-                    </div>
-                    <div className="ml-auto flex items-center gap-1.5 text-[9px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      Step {requestStep} of 3
+                      <p className="text-[9px] text-slate-400">To {alumniForRequest.name} · {alumniForRequest.role} at {alumniForRequest.company}</p>
                     </div>
                   </div>
 
-                  {/* Flow contents based on steps */}
-                  {requestStep === 1 && (
-                    <div className="space-y-4 font-inter">
+                  {/* Scrollable Form Content */}
+                  <div className="flex-1 overflow-y-auto no-scrollbar space-y-3 pr-0.5">
+                    {/* Role & Timeline (2-column layout) */}
+                    <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-2 font-space-grotesk">
-                          Which role are you targeting at {alumniForRequest.company}?
+                        <label className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">
+                          Target Role
                         </label>
                         <select 
                           value={targetRole} 
                           onChange={(e) => setTargetRole(e.target.value)}
-                          className="w-full px-4 py-2.5 bg-black border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500/40"
+                          className="w-full px-2 py-1.5 bg-black border border-white/10 rounded-lg text-white text-[10px] focus:outline-none focus:border-purple-500/40"
                         >
                           {alumniForRequest.company === 'Google' && (
                             <>
@@ -503,11 +524,11 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-2 font-space-grotesk">What is your application timeline?</label>
+                        <label className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">Timeline</label>
                         <select 
                           value={timeline} 
                           onChange={(e) => setTimeline(e.target.value)}
-                          className="w-full px-4 py-2.5 bg-black border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500/40"
+                          className="w-full px-2 py-1.5 bg-black border border-white/10 rounded-lg text-white text-[10px] focus:outline-none focus:border-purple-500/40"
                         >
                           <option>Actively looking (Immediate)</option>
                           <option>Next 3 months</option>
@@ -515,91 +536,63 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                         </select>
                       </div>
                     </div>
-                  )}
 
-                  {requestStep === 2 && (
-                    <div className="space-y-3 font-inter">
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">
-                        Tell {alumniForRequest.name} why you are a great fit
+                    {/* Pitch Message */}
+                    <div className="space-y-1">
+                      <label className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider font-space-grotesk">
+                        Why are you a good fit?
                       </label>
                       <textarea
-                        rows={5}
+                        rows={3}
                         value={pitchMessage}
                         onChange={(e) => setPitchMessage(e.target.value)}
-                        placeholder="Tell them why you're a great fit in 3-4 lines. E.g., mention your strongest technical project..."
-                        className="w-full px-4 py-3 bg-black border border-white/15 rounded-2xl text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500/45 resize-none leading-relaxed"
+                        placeholder="State your strongest project/achievement..."
+                        className="w-full px-3 py-2 bg-black border border-white/10 rounded-xl text-white text-[11px] placeholder-slate-600 focus:outline-none focus:border-purple-500/40 resize-none leading-normal"
                         maxLength={300}
                       />
                       
-                      <div className="flex items-center justify-between text-[9px] text-slate-550 font-bold uppercase tracking-wider">
-                        <span>Character count: {pitchMessage.length}/300</span>
-                        <span>AI Pitch Quality Guard active</span>
+                      <div className="flex items-center justify-between text-[7px] text-slate-550 font-bold uppercase tracking-wider">
+                        <span>{pitchMessage.length}/300 chars</span>
+                        <span>AI Pitch Guard Active</span>
                       </div>
 
                       {/* AI warning prompts */}
                       {aiTipWarning && (
-                        <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/15 text-[10px] text-purple-300 leading-relaxed flex gap-2">
-                          <AlertCircle className="w-4 h-4 text-purple-400 shrink-0 mt-0.5 animate-pulse" />
+                        <div className="p-2 rounded-lg bg-purple-500/5 border border-purple-500/10 text-[9px] text-purple-300 leading-normal flex gap-1.5">
+                          <AlertCircle className="w-3.5 h-3.5 text-purple-400 shrink-0 animate-pulse" />
                           <div>{aiTipWarning}</div>
                         </div>
                       )}
                     </div>
-                  )}
 
-                  {requestStep === 3 && (
-                    <div className="space-y-4 font-inter">
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-space-grotesk">Attach your verified resume</label>
-                      
-                      <div className="p-8 border border-dashed border-purple-500/20 hover:border-purple-500/40 bg-purple-950/[0.02] transition-all rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer">
-                        <FileText className="w-8 h-8 text-rose-500 mb-3" />
-                        <span className="block text-xs font-bold text-white">{resumeName}</span>
-                        <span className="block text-[9px] text-slate-500 mt-1">PDF file format only. Size: ~1.2 MB.</span>
-                        <span className="block text-[9px] text-purple-400 font-semibold mt-2">Your resume is encrypted and only visible to this alumni.</span>
+                    {/* Attached Resume */}
+                    <div className="space-y-1">
+                      <label className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider font-space-grotesk">Verified Resume</label>
+                      <div className="p-2 rounded-xl border border-white/10 bg-white/[0.01] flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-rose-500 shrink-0" />
+                        <div className="min-w-0">
+                          <span className="block font-bold text-white text-[10px] truncate">{resumeName || "No resume uploaded"}</span>
+                          <span className="block text-[8px] text-slate-500">PDF Encrypted · Automatically attached</span>
+                        </div>
                       </div>
                     </div>
-                  )}
+                  </div>
 
                   {/* Modal Footer Controls */}
-                  <div className="flex flex-col gap-4 mt-6 pt-6 border-t border-white/5">
-                    <div className="flex items-center justify-between">
-                      {requestStep > 1 ? (
-                        <button
-                          type="button"
-                          onClick={() => setRequestStep(requestStep - 1)}
-                          className="px-5 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-white transition font-sora"
-                        >
-                          Back
-                        </button>
-                      ) : (
-                        <div />
-                      )}
-
-                      {requestStep < 3 ? (
-                        <button
-                          type="button"
-                          onClick={() => setRequestStep(requestStep + 1)}
-                          disabled={requestStep === 2 && pitchMessage.trim().length === 0}
-                          className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition disabled:opacity-40 disabled:pointer-events-none"
-                        >
-                          Next Step
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={submitReferralRequest}
-                          className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition shadow-md"
-                        >
-                          Send Request →
-                        </button>
-                      )}
+                  <div className="pt-3 border-t border-white/5 mt-3 shrink-0 flex flex-col gap-1.5">
+                    <button
+                      type="button"
+                      onClick={submitReferralRequest}
+                      disabled={pitchMessage.trim().length === 0}
+                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[11px] uppercase tracking-wider transition shadow-md disabled:opacity-40 disabled:pointer-events-none"
+                    >
+                      Send Request
+                    </button>
+                    <div className="text-center">
+                      <span className="text-[8px] text-slate-500 font-semibold">
+                        {alumniForRequest.name} typically responds {alumniForRequest.responseSpeed.toLowerCase()}.
+                      </span>
                     </div>
-                    {requestStep === 3 && (
-                      <div className="text-center">
-                        <span className="text-[10px] text-slate-455 font-semibold">
-                          {alumniForRequest.name} typically responds {alumniForRequest.responseSpeed.toLowerCase()}.
-                        </span>
-                      </div>
-                    )}
                   </div>
 
                 </div>

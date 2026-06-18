@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck
+  Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { DashboardTab } from './dashboard/DashboardTab';
@@ -10,6 +10,7 @@ import { MessagesTab } from './dashboard/MessagesTab';
 import { SavedTab } from './dashboard/SavedTab';
 import { ProfileTab } from './dashboard/ProfileTab';
 import { AlumniDashboard } from './dashboard/AlumniDashboard';
+import { ReferralNewsPanel } from './dashboard/ReferralNewsPanel';
 
 interface DashboardPageProps {
   id: number;
@@ -20,10 +21,17 @@ interface DashboardPageProps {
   onLogout: () => void;
 }
 
-type ActiveTab = 'dashboard' | 'network' | 'my_referrals' | 'messages' | 'saved' | 'profile' | 'accounting';
+type ActiveTab = 'dashboard' | 'network' | 'my_referrals' | 'messages' | 'saved' | 'profile' | 'accounting' | 'referral_board';
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, college = 'IIT Bombay', company = 'Google', onLogout }) => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    const savedTab = localStorage.getItem('seekerActiveTab');
+    return (savedTab as ActiveTab) || 'dashboard';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('seekerActiveTab', activeTab);
+  }, [activeTab]);
 
   // Profile data (Screen 6)
   const [profileName, setProfileName] = useState(name);
@@ -73,7 +81,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
 
   // Request flow modal states (Screen 3)
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const [requestStep, setRequestStep] = useState(1);
   const [targetRole, setTargetRole] = useState('Software Engineer');
   const [timeline, setTimeline] = useState('Actively looking');
   const [pitchMessage, setPitchMessage] = useState('');
@@ -619,7 +626,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const openRequestModal = (alumni: any) => {
     setAlumniForRequest(alumni);
     setPitchMessage('');
-    setRequestStep(1);
     setIsRequestModalOpen(true);
   };
 
@@ -632,36 +638,27 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
         <aside className="hidden md:flex w-[240px] bg-[#08080d]/95 border-r border-white/[0.055] flex-col shrink-0 relative z-30 backdrop-blur-xl">
           <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-purple-950/25 to-transparent pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-950/10 to-transparent pointer-events-none" />
-          <div className="flex items-center gap-3 px-5 pt-6 pb-5 border-b border-white/[0.055] shrink-0 relative z-10">
-            <div className="w-8 h-8 flex items-center justify-center shrink-0 animate-logo-pulse">
-              <svg viewBox="0 0 160 100" className="w-7 h-7" fill="none">
-                <defs>
-                  <linearGradient id="sp-logo-g2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#38BDF8" />
-                    <stop offset="100%" stopColor="#EF4444" />
-                  </linearGradient>
-                </defs>
-                <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#sp-logo-g2)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#sp-logo-g2)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="68" cy="20" r="6" fill="#38BDF8" />
-                <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#sp-logo-g2)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div>
-              <span className="font-sora text-white font-extrabold text-sm tracking-tight leading-none block">NiC</span>
-              <span className="text-[9px] font-bold text-purple-400/80 uppercase tracking-widest mt-0.5 block">Seeker Portal</span>
+          <div className="px-5 pt-6 pb-5 border-b border-white/[0.055] shrink-0 relative z-10">
+            <div className="flex flex-col select-none">
+              <span className="font-space-grotesk font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] text-base tracking-tight leading-none block">
+                NextInCampus
+              </span>
+              <span className="text-[9px] font-bold text-purple-400/80 uppercase tracking-widest mt-2 block">
+                Seeker Portal
+              </span>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto no-scrollbar px-3 py-5 relative z-10">
             <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Navigation</span>
             <nav className="space-y-0.5">
               {([
-                { id: 'dashboard',    label: 'Dashboard',    icon: Home,          badge: null },
-                { id: 'network',      label: 'Network',      icon: Search,        badge: null },
-                { id: 'my_referrals', label: 'My Referrals', icon: Send,          badge: null },
-                { id: 'messages',     label: 'Messages',     icon: MessageSquare, badge: null },
-                { id: 'saved',        label: 'Saved',        icon: Bookmark,      badge: savedAlumniIds.length > 0 ? savedAlumniIds.length : null },
-                { id: 'accounting',   label: 'Accounting',   icon: ShieldCheck,   badge: null },
+                { id: 'dashboard',      label: 'Dashboard',      icon: Home,          badge: null },
+                { id: 'referral_board', label: 'Referral Board', icon: Newspaper,     badge: null },
+                { id: 'network',        label: 'Network',        icon: Search,        badge: null },
+                { id: 'my_referrals',   label: 'My Referrals',  icon: Send,          badge: null },
+                { id: 'messages',       label: 'Messages',       icon: MessageSquare, badge: null },
+                { id: 'saved',          label: 'Saved',          icon: Bookmark,      badge: savedAlumniIds.length > 0 ? savedAlumniIds.length : null },
+                { id: 'accounting',     label: 'Accounting',     icon: ShieldCheck,   badge: null },
               ] as { id: string; label: string; icon: React.ElementType; badge: number | null }[]).map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -736,13 +733,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
         {/* Mobile nav */}
         <aside className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#07070a]/95 border-t border-white/5 flex items-center justify-around z-40 px-3 shadow-2xl backdrop-blur-md">
           {([
-            { id: 'dashboard',    icon: Home },
-            { id: 'network',      icon: Search },
-            { id: 'my_referrals', icon: Send },
-            { id: 'messages',     icon: MessageSquare },
-            { id: 'saved',        icon: Bookmark },
-            { id: 'accounting',   icon: ShieldCheck },
-            { id: 'profile',      icon: User },
+            { id: 'dashboard',      icon: Home },
+            { id: 'referral_board', icon: Newspaper },
+            { id: 'network',        icon: Search },
+            { id: 'my_referrals',   icon: Send },
+            { id: 'messages',       icon: MessageSquare },
+            { id: 'saved',          icon: Bookmark },
+            { id: 'accounting',     icon: ShieldCheck },
+            { id: 'profile',        icon: User },
           ] as { id: string; icon: React.ElementType }[]).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -766,13 +764,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           <header className="px-6 md:px-8 py-4 border-b border-white/[0.055] bg-[#050508]/85 backdrop-blur-xl flex items-center justify-between text-left shrink-0 sticky top-0 z-20">
             <div>
               <h2 className="font-sora text-white text-sm font-extrabold leading-tight">
-                {activeTab === 'dashboard'    && <>Good morning, {profileName.split(' ')[0]} 👋</>}
-                {activeTab === 'network'      && 'Discover Network'}
-                {activeTab === 'my_referrals' && 'My Referrals'}
-                {activeTab === 'messages'     && 'Outreach Messages'}
-                {activeTab === 'saved'        && 'Saved Mentors'}
-                {activeTab === 'accounting'   && 'Accounting'}
-                {activeTab === 'profile'      && 'My Profile'}
+                {activeTab === 'dashboard'      && <>{`Good morning, ${profileName.split(' ')[0]} 👋`}</>}
+                {activeTab === 'referral_board' && 'Referral Board'}
+                {activeTab === 'network'        && 'Discover Network'}
+                {activeTab === 'my_referrals'   && 'My Referrals'}
+                {activeTab === 'messages'       && 'Outreach Messages'}
+                {activeTab === 'saved'          && 'Saved Mentors'}
+                {activeTab === 'accounting'     && 'Accounting'}
+                {activeTab === 'profile'        && 'My Profile'}
               </h2>
               <p className="text-[10px] text-slate-600 font-medium mt-0.5">{profileCollege} · Seeker Dashboard</p>
             </div>
@@ -799,6 +798,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 openRequestModal={openRequestModal}
               />
             )}
+            {activeTab === 'referral_board' && (
+              <ReferralNewsPanel
+                seekerId={id}
+                resumeName={resumeName}
+                alumniNetwork={alumniNetwork}
+                setSelectedAlumni={setSelectedAlumni}
+                setActiveTab={setActiveTab as any}
+              />
+            )}
             {activeTab === 'network' && (
               <DiscoverTab
                 searchQuery={searchQuery}
@@ -822,8 +830,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 isRequestModalOpen={isRequestModalOpen}
                 setIsRequestModalOpen={setIsRequestModalOpen}
                 alumniForRequest={alumniForRequest}
-                requestStep={requestStep}
-                setRequestStep={setRequestStep}
                 targetRole={targetRole}
                 setTargetRole={setTargetRole}
                 timeline={timeline}
@@ -837,6 +843,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 setSelectedCompanyFilter={setSelectedCompanyFilter}
                 selectedRoleFilter={selectedRoleFilter}
                 setSelectedRoleFilter={setSelectedRoleFilter}
+                setActiveTab={setActiveTab as any}
+                setActiveChatId={setActiveChatId}
               />
             )}
             {activeTab === 'my_referrals' && (

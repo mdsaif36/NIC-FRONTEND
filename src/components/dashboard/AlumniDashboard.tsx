@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BarChart2, Bookmark, CheckCircle, Clock, FileText,
   Home, LogOut, MessageSquare, ShieldCheck, TrendingUp,
@@ -59,7 +59,14 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   conversations,
   alumniNetwork
 }) => {
-  const [activeTab, setActiveTab] = useState<AlumniTab>('overview');
+  const [activeTab, setActiveTab] = useState<AlumniTab>(() => {
+    const savedTab = localStorage.getItem('alumniActiveTab');
+    return (savedTab as AlumniTab) || 'overview';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('alumniActiveTab', activeTab);
+  }, [activeTab]);
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
 
   // Helper functions for candidate college tier mapping
@@ -236,92 +243,84 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     <section className="min-h-screen w-full bg-[#07070a] text-slate-100 flex relative overflow-hidden font-inter select-none">
 
       {/* ── Sidebar ── */}
-      <aside className="hidden md:flex w-[70px] bg-gradient-to-b from-blue-900/10 via-transparent to-emerald-900/10 backdrop-blur-sm flex-col items-center py-6 justify-between shrink-0 border-r border-white/5 relative z-30">
-
-        {/* Logo */}
-        <div className="w-10 h-10 flex items-center justify-center animate-logo-pulse shrink-0">
-          <svg viewBox="0 0 160 100" className="w-8 h-8" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="alumni-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#38BDF8" />
-                <stop offset="100%" stopColor="#10B981" />
-              </linearGradient>
-            </defs>
-            <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#alumni-logo-grad)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#alumni-logo-grad)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="68" cy="20" r="6" fill="#38BDF8" />
-            <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#alumni-logo-grad)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+      <aside className="hidden md:flex w-[240px] bg-[#08080d]/95 border-r border-white/[0.055] flex-col shrink-0 relative z-30 backdrop-blur-xl">
+        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-emerald-950/10 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-emerald-950/5 to-transparent pointer-events-none" />
+        
+        {/* Brand Header */}
+        <div className="px-5 pt-6 pb-5 border-b border-white/[0.055] shrink-0 relative z-10">
+          <div className="flex flex-col select-none">
+            <span className="font-space-grotesk font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] text-base tracking-tight leading-none block">
+              NextInCampus
+            </span>
+            <span className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-widest mt-2 block">
+              Alumni Portal
+            </span>
+          </div>
         </div>
 
-        {/* Nav icons */}
-        <nav className="flex flex-col gap-4 items-center w-full">
-          {sidebarItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <div
-                key={item.id}
-                className="relative flex items-center justify-center w-full group"
-                onMouseEnter={() => setHoveredTab(item.id)}
-                onMouseLeave={() => setHoveredTab(null)}
-              >
+        {/* Navigation list */}
+        <div className="flex-1 overflow-y-auto no-scrollbar px-3 py-5 relative z-10">
+          <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Navigation</span>
+          <nav className="space-y-0.5">
+            {sidebarItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
                 <button
+                  key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
-                  className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 ${
                     isActive
-                      ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.18)]'
-                      : 'text-slate-500 hover:text-white hover:bg-white/5 border border-transparent'
+                      ? 'bg-gradient-to-r from-emerald-600/10 to-teal-500/10 border border-white/[0.055] text-white shadow-[0_0_12px_rgba(16,185,129,0.05)]'
+                      : 'text-slate-500 hover:text-white border border-transparent'
                   }`}
-                  aria-label={item.label}
                 >
-                  <Icon className="w-5 h-5" />
+                  <div className="flex items-center gap-2.5">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
+                    <span>{item.label}</span>
+                  </div>
                   {item.badge !== undefined && item.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center">
+                    <span className="w-4 h-4 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center">
                       {item.badge}
                     </span>
                   )}
                 </button>
-                {hoveredTab === item.id && (
-                  <div className="absolute left-[52px] bg-slate-900 border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap shadow-xl z-50 pointer-events-none">
-                    {item.label}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
+              );
+            })}
+          </nav>
+        </div>
 
         {/* Bottom profile + logout */}
-        <div className="flex flex-col gap-4 items-center w-full mt-auto">
-          <div
-            className="relative flex items-center justify-center w-full group"
-            onMouseEnter={() => setHoveredTab('myprofile')}
-            onMouseLeave={() => setHoveredTab(null)}
+        <div className="px-3 pb-5 border-t border-white/[0.055] pt-4 relative z-10 space-y-0.5">
+          <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Account</span>
+          <button
+            type="button"
+            onClick={() => setActiveTab('profile')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 group relative ${
+              activeTab === 'profile' ? 'bg-emerald-500/10 text-white' : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
+            }`}
           >
-            <button
-              type="button"
-              onClick={() => setActiveTab('profile')}
-              className={`w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-[10px] font-black uppercase border transition ${
-                activeTab === 'profile' ? 'border-white shadow-[0_0_12px_rgba(16,185,129,0.4)]' : 'border-transparent'
-              }`}
-            >
+            {activeTab === 'profile' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-r-full" />}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-[10px] font-black uppercase shadow-md">
               {initials}
-            </button>
-            {hoveredTab === 'myprofile' && (
-              <div className="absolute left-[52px] bg-slate-900 border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap shadow-xl z-50 pointer-events-none">
-                My Profile
-              </div>
-            )}
-          </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="block text-xs font-bold text-white truncate leading-tight">{name}</span>
+              <span className="block text-[9px] text-emerald-400/70 font-medium">Alumni Mentor</span>
+            </div>
+          </button>
+          
           <button
             type="button"
             onClick={onLogout}
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-400 hover:bg-rose-500/5 transition"
-            aria-label="Logout"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-600 hover:text-rose-400 hover:bg-rose-500/5 transition-all duration-200 group"
           >
-            <LogOut className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-rose-500/10 transition-all">
+              <LogOut className="w-4 h-4" />
+            </div>
+            <span className="text-xs font-semibold">Sign Out</span>
           </button>
         </div>
       </aside>
@@ -794,14 +793,54 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                                 </div>
                               </>
                             ) : (
-                              <div className={`p-4 rounded-xl border text-center flex flex-col items-center justify-center gap-2 ${
+                              <div className={`p-4 rounded-xl border text-center flex flex-col items-center justify-center gap-2 w-full ${
                                 req.status === 'referred' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' :
                                 req.status === 'info'     ? 'bg-amber-500/5 border-amber-500/20 text-amber-400' :
                                 'bg-rose-500/5 border-rose-500/20 text-rose-400'
                               }`}>
-                                {req.status === 'referred'  && <><CheckCircle className="w-6 h-6 animate-logo-pulse" /><span className="text-xs font-bold uppercase tracking-wider">Referred!</span><span className="text-[8px] text-slate-400">ID: #REF-{1000 + req.id}</span></>}
-                                {req.status === 'info'      && <><Clock className="w-6 h-6" /><span className="text-xs font-bold uppercase tracking-wider">Info Requested</span><span className="text-[8px] text-slate-400">Candidate notified</span></>}
-                                {req.status === 'declined'  && <><XCircle className="w-6 h-6" /><span className="text-xs font-bold uppercase tracking-wider">Declined</span><span className="text-[8px] text-slate-400">Feedback sent</span></>}
+                                {req.status === 'referred' && (
+                                  <>
+                                    <CheckCircle className="w-6 h-6 animate-logo-pulse" />
+                                    <span className="text-xs font-bold uppercase tracking-wider">Referred!</span>
+                                    <span className="text-[8px] text-slate-400">ID: #REF-{1000 + req.id}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveTab('messages');
+                                        setActiveChatId(req.seekerId);
+                                      }}
+                                      className="mt-2 w-full py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-[10px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5"
+                                    >
+                                      <MessageSquare className="w-3.5 h-3.5" />
+                                      Message
+                                    </button>
+                                  </>
+                                )}
+                                {req.status === 'info' && (
+                                  <>
+                                    <Clock className="w-6 h-6" />
+                                    <span className="text-xs font-bold uppercase tracking-wider">Info Requested</span>
+                                    <span className="text-[8px] text-slate-400">Candidate notified</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveTab('messages');
+                                        setActiveChatId(req.seekerId);
+                                      }}
+                                      className="mt-2 w-full py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 text-[10px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5"
+                                    >
+                                      <MessageSquare className="w-3.5 h-3.5" />
+                                      Message
+                                    </button>
+                                  </>
+                                )}
+                                {req.status === 'declined' && (
+                                  <>
+                                    <XCircle className="w-6 h-6" />
+                                    <span className="text-xs font-bold uppercase tracking-wider">Declined</span>
+                                    <span className="text-[8px] text-slate-400">Feedback sent</span>
+                                  </>
+                                )}
                               </div>
                             )}
                           </div>
@@ -866,6 +905,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                   {[
                     {
                       id: 201,
+                      seekerId: 8, // Seeded Amit Sharma ID
                       name: "Amit Sharma",
                       college: "IIT Delhi",
                       role: "Software Engineer Intern",
@@ -876,6 +916,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                     },
                     {
                       id: 202,
+                      seekerId: 9, // Seeded Karan Patel ID
                       name: "Karan Patel",
                       college: "BITS Pilani",
                       role: "Associate SWE",
@@ -886,6 +927,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                     },
                     {
                       id: 203,
+                      seekerId: 7, // Fallback to Arjun Singh
                       name: "Riya Sen",
                       college: "NIT Trichy",
                       role: "Product Manager Intern",
@@ -896,6 +938,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                     },
                     {
                       id: 204,
+                      seekerId: 7, // Fallback to Arjun Singh
                       name: "Sneha Rao",
                       college: "IIT Bombay",
                       role: "Data Scientist",
@@ -909,6 +952,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                       .filter(r => r.status === 'referred')
                       .map((req, idx) => ({
                         id: 300 + idx,
+                        seekerId: req.seekerId,
                         name: req.studentName,
                         college: getCandidateCollege(req),
                         role: req.role,
@@ -954,22 +998,36 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                         </div>
 
                         {/* Status detail */}
-                        <div className="text-left md:text-right shrink-0">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wide border ${
-                            candidate.stage === 'Offered' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
-                            candidate.stage === 'Interviewing' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
-                            candidate.stage === 'Under Review' ? 'bg-amber-500/10 border-amber-500/25 text-amber-400' :
-                            'bg-slate-500/10 border-slate-500/25 text-slate-400'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              candidate.stage === 'Offered' ? 'bg-purple-400 animate-pulse' :
-                              candidate.stage === 'Interviewing' ? 'bg-blue-400 animate-pulse' :
-                              candidate.stage === 'Under Review' ? 'bg-amber-400 animate-pulse' :
-                              'bg-slate-400'
-                            }`} />
-                            {candidate.stage}
-                          </span>
-                          <span className="block text-[9.5px] text-slate-500 mt-1 font-medium">{candidate.details}</span>
+                        <div className="text-left md:text-right shrink-0 flex flex-col items-start md:items-end gap-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wide border ${
+                              candidate.stage === 'Offered' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
+                              candidate.stage === 'Interviewing' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
+                              candidate.stage === 'Under Review' ? 'bg-amber-500/10 border-amber-500/25 text-amber-400' :
+                              'bg-slate-500/10 border-slate-500/25 text-slate-400'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                candidate.stage === 'Offered' ? 'bg-purple-400 animate-pulse' :
+                                candidate.stage === 'Interviewing' ? 'bg-blue-400 animate-pulse' :
+                                candidate.stage === 'Under Review' ? 'bg-amber-400 animate-pulse' :
+                                'bg-slate-400'
+                              }`} />
+                              {candidate.stage}
+                            </span>
+                            
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveTab('messages');
+                                setActiveChatId(candidate.seekerId);
+                              }}
+                              className="px-2.5 py-1 rounded-lg border border-white/10 bg-white/5 text-slate-355 hover:text-white hover:bg-white/10 text-[9.5px] font-bold uppercase tracking-wider transition flex items-center gap-1"
+                            >
+                              <MessageSquare className="w-3 h-3" />
+                              Chat
+                            </button>
+                          </div>
+                          <span className="block text-[9.5px] text-slate-500 font-medium">{candidate.details}</span>
                         </div>
                       </div>
                     </div>

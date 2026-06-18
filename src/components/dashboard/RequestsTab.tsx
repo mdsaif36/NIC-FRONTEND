@@ -89,7 +89,7 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                           {req.status === 'hired' ? 'Hired 🎉' : req.status}
                         </span>
 
-                        {req.status === 'accepted' && (
+                        {(req.status === 'accepted' || req.status === 'referred' || req.status === 'hired') && (
                           <button
                             onClick={() => {
                               setActiveTab('messages');
@@ -138,11 +138,11 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
               {/* Expand row details drawer overlay */}
               {expandedRequest && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-end animate-fade-in">
-                  <div className="w-full max-w-md bg-[#07070a] border-l border-white/5 h-full p-6 md:p-8 overflow-y-auto no-scrollbar shadow-2xl relative text-left flex flex-col justify-between font-inter">
+                  <div className="w-full max-w-md bg-[#07070a] border-l border-white/5 h-full p-4 overflow-y-auto no-scrollbar shadow-2xl relative text-left flex flex-col justify-between font-inter">
                     
                     <div>
                       {/* Close Header */}
-                      <div className="flex items-center justify-between pb-6 border-b border-white/5 mb-6">
+                      <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
                         <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest font-space-grotesk">Referral Application Details</span>
                         <button 
                           onClick={() => setExpandedRequest(null)} 
@@ -153,35 +153,37 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                       </div>
 
                       {/* Request Info Card */}
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-550 to-indigo-650 flex items-center justify-center font-bold text-white text-sm uppercase shadow-lg">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-550 to-indigo-650 flex items-center justify-center font-bold text-white text-xs uppercase shadow-lg">
                           {expandedRequest.alumniName.split(' ').map((n: string) => n[0]).join('')}
                         </div>
                         <div>
-                          <h3 className="font-sora text-white text-sm font-bold flex items-center gap-1.5">
+                          <h3 className="font-sora text-white text-xs font-bold flex items-center gap-1.5">
                             {expandedRequest.alumniName}
                           </h3>
-                          <p className="text-[10px] text-slate-400 mt-1 font-semibold">{expandedRequest.role} at {expandedRequest.company}</p>
-                          <span className="block text-[9px] text-slate-550 mt-0.5">{expandedRequest.date}</span>
+                          <p className="text-[10px] text-slate-400 mt-0.5 font-semibold">{expandedRequest.role} at {expandedRequest.company}</p>
+                          <span className="block text-[8px] text-slate-550 mt-0.5">{expandedRequest.date}</span>
                         </div>
                       </div>
 
                       {/* Pitch Message Sent */}
-                      <div className="space-y-4 mb-6">
+                      <div className="space-y-3 mb-4">
                         <div>
-                          <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">Pitch Message Sent</span>
-                          <p className="p-4 rounded-xl bg-slate-950/40 border border-white/5 text-xs text-slate-300 leading-relaxed font-medium italic">
-                            "{expandedRequest.message}"
-                          </p>
+                          <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">Pitch Message Sent</span>
+                          <div className="max-h-[100px] overflow-y-auto no-scrollbar pr-1 bg-slate-950/40 p-3 rounded-xl border border-white/5">
+                            <p className="text-[11px] text-slate-350 leading-relaxed font-medium italic">
+                              "{expandedRequest.message}"
+                            </p>
+                          </div>
                         </div>
 
                         {/* Resume document attached */}
                         <div>
-                          <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk font-inter">Attached Asset</span>
-                          <div className="p-3.5 rounded-xl border border-white/5 bg-slate-950/40 flex items-center gap-2.5">
-                            <FileText className="w-6 h-6 text-rose-500" />
-                            <div>
-                              <span className="block font-bold text-white text-xs">{resumeName}</span>
+                          <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-space-grotesk">Attached Asset</span>
+                          <div className="p-2.5 rounded-xl border border-white/5 bg-slate-950/40 flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-rose-500 shrink-0" />
+                            <div className="min-w-0">
+                              <span className="block font-bold text-white text-[11px] truncate">{resumeName}</span>
                               <span className="block text-[8px] text-slate-555 mt-0.5">PDF encrypted · Verified</span>
                             </div>
                           </div>
@@ -189,16 +191,16 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
 
                         {/* Declination insights if declined */}
                         {expandedRequest.status === 'declined' && (
-                          <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/10 text-xs leading-relaxed text-rose-350">
-                            <span className="block text-[9px] font-bold text-rose-400 uppercase tracking-wider mb-1 font-space-grotesk">Feedback from {expandedRequest.alumniName}</span>
+                          <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/10 text-[11px] leading-relaxed text-rose-350">
+                            <span className="block text-[8px] font-bold text-rose-400 uppercase tracking-wider mb-0.5 font-space-grotesk">Feedback from {expandedRequest.alumniName}</span>
                             "Your technical qualifications are good, but Google typically expects 2+ complex developer projects on the resume. Please build more React/Go projects and request again!"
                           </div>
                         )}
                         
                         {/* Hired congrats details */}
                         {expandedRequest.status === 'hired' && (
-                          <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10 text-xs leading-relaxed text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.05)]">
-                            <span className="block text-[9px] font-bold text-purple-400 uppercase tracking-wider mb-1 font-space-grotesk">Congratulations 🎉</span>
+                          <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[11px] leading-relaxed text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.05)]">
+                            <span className="block text-[8px] font-bold text-purple-400 uppercase tracking-wider mb-0.5 font-space-grotesk">Congratulations 🎉</span>
                             You have been hired at {expandedRequest.company}! Your network journey is complete. The next step is to transition to an alumni mentor to support future candidates.
                           </div>
                         )}
@@ -206,16 +208,16 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                     </div>
 
                     {/* Actions Drawer Footer */}
-                    <div className="pt-6 border-t border-white/5 flex gap-4 mt-auto">
+                    <div className="pt-3 border-t border-white/5 flex gap-3 mt-auto">
                       <button
                         type="button"
                         onClick={() => setExpandedRequest(null)}
-                        className="flex-1 py-3 rounded-full border border-white/10 bg-white/5 text-slate-200 font-sora font-semibold text-[10px] uppercase tracking-wider hover:bg-white/10 transition text-center"
+                        className="flex-1 py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-200 font-sora font-semibold text-[10px] uppercase tracking-wider hover:bg-white/10 transition text-center"
                       >
                         Close Details
                       </button>
                       
-                      {expandedRequest.status === 'accepted' && (
+                      {(expandedRequest.status === 'accepted' || expandedRequest.status === 'referred' || expandedRequest.status === 'hired') && (
                         <button
                           type="button"
                           onClick={() => {
@@ -223,7 +225,7 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                             setActiveTab('messages');
                             setActiveChatId(expandedRequest.alumniId);
                           }}
-                          className="flex-1 py-3 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition text-center"
+                          className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition text-center"
                         >
                           Open Chat
                         </button>

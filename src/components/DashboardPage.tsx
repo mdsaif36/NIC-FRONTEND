@@ -307,10 +307,27 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
       fetchRequests();
     });
 
+    socketInstance.on('new_request', (reqData: any) => {
+      if (role === 'alumni') {
+        setRequests(prev => {
+          if (prev.some((r: any) => r.id === reqData.id)) {
+            return prev;
+          }
+          return [reqData, ...prev];
+        });
+      }
+    });
+
+    socketInstance.on('request_status_update', (data: any) => {
+      if (role === 'seeker') {
+        setRequestsList(prev => prev.map(r => r.id === data.id ? { ...r, status: data.status } : r));
+      }
+    });
+
     return () => {
       socketInstance.disconnect();
     };
-  }, [id, fetchConversations, fetchRequests]);
+  }, [id, role, fetchConversations, fetchRequests]);
 
   // Seeker submits referral request
   const submitReferralRequest = async () => {

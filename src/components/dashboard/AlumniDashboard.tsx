@@ -67,7 +67,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   useEffect(() => {
     localStorage.setItem('alumniActiveTab', activeTab);
   }, [activeTab]);
-  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
 
   // Helper functions for candidate college tier mapping
   const getCandidateCollege = (req: any) => {
@@ -162,6 +161,80 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     }
     return defaults;
   });
+
+  // Keep localRequests synchronized with requests props
+  useEffect(() => {
+    if (requests) {
+      setLocalRequests(prev => {
+        const merged = [...requests];
+        const defaults = [
+          {
+            id: 101,
+            studentName: "Arjun Sharma",
+            college: "IIT Bombay",
+            class: "CSE Junior, IIT Bombay",
+            company: company,
+            role: "Software Engineer Intern",
+            score: "94%",
+            message: "Hi! I saw your profile and noticed you also graduated from IIT Bombay. I'm really interested in the SWE Intern roles at Google and would love to get a referral or some feedback on my projects, especially my work on distributed system simulations. Thanks!",
+            status: "pending",
+          },
+          {
+            id: 102,
+            studentName: "Priya Rao",
+            college: "BITS Pilani",
+            class: "EEE Senior, BITS Pilani",
+            company: company,
+            role: "Associate Product Manager",
+            score: "89%",
+            message: "Hello! I am a senior at BITS Pilani transitioning to Product Management. I have built 2 products during my internships and would appreciate a referral for the APM role at Google. My resume highlights my user research and product metrics work.",
+            status: "pending",
+          },
+          {
+            id: 103,
+            studentName: "Rohan Das",
+            college: "Delhi Technological University",
+            class: "IT Senior, Delhi Technological University",
+            company: company,
+            role: "Software Engineer",
+            score: "92%",
+            message: "Hello sir, I have 3 internships in Full Stack development and a 9.1 CGPA. I'm looking for a referral for the full-time SWE position. I've optimized databases and built React projects that handle 10k+ active users.",
+            status: "pending",
+          },
+          {
+            id: 104,
+            studentName: "Sneha Reddy",
+            college: "Vellore Institute of Technology",
+            class: "CSE Junior, Vellore Institute of Technology",
+            company: company,
+            role: "Data Scientist Intern",
+            score: "87%",
+            message: "Hi! I am working on deep learning for computer vision and have published a paper in a student journal. I'd love to apply for the Data Science Intern role. Although I am from VIT, I believe my research profile is a strong match for Google's ML team.",
+            status: "pending",
+          },
+          {
+            id: 105,
+            studentName: "Karan Johar",
+            college: "Mumbai University",
+            class: "IT Junior, Mumbai University",
+            company: company,
+            role: "Software Engineer Intern",
+            score: "78%",
+            message: "Hey, looking for a referral to Google for SWE role. Check out my resume.",
+            status: "pending",
+          }
+        ];
+
+        defaults.forEach(def => {
+          if (!merged.some(r => r.studentName === def.studentName)) {
+            const existing = prev.find(p => p.studentName === def.studentName);
+            merged.push(existing ? { ...def, status: existing.status } : def);
+          }
+        });
+        return merged;
+      });
+    }
+  }, [requests, company]);
 
   // Local tab filters
   const [inboxFilter, setInboxFilter] = useState<'All' | 'Pending' | 'Referred' | 'Info' | 'Declined'>('Pending');

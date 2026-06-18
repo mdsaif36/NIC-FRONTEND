@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import { LiveReferralGlobe } from './LiveReferralGlobe';
 
 interface HeroProps {
   onNavigate: (page: 'landing' | 'auth', mode?: 'login' | 'signup') => void;
 }
 
-export const Hero: React.FC<HeroProps> = () => {
+export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -53,11 +54,11 @@ export const Hero: React.FC<HeroProps> = () => {
       </div>
 
       {/* ── Main Content Container ─────────────────────────────────────── */}
-      <div className="relative z-10 flex-grow flex items-end pt-20 pb-28 md:pb-36">
-        <div className="max-w-4xl mx-auto px-6 w-full flex flex-col items-center justify-center text-center">
+      <div className="relative z-10 flex-grow flex items-center pt-24 pb-20 md:pb-28">
+        <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center justify-between">
           
-          {/* Headline & Subtext */}
-          <div className={`flex flex-col items-center justify-center text-center font-inter transition-all duration-1000 transform ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          {/* Headline & Subtext Column */}
+          <div className={`lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left font-inter transition-all duration-1000 transform ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             
             {/* Main Heading (Responsive text size to fit small mobile screens) */}
             <h1 className="font-sora font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-[1.1] tracking-tight mb-6 drop-shadow-[0_4px_20px_rgba(0,0,0,0.85)]">
@@ -69,9 +70,52 @@ export const Hero: React.FC<HeroProps> = () => {
             </h1>
 
             {/* Subtext description */}
-            <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl font-medium drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+            <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl font-medium drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] mb-8">
               A referral from an insider multiplies your interview chances by 10×. NexInCampus gives every student access to that inside track.
             </p>
+
+            {/* CTA Buttons with responsive layouts & premium glassmorphism */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full sm:w-auto shrink-0">
+              {/* Seeker CTA Button */}
+              <button
+                type="button"
+                onClick={() => onNavigate('auth', 'login')}
+                className="w-full sm:w-auto relative group overflow-hidden px-8 py-3.5 rounded-full text-white font-sora font-semibold text-sm tracking-wide shadow-[0_0_20px_rgba(255,30,60,0.12)] hover:shadow-[0_0_30px_rgba(255,30,60,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+              >
+                {/* Background Shifting Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#FF1E3C] via-[#8B5CF6] to-[#1E40FF] transition-all duration-500 z-0" />
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300 z-0" />
+                
+                <div className="relative z-10 flex items-center justify-center gap-2">
+                  <span>Access Seeker Portal</span>
+                  <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </div>
+              </button>
+
+              {/* Alumni CTA Button */}
+              <button
+                type="button"
+                onClick={() => onNavigate('auth', 'login')}
+                className="w-full sm:w-auto relative group overflow-hidden px-8 py-3.5 rounded-full text-slate-200 font-sora font-semibold text-sm tracking-wide border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+              >
+                {/* Neon Border Glow */}
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#1E40FF] to-[#FF1E3C] opacity-0 group-hover:opacity-30 blur-md transition-opacity duration-500 z-0" />
+                
+                <div className="relative z-10 flex items-center justify-center gap-2">
+                  <span>Enter Alumni Portal</span>
+                  <svg className="w-4 h-4 text-slate-400 group-hover:text-white transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* 3D Globe Column */}
+          <div className={`lg:col-span-5 flex items-center justify-center transition-all duration-1000 delay-300 transform ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+            <LiveReferralGlobe />
           </div>
 
         </div>

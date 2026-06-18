@@ -34,9 +34,17 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           }}
         />
 
+        {/* Dark radial overlay to vignette the edges and keep the background deep and premium */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.05) 0%, rgba(2, 2, 5, 0.95) 90%)',
+          }}
+        />
+
         {/* Spotlight Glow Behind the Logo */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-[85vw] h-[85vw] max-w-[700px] rounded-full bg-gradient-to-tr from-[#FF1E3C]/4 via-purple-600/3 to-[#1E40FF]/5 blur-[120px] pointer-events-none" />
+          <div className="w-[85vw] h-[85vw] max-w-[700px] rounded-full bg-gradient-to-tr from-[#FF1E3C]/12 via-purple-600/8 to-[#1E40FF]/15 blur-[120px] pointer-events-none" />
         </div>
 
         {/* Static Watermark Background Image */}
@@ -44,17 +52,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           <img 
             src="/nic_3d_logo.png" 
             alt="NextInCampus Logo Watermark" 
-            className="w-full max-w-[280px] sm:max-w-[420px] md:max-w-[560px] aspect-[3/4] object-contain animate-float opacity-[0.14] sm:opacity-[0.18] select-none pointer-events-none blur-[1px]"
+            className="w-full max-w-[280px] sm:max-w-[420px] md:max-w-[560px] aspect-[3/4] object-contain animate-float opacity-[0.38] sm:opacity-[0.48] select-none pointer-events-none"
           />
         </div>
-
-        {/* Dark radial overlay to vignette the edges and keep the text perfectly readable */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.02) 0%, rgba(2, 2, 5, 0.96) 95%)',
-          }}
-        />
       </div>
 
       {/* ── Main Content Container ─────────────────────────────────────── */}

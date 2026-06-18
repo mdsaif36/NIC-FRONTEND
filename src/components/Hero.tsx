@@ -19,15 +19,6 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
     >
       {/* ── Background Image with Premium Lighter-Tone Fade ──────────────────────── */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
-        {/* Background Image itself (Responsive opacity for mobile vs desktop) */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25 md:opacity-45"
-          style={{
-            backgroundImage: "url('/starry_referral_bg.png')",
-            filter: 'brightness(0.9) contrast(1.1) saturate(1.15)',
-          }}
-        />
-
         {/* Ambient Left Red Glow (blends with the left side of the artwork) */}
         <div 
           className="absolute top-1/2 left-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[120px]"

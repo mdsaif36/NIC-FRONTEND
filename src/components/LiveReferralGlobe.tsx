@@ -24,7 +24,7 @@ export const LiveReferralGlobe: React.FC = () => {
   // Generate sphere points on mount
   useEffect(() => {
     const points: { x: number; y: number; z: number; isLand: boolean }[] = [];
-    const numPoints = 800; // Dense enough to look like continents
+    const numPoints = 1400; // Increased density for a full, rich look
 
     // Continental clustering math
     const checkIsLand = (lat: number, lon: number) => {
@@ -104,7 +104,7 @@ export const LiveReferralGlobe: React.FC = () => {
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
 
-      // 1. Draw Bounding Glow and Orbit Rings (Tech aesthetics like the image)
+      // 1. Bounding Glow and Orbit Rings
       ctx.shadowBlur = 0;
       ctx.globalAlpha = 1.0;
 
@@ -134,36 +134,51 @@ export const LiveReferralGlobe: React.FC = () => {
         const sx = cx + x1 * R * scale;
         const sy = cy + y2 * R * scale;
 
-        return { sx, sy, z: z2 * R, isLand: pt.isLand, x1 };
+        return { sx, sy, z: z2 * R, isLand: pt.isLand, x1, scale };
       });
 
       // Sort dots by depth
       projectedDots.sort((a, b) => a.z - b.z);
 
-      // Draw dots representing sphere continents
+      // Draw dots representing sphere continents & oceans
       projectedDots.forEach(d => {
-        if (!d.isLand) return; // Only draw landmasses for that clean look
-
-        // Opacity based on depth
-        const depthOpacity = (d.z + R) / (2 * R) * 0.6 + 0.15;
-        ctx.globalAlpha = depthOpacity;
-
-        // Red/Blue hemisphere split
-        if (d.x1 < 0) {
-          ctx.fillStyle = '#FF1E3C'; // Red hemisphere
+        const depthOpacity = (d.z + R) / (2 * R) * 0.55 + 0.15;
+        
+        if (d.isLand) {
+          // Landmass particles: larger and brighter
+          ctx.globalAlpha = depthOpacity * 0.85;
+          if (d.x1 < 0) {
+            ctx.fillStyle = '#FF1E3C'; // Red hemisphere
+          } else {
+            ctx.fillStyle = '#1E40FF'; // Blue hemisphere
+          }
+          ctx.beginPath();
+          ctx.arc(d.sx, d.sy, 1.8 * d.scale, 0, 2 * Math.PI);
+          ctx.fill();
         } else {
-          ctx.fillStyle = '#1E40FF'; // Blue hemisphere
+          // Ocean particles: smaller and fainter to fill the sphere shapes
+          ctx.globalAlpha = depthOpacity * 0.15;
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.4)'; // Faint slate blue
+          ctx.beginPath();
+          ctx.arc(d.sx, d.sy, 0.85 * d.scale, 0, 2 * Math.PI);
+          ctx.fill();
         }
-
-        ctx.beginPath();
-        ctx.arc(d.sx, d.sy, 1.25, 0, 2 * Math.PI);
-        ctx.fill();
       });
 
       // Reset global opacity
       ctx.globalAlpha = 1.0;
 
-      // 2. Seeker and Alumni Nodes 3D projections
+      // 2. Volumetric Atmosphere Rim Glow (Tech aesthetics like the image)
+      const rimGrad = ctx.createRadialGradient(cx, cy, R * 0.88, cx, cy, R * 1.04);
+      rimGrad.addColorStop(0, 'rgba(139, 92, 246, 0.0)');
+      rimGrad.addColorStop(0.7, 'rgba(139, 92, 246, 0.06)');
+      rimGrad.addColorStop(1.0, 'rgba(30, 64, 255, 0.16)');
+      ctx.fillStyle = rimGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 1.04, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // 3. Seeker and Alumni Nodes 3D projections
       // Seeker coords
       const skX0 = Math.cos(seekerPos.lat) * Math.sin(seekerPos.lon);
       const skY0 = Math.sin(seekerPos.lat);
@@ -194,8 +209,7 @@ export const LiveReferralGlobe: React.FC = () => {
       const alSx = cx + alX1 * R * alScale;
       const alSy = cy + alY2 * R * alScale;
 
-      // 3. Draw Connecting Arc (Quadratic Bezier Curve in 3D)
-      // Node 3D Vectors
+      // 4. Draw Connecting Arc (Quadratic Bezier Curve in 3D)
       const vSeeker = { x: skX0, y: skY0, z: skZ0 };
       const vAlumni = { x: alX0, y: alY0, z: alZ0 };
 
@@ -206,9 +220,7 @@ export const LiveReferralGlobe: React.FC = () => {
         z: (vSeeker.z + vAlumni.z) * 0.5
       };
       const midLen = Math.hypot(vMidRaw.x, vMidRaw.y, vMidRaw.z) || 1;
-      // Normal vector pointing outwards
       const vNormal = { x: vMidRaw.x / midLen, y: vMidRaw.y / midLen, z: vMidRaw.z / midLen };
-      // Control point offset (arc height)
       const arcHeight = 0.45; 
       const vControl = {
         x: vMidRaw.x + vNormal.x * arcHeight,
@@ -222,7 +234,6 @@ export const LiveReferralGlobe: React.FC = () => {
 
       for (let i = 0; i <= numCurvePoints; i++) {
         const t = i / numCurvePoints;
-        // Bezier formula: B(t) = (1-t)^2 * P0 + 2(1-t)t * P1 + t^2 * P2
         const bx = (1 - t) * (1 - t) * vSeeker.x + 2 * (1 - t) * t * vControl.x + t * t * vAlumni.x;
         const by = (1 - t) * (1 - t) * vSeeker.y + 2 * (1 - t) * t * vControl.y + t * t * vAlumni.y;
         const bz = (1 - t) * (1 - t) * vSeeker.z + 2 * (1 - t) * t * vControl.z + t * t * vAlumni.z;
@@ -241,15 +252,15 @@ export const LiveReferralGlobe: React.FC = () => {
       }
 
       // Draw the connecting Arc with linear gradient (Red to Blue)
-      ctx.lineWidth = 2.5;
-      ctx.shadowBlur = 8;
+      ctx.lineWidth = 2.8;
+      ctx.shadowBlur = 10;
       
       const grad = ctx.createLinearGradient(skSx, skSy, alSx, alSy);
-      grad.addColorStop(0, 'rgba(255, 30, 60, 0.85)'); // Red
-      grad.addColorStop(0.5, 'rgba(139, 92, 246, 0.7)'); // Purple
-      grad.addColorStop(1, 'rgba(30, 64, 255, 0.85)'); // Blue
+      grad.addColorStop(0, 'rgba(255, 30, 60, 0.9)'); // Red
+      grad.addColorStop(0.5, 'rgba(139, 92, 246, 0.75)'); // Purple
+      grad.addColorStop(1, 'rgba(30, 64, 255, 0.9)'); // Blue
       ctx.strokeStyle = grad;
-      ctx.shadowColor = 'rgba(139, 92, 246, 0.4)';
+      ctx.shadowColor = 'rgba(139, 92, 246, 0.45)';
 
       ctx.beginPath();
       ctx.moveTo(curve2DPoints[0].sx, curve2DPoints[0].sy);
@@ -257,13 +268,11 @@ export const LiveReferralGlobe: React.FC = () => {
         ctx.lineTo(curve2DPoints[i].sx, curve2DPoints[i].sy);
       }
       ctx.stroke();
-
-      // Reset shadows
       ctx.shadowBlur = 0;
 
-      // 4. Animate Referral Pulse Particle traveling along the Arc
+      // 5. Animate Referral Pulse Particle traveling along the Arc
       const elapsed = performance.now() * 0.001;
-      const pulseT = (elapsed * 0.35) % 1.0; // Easing speed
+      const pulseT = (elapsed * 0.35) % 1.0; 
       const pulseIdx = Math.floor(pulseT * numCurvePoints);
       
       if (pulseIdx >= 0 && pulseIdx < curve2DPoints.length) {
@@ -273,27 +282,26 @@ export const LiveReferralGlobe: React.FC = () => {
         ctx.shadowColor = '#FFFFFF';
         ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
-        ctx.arc(pulsePt.sx, pulsePt.sy, 3.5, 0, 2 * Math.PI);
+        ctx.arc(pulsePt.sx, pulsePt.sy, 4.0, 0, 2 * Math.PI);
         ctx.fill();
-        
         ctx.shadowBlur = 0;
       }
 
-      // 5. Draw Seeker Node (Left / Red)
-      if (skZ2 > -0.7) { // Only draw if not fully blocked at back
-        const nodeRadius = 14 * skScale;
+      // 6. Draw Seeker Node (Left / Red)
+      if (skZ2 > -0.7) {
+        const nodeRadius = 14.5 * skScale;
 
         // Outer Glow Ring
-        ctx.strokeStyle = 'rgba(255, 30, 60, 0.28)';
+        ctx.strokeStyle = 'rgba(255, 30, 60, 0.32)';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(skSx, skSy, nodeRadius + 5, 0, 2 * Math.PI);
+        ctx.arc(skSx, skSy, nodeRadius + 5.5, 0, 2 * Math.PI);
         ctx.stroke();
 
         // Solid Node Circle
         ctx.fillStyle = '#FF1E3C';
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = 'rgba(255, 30, 60, 0.6)';
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = 'rgba(255, 30, 60, 0.7)';
         ctx.beginPath();
         ctx.arc(skSx, skSy, nodeRadius, 0, 2 * Math.PI);
         ctx.fill();
@@ -312,26 +320,26 @@ export const LiveReferralGlobe: React.FC = () => {
         ctx.stroke();
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 9px "Space Grotesk", sans-serif';
+        ctx.font = 'bold 9.5px "Space Grotesk", sans-serif';
         ctx.textAlign = 'left';
         ctx.fillText('SEEKER (Sending Request)', skSx - nodeRadius - 95, skSy - 22);
       }
 
-      // 6. Draw Alumni Node (Right / Blue)
+      // 7. Draw Alumni Node (Right / Blue)
       if (alZ2 > -0.7) {
-        const nodeRadius = 14 * alScale;
+        const nodeRadius = 14.5 * alScale;
 
         // Outer Glow Ring
-        ctx.strokeStyle = 'rgba(30, 64, 255, 0.28)';
+        ctx.strokeStyle = 'rgba(30, 64, 255, 0.32)';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(alSx, alSy, nodeRadius + 5, 0, 2 * Math.PI);
+        ctx.arc(alSx, alSy, nodeRadius + 5.5, 0, 2 * Math.PI);
         ctx.stroke();
 
         // Solid Node Circle
         ctx.fillStyle = '#1E40FF';
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = 'rgba(30, 64, 255, 0.6)';
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = 'rgba(30, 64, 255, 0.7)';
         ctx.beginPath();
         ctx.arc(alSx, alSy, nodeRadius, 0, 2 * Math.PI);
         ctx.fill();
@@ -350,7 +358,7 @@ export const LiveReferralGlobe: React.FC = () => {
         ctx.stroke();
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 9px "Space Grotesk", sans-serif';
+        ctx.font = 'bold 9.5px "Space Grotesk", sans-serif';
         ctx.textAlign = 'left';
         ctx.fillText('ALUMNI (Giving Referral)', alSx + nodeRadius + 20, alSy + 28);
       }
@@ -391,7 +399,7 @@ export const LiveReferralGlobe: React.FC = () => {
   return (
     <div className="relative w-full aspect-square max-w-[420px] mx-auto select-none overflow-visible flex items-center justify-center">
       {/* Glow highlight behind the globe */}
-      <div className="absolute w-[260px] h-[260px] rounded-full bg-gradient-to-tr from-[#FF1E3C]/6 via-purple-600/4 to-[#1E40FF]/6 blur-[90px] pointer-events-none z-0" />
+      <div className="absolute w-[280px] h-[280px] rounded-full bg-gradient-to-tr from-[#FF1E3C]/8 via-purple-600/5 to-[#1E40FF]/8 blur-[95px] pointer-events-none z-0" />
       
       <canvas
         ref={canvasRef}

@@ -17,12 +17,12 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-transparent select-none"
     >
       {/* ── Background Ambient Glows & Logo Watermark (Dim light theme) ──────── */}
-      <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
+      <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden bg-[#020205]" aria-hidden="true">
         {/* Ambient Left Red Glow (very dim) */}
         <div 
           className="absolute top-1/2 left-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(239,68,68,0.1) 0%, transparent 80%)',
+            background: 'radial-gradient(circle, rgba(239,68,68,0.08) 0%, transparent 80%)',
           }}
         />
 
@@ -30,31 +30,29 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         <div 
           className="absolute top-1/2 right-[5vw] -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] rounded-full blur-[140px]"
           style={{
-            background: 'radial-gradient(circle, rgba(26,107,245,0.12) 0%, transparent 80%)',
+            background: 'radial-gradient(circle, rgba(26,107,245,0.1) 0%, transparent 80%)',
           }}
         />
 
-        {/* Dark radial overlay to vignette the edges and keep the background deep and premium */}
+        {/* Static Referral Flow Background Image (Flat, non-3D) */}
+        <div className={`absolute inset-0 w-full h-full transition-all duration-1000 transform ${isMounted ? 'opacity-100' : 'opacity-0'}`}>
+          <img 
+            src="/referral_flow_bg.jpg" 
+            alt="NextInCampus Referral Flow Background" 
+            className="w-full h-full object-cover opacity-35 md:opacity-50 select-none pointer-events-none"
+          />
+        </div>
+
+        {/* Dark radial overlay to vignette the edges and keep the text perfectly readable */}
+        <div 
+          className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50"
+        />
         <div 
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.05) 0%, rgba(2, 2, 5, 0.95) 90%)',
+            background: 'radial-gradient(circle at 50% 50%, rgba(2, 2, 5, 0.4) 0%, rgba(2, 2, 5, 0.98) 95%)',
           }}
         />
-
-        {/* Spotlight Glow Behind the Logo */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-[85vw] h-[85vw] max-w-[700px] rounded-full bg-gradient-to-tr from-[#FF1E3C]/12 via-purple-600/8 to-[#1E40FF]/15 blur-[120px] pointer-events-none" />
-        </div>
-
-        {/* Static Watermark Background Image */}
-        <div className={`absolute inset-0 flex items-center justify-center transition-all duration-1000 delay-300 transform ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-          <img 
-            src="/nic_3d_logo.png" 
-            alt="NextInCampus Logo Watermark" 
-            className="w-full max-w-[280px] sm:max-w-[420px] md:max-w-[560px] aspect-[3/4] object-contain animate-float opacity-[0.38] sm:opacity-[0.48] select-none pointer-events-none"
-          />
-        </div>
       </div>
 
       {/* ── Main Content Container ─────────────────────────────────────── */}

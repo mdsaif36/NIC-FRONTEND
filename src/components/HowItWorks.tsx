@@ -95,7 +95,7 @@ export const HowItWorks: React.FC = () => {
         <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6">
+      <div className="relative z-10 max-w-6xl 3xl:max-w-[1440px] 4xl:max-w-[1700px] mx-auto px-6">
         
         {/* ======================================================== */}
         {/* 1. TRUST CORE MODEL                                      */}

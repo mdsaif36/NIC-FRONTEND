@@ -83,7 +83,7 @@ export const Footer: React.FC = () => {
     >
       {/* Neon border line at the top of the footer */}
       <div className="absolute top-0 left-0 right-0 h-[1.2px] bg-gradient-to-r from-blue-500 to-red-500 shadow-[0_1px_15px_rgba(26,107,245,0.4)] pointer-events-none" />
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl 3xl:max-w-[1500px] 4xl:max-w-[1800px] mx-auto px-6">
         {/* Main grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Column 1: About NiC */}

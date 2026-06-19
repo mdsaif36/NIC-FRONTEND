@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper
+  Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper, Sparkles
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { DashboardTab } from './dashboard/DashboardTab';
@@ -11,6 +11,16 @@ import { SavedTab } from './dashboard/SavedTab';
 import { ProfileTab } from './dashboard/ProfileTab';
 import { AlumniDashboard } from './dashboard/AlumniDashboard';
 import { ReferralNewsPanel } from './dashboard/ReferralNewsPanel';
+import { CareerIntelligenceTab } from './dashboard/CareerIntelligenceTab';
+
+const getNextResetDate = () => {
+  const now = new Date();
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const day = nextMonth.getDate();
+  const month = nextMonth.toLocaleString('en-US', { month: 'long' });
+  const year = nextMonth.getFullYear();
+  return `${day} ${month} ${year}`;
+};
 
 interface DashboardPageProps {
   id: number;
@@ -21,7 +31,7 @@ interface DashboardPageProps {
   onLogout: () => void;
 }
 
-type ActiveTab = 'dashboard' | 'network' | 'my_referrals' | 'messages' | 'saved' | 'profile' | 'accounting' | 'referral_board';
+type ActiveTab = 'dashboard' | 'network' | 'my_referrals' | 'messages' | 'saved' | 'profile' | 'accounting' | 'referral_board' | 'career_intelligence';
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, college = 'IIT Bombay', company = 'Google', onLogout }) => {
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
@@ -33,39 +43,35 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     localStorage.setItem('seekerActiveTab', activeTab);
   }, [activeTab]);
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
   // Profile data (Screen 6)
   const [profileName, setProfileName] = useState(name);
   const [profileCollege, setProfileCollege] = useState(college);
-  const [profileYear, setProfileYear] = useState('3rd Year');
-  const [profileBranch, setProfileBranch] = useState('CSE');
-  const [targetCompanies, setTargetCompanies] = useState<string[]>(['Google', 'Microsoft', 'Amazon']);
+  const [profileYear, setProfileYear] = useState('');
+  const [profileBranch, setProfileBranch] = useState('');
+  const [targetCompanies, setTargetCompanies] = useState<string[]>([]);
   const [newCompanyInput, setNewCompanyInput] = useState('');
   
   // Set requested skills list
-  const [skills, setSkills] = useState<string[]>(['Python', 'React', 'ML', 'SQL', 'System Design', 'AWS', 'DSA']);
+  const [skills, setSkills] = useState<string[]>([]);
   const [newSkillInput, setNewSkillInput] = useState('');
   
   // Skill Details state for 3D Globe attributes
   const [skillDetails, setSkillDetails] = useState<{
     [key: string]: { proficiency: number; type: 'technical' | 'soft' | 'domain' }
-  }>({
-    'Python': { proficiency: 5, type: 'technical' },
-    'React': { proficiency: 5, type: 'technical' },
-    'ML': { proficiency: 5, type: 'domain' },
-    'SQL': { proficiency: 4, type: 'technical' },
-    'System Design': { proficiency: 5, type: 'domain' },
-    'AWS': { proficiency: 3, type: 'technical' },
-    'DSA': { proficiency: 5, type: 'domain' }
-  });
+  }>({});
 
   const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
-  const [resumeName, setResumeName] = useState('arjun_resume.pdf');
-  const [resumeUploaded, setResumeUploaded] = useState(true);
+  const [resumeName, setResumeName] = useState('');
+  const [resumeUploaded, setResumeUploaded] = useState(false);
   const [resumesHistory, setResumesHistory] = useState<any[]>([]);
-  const [bio, setBio] = useState('CSE Junior passionate about building highly interactive web apps and AI systems.');
-  const [githubUrl, setGithubUrl] = useState('https://github.com/arjun');
-  const [linkedinUrl, setLinkedinUrl] = useState('https://linkedin.com/in/arjun');
+  const [bio, setBio] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
+  const [referralCreditsRemaining, setReferralCreditsRemaining] = useState(4);
+  const [monthlyReferralLimit, setMonthlyReferralLimit] = useState(4);
 
   // Discover state (Screen 2)
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,6 +88,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   // Request flow modal states (Screen 3)
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [targetRole, setTargetRole] = useState('Software Engineer');
+  const [profileTargetRole, setProfileTargetRole] = useState('Software Engineer');
   const [timeline, setTimeline] = useState('Actively looking');
   const [pitchMessage, setPitchMessage] = useState('');
   const [aiTipWarning, setAiTipWarning] = useState('');
@@ -117,6 +124,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
       });
       if (res.ok) {
         const data = await res.json();
+        setCurrentUser(data);
         setProfileName(data.name);
         setProfileCollege(data.college);
         if (data.role === 'seeker') {
@@ -128,9 +136,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           setSkills(data.skills || []);
           setSkillDetails(data.skillDetails || {});
           setTargetCompanies(data.targetCompanies || []);
+          setProfileTargetRole(data.targetRole || 'Software Engineer');
           setResumeUploaded(data.resumeUploaded);
           setResumeName(data.resumeName || '');
           setResumesHistory(data.resumesHistory || []);
+          setReferralCreditsRemaining(data.referralCreditsRemaining !== undefined ? data.referralCreditsRemaining : 4);
+          setMonthlyReferralLimit(data.monthlyReferralLimit !== undefined ? data.monthlyReferralLimit : 4);
         } else {
           setReferralsSentCount(data.referralsSentCount);
         }
@@ -188,8 +199,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             company: r.alumni.company,
             role: r.targetRole,
             date: new Date(r.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ago',
+            createdAt: r.createdAt,
             status: r.status,
-            message: r.pitchMessage
+            message: r.pitchMessage,
+            rating: r.rating,
+            ratingFeedback: r.ratingFeedback
           }));
           setRequestsList(formatted);
         }
@@ -210,7 +224,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             status: r.status,
             seekerId: r.seekerId,
             resumeName: r.seeker?.resumeName || '',
-            resumeUploaded: r.seeker?.resumeUploaded || false
+            resumeUploaded: r.seeker?.resumeUploaded || false,
+            seeker: r.seeker
           }));
           setRequests(formatted);
         }
@@ -348,6 +363,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
         })
       });
       if (res.ok) {
+        setReferralCreditsRemaining(prev => Math.max(0, prev - 1));
         fetchRequests();
         setIsRequestModalOpen(false);
         setActiveTab('my_referrals');
@@ -444,6 +460,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
       });
       if (res.ok) {
         const data = await res.json();
+        setCurrentUser(data);
         setProfileName(data.name);
         setProfileCollege(data.college);
         if (data.role === 'seeker') {
@@ -455,9 +472,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           setSkills(data.skills);
           setSkillDetails(data.skillDetails);
           setTargetCompanies(data.targetCompanies);
+          setProfileTargetRole(data.targetRole || 'Software Engineer');
           setResumeUploaded(data.resumeUploaded);
           setResumeName(data.resumeName);
           setResumesHistory(data.resumesHistory || []);
+          setReferralCreditsRemaining(data.referralCreditsRemaining !== undefined ? data.referralCreditsRemaining : 4);
+          setMonthlyReferralLimit(data.monthlyReferralLimit !== undefined ? data.monthlyReferralLimit : 4);
         }
       }
     } catch (err) {
@@ -488,12 +508,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           skills,
           skillDetails,
           targetCompanies,
+          targetRole: profileTargetRole,
           resumeUploaded: uploaded,
           resumeName: name
         })
       });
       if (res.ok) {
         const data = await res.json();
+        setCurrentUser(data);
         setResumesHistory(data.resumesHistory || []);
       }
     } catch (err) {
@@ -515,6 +537,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
         skills,
         skillDetails,
         targetCompanies,
+        targetRole: profileTargetRole,
         resumeUploaded,
         resumeName,
         resumesHistory
@@ -673,6 +696,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 { id: 'referral_board', label: 'Referral Board', icon: Newspaper,     badge: null },
                 { id: 'network',        label: 'Network',        icon: Search,        badge: null },
                 { id: 'my_referrals',   label: 'My Referrals',  icon: Send,          badge: null },
+                { id: 'career_intelligence', label: 'AI Coach',  icon: Sparkles,      badge: null },
                 { id: 'messages',       label: 'Messages',       icon: MessageSquare, badge: null },
                 { id: 'saved',          label: 'Saved',          icon: Bookmark,      badge: savedAlumniIds.length > 0 ? savedAlumniIds.length : null },
                 { id: 'accounting',     label: 'Accounting',     icon: ShieldCheck,   badge: null },
@@ -709,6 +733,36 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
               })}
             </nav>
           </div>
+
+          {role === 'seeker' && (
+            <div className="px-4 py-3 mx-3 my-2 bg-purple-950/10 border border-purple-500/10 rounded-xl space-y-2 font-inter text-left shadow-[0_4px_15px_rgba(168,85,247,0.03)]">
+              <div className="flex items-center justify-between">
+                <span className="block text-[8.5px] font-bold text-slate-500 uppercase tracking-wider font-space-grotesk">Referral Credits</span>
+                <span className="text-[9.5px] font-bold text-purple-400 font-mono">
+                  {referralCreditsRemaining}/{monthlyReferralLimit} Available
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 py-1">
+                {Array.from({ length: monthlyReferralLimit }).map((_, idx) => {
+                  const isActive = idx < referralCreditsRemaining;
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`w-3.5 h-3.5 rounded transition-all duration-300 ${
+                        isActive 
+                          ? 'bg-gradient-to-br from-purple-500 to-indigo-650 shadow-[0_0_8px_rgba(168,85,247,0.45)]' 
+                          : 'bg-white/5 border border-white/10'
+                      }`} 
+                    />
+                  );
+                })}
+              </div>
+              <span className="block text-[7.5px] text-slate-550 font-semibold leading-relaxed">
+                Your credits will reset on {getNextResetDate()}
+              </span>
+            </div>
+          )}
+
           <div className="px-3 pb-5 border-t border-white/[0.055] pt-4 relative z-10 space-y-0.5">
             <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Account</span>
             <button
@@ -754,6 +808,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             { id: 'referral_board', icon: Newspaper },
             { id: 'network',        icon: Search },
             { id: 'my_referrals',   icon: Send },
+            { id: 'career_intelligence', icon: Sparkles },
             { id: 'messages',       icon: MessageSquare },
             { id: 'saved',          icon: Bookmark },
             { id: 'accounting',     icon: ShieldCheck },
@@ -777,30 +832,36 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-24 md:pb-0 flex flex-col relative z-20">
-          <header className="px-6 md:px-8 py-4 border-b border-white/[0.055] bg-[#050508]/85 backdrop-blur-xl flex items-center justify-between text-left shrink-0 sticky top-0 z-20">
-            <div>
-              <h2 className="font-sora text-white text-sm font-extrabold leading-tight">
-                {activeTab === 'dashboard'      && <>{`Good morning, ${profileName.split(' ')[0]} 👋`}</>}
-                {activeTab === 'referral_board' && 'Referral Board'}
-                {activeTab === 'network'        && 'Discover Network'}
-                {activeTab === 'my_referrals'   && 'My Referrals'}
-                {activeTab === 'messages'       && 'Outreach Messages'}
-                {activeTab === 'saved'          && 'Saved Mentors'}
-                {activeTab === 'accounting'     && 'Accounting'}
-                {activeTab === 'profile'        && 'My Profile'}
-              </h2>
-              <p className="text-[10px] text-slate-600 font-medium mt-0.5">{profileCollege} · Seeker Dashboard</p>
+        <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-24 md:pb-0 flex flex-col relative z-20 w-full">
+          <header className="border-b border-white/[0.055] bg-[#050508]/85 backdrop-blur-xl shrink-0 sticky top-0 z-20 w-full">
+            <div className="px-6 md:px-8 py-4 flex items-center justify-between text-left w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
+              <div>
+                <h2 className="font-sora text-white text-sm font-extrabold leading-tight">
+                  {activeTab === 'dashboard'      && <>{`Good morning, ${profileName.split(' ')[0]} 👋`}</>}
+                  {activeTab === 'referral_board' && 'Referral Board'}
+                  {activeTab === 'network'        && 'Discover Network'}
+                  {activeTab === 'my_referrals'   && 'My Referrals'}
+                  {activeTab === 'career_intelligence' && 'AI Career Coach'}
+                  {activeTab === 'messages'       && 'Outreach Messages'}
+                  {activeTab === 'saved'          && 'Saved Mentors'}
+                  {activeTab === 'accounting'     && 'Accounting'}
+                  {activeTab === 'profile'        && 'My Profile'}
+                </h2>
+                <p className="text-[10px] text-slate-600 font-medium mt-0.5">{profileCollege} · Seeker Dashboard</p>
+              </div>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className="text-[10px] text-purple-400 hover:text-purple-300 transition font-semibold flex items-center gap-1.5 bg-purple-500/10 px-3 py-1.5 rounded-full border border-purple-500/20 hover:border-purple-500/40"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+                {getProfileCompletion()}% Complete
+              </button>
             </div>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className="text-[10px] text-purple-400 hover:text-purple-300 transition font-semibold flex items-center gap-1.5 bg-purple-500/10 px-3 py-1.5 rounded-full border border-purple-500/20 hover:border-purple-500/40"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-              {getProfileCompletion()}% Complete
-            </button>
           </header>
-          <div className="flex-1 p-6 md:p-8">
+          <div className="flex-1 p-6 md:p-8 w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
+            {activeTab === 'career_intelligence' && (
+              <CareerIntelligenceTab currentUser={currentUser} fetchProfile={fetchProfile} />
+            )}
             {activeTab === 'dashboard' && (
               <DashboardTab
                 profileCollege={profileCollege}
@@ -862,6 +923,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 setSelectedRoleFilter={setSelectedRoleFilter}
                 setActiveTab={setActiveTab as any}
                 setActiveChatId={setActiveChatId}
+                referralCreditsRemaining={referralCreditsRemaining}
+                monthlyReferralLimit={monthlyReferralLimit}
+                requestsList={requestsList}
               />
             )}
             {activeTab === 'my_referrals' && (
@@ -875,6 +939,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 setActiveTab={setActiveTab as any}
                 setActiveChatId={setActiveChatId}
                 setSelectedCompanyFilter={setSelectedCompanyFilter}
+                fetchRequests={fetchRequests}
               />
             )}
             {activeTab === 'accounting' && (
@@ -949,6 +1014,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             )}
             {activeTab === 'profile' && (
               <ProfileTab
+                fetchProfile={fetchProfile}
                 isEditMode={isEditMode}
                 setIsEditMode={toggleEditMode as any}
                 profileName={profileName}
@@ -984,6 +1050,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 setResumeName={(name) => handleSetResumeNameAndUploaded(name, true)}
                 resumesHistory={resumesHistory}
                 setResumesHistory={setResumesHistory}
+                targetRole={profileTargetRole}
+                setTargetRole={setProfileTargetRole}
+                setSkills={setSkills}
+                setTargetCompanies={setTargetCompanies}
 
                 hoveredSkill={hoveredSkill}
                 setHoveredSkill={setHoveredSkill}
@@ -1025,6 +1095,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
       handleScheduleCall={handleScheduleCall}
       conversations={conversations}
       alumniNetwork={alumniNetwork}
+      currentUser={currentUser}
+      fetchProfile={fetchProfile}
     />
   );
 };

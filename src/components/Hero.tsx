@@ -45,7 +45,7 @@ export const Hero: React.FC<HeroProps> = () => {
 
       {/* ── Main Content Container ─────────────────────────────────────── */}
       <div className="relative z-10 flex-grow flex items-center pt-24 pb-20 md:pb-28">
-        <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center justify-between">
+        <div className="max-w-7xl 3xl:max-w-[1500px] 4xl:max-w-[1800px] mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center justify-between">
           
           {/* Headline & Subtext Column */}
           <div className={`lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left font-inter transition-all duration-1000 transform ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>

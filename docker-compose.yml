@@ -1,0 +1,93 @@
+version: '3.9'
+
+# ─── NextInCampus — Docker Compose Stack ──────────────────────────────────────
+# One-command startup:  docker-compose up --build
+# Stop everything:      docker-compose down
+# Reset DB:             docker-compose down -v
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL Database ─────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: nic_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nic_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nic_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-nextincampus}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'   # Expose for local tools (DBeaver, TablePlus, etc.)
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-nic_user} -d ${POSTGRES_DB:-nextincampus}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend API ─────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ../NIC-Backend
+      dockerfile: Dockerfile
+    container_name: nic_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nic_user}:${POSTGRES_PASSWORD:-nic_pass}@postgres:5432/${POSTGRES_DB:-nextincampus}
+      JWT_SECRET: ${JWT_SECRET:-change_this_in_production_please}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:80}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      # Future S3 vars (uncomment when ready to switch from local storage)
+      # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      # AWS_REGION: ${AWS_REGION:-ap-south-1}
+      # AWS_S3_BUCKET: ${AWS_S3_BUCKET:-nextincampus-files}
+    volumes:
+      # Persist uploads across container restarts (switch to S3 later)
+      - uploads_data:/app/uploads
+    ports:
+      - '5000:5000'   # Direct access for debugging; in prod remove this and use nginx proxy only
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:5000/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Frontend (React + Nginx) ────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nic_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '80:80'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:80 || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# ─── Named Volumes ─────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    name: nic_postgres_data
+  uploads_data:
+    name: nic_uploads_data
+
+# ─── Network ──────────────────────────────────────────────────────────────────
+networks:
+  default:
+    name: nic_network

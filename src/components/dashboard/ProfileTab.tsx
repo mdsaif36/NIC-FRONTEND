@@ -118,6 +118,11 @@ interface ProfileTabProps {
   userId: number;
   resumesHistory: ResumeHistoryItem[];
   setResumesHistory: React.Dispatch<React.SetStateAction<ResumeHistoryItem[]>>;
+  targetRole: string;
+  setTargetRole: (role: string) => void;
+  setSkills: (skills: string[]) => void;
+  setTargetCompanies: (companies: string[]) => void;
+  fetchProfile?: () => Promise<void>;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
@@ -162,10 +167,16 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   targetCompanies,
   userId,
   resumesHistory,
-  setResumesHistory
+  setResumesHistory,
+  targetRole,
+  setTargetRole,
+  setSkills,
+  setTargetCompanies,
+  fetchProfile
 }) => {
 
   const [dragActive, setDragActive] = React.useState(false);
+  const [isUploading, setIsUploading] = React.useState(false);
   const [uploadStatus, setUploadStatus] = React.useState<{ type: 'success' | 'error', message: string } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [previewingResume, setPreviewingResume] = React.useState<ResumeHistoryItem | null>(null);
@@ -530,35 +541,83 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       await storeFileInDB(name, file);
     }
 
-    const objectUrl = URL.createObjectURL(file);
-    const key = name.trim().toLowerCase();
-    setFileUrlsMap(prev => {
-      if (prev[key]) {
-        URL.revokeObjectURL(prev[key]);
-      }
-      return {
-        ...prev,
-        [key]: objectUrl
-      };
-    });
-
-    const newItem: ResumeHistoryItem = {
-      id: `res-${Date.now()}`,
-      name: name,
-      size: sizeStr,
-      uploadedAt: timeStr
-    };
-
-    const updated = [newItem, ...resumesHistory.filter(item => item.name !== name)];
-    saveHistory(updated);
-    setResumeName(name);
-    setResumeUploaded(true);
-
+    setIsUploading(true);
     setUploadStatus({
       type: 'success',
-      message: `Successfully uploaded and activated "${name}"!`
+      message: 'AI extracting skills and target goals...'
     });
-    setTimeout(() => setUploadStatus(null), 4000);
+
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('resume', file);
+
+      const response = await fetch('/api/users/resume/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Server upload failed');
+      }
+
+      const data = await response.json();
+      
+      // Update all local states from parsed output
+      if (data.skills) setSkills(data.skills);
+      if (data.targetRole) setTargetRole(data.targetRole);
+      if (data.targetCompanies) setTargetCompanies(data.targetCompanies);
+      if (data.bio) setBio(data.bio);
+      if (data.resumeName) setResumeName(data.resumeName);
+      if (data.resumeUploaded !== undefined) setResumeUploaded(data.resumeUploaded);
+      if (data.resumesHistory) setResumesHistory(data.resumesHistory);
+
+      setUploadStatus({
+        type: 'success',
+        message: `Successfully uploaded and AI-parsed "${name}"!`
+      });
+
+      if (fetchProfile) {
+        await fetchProfile();
+      }
+    } catch (err: any) {
+      console.error("[Resume Upload] Error during server upload/parse:", err);
+      // Local fallback in case of connection/server issue
+      const objectUrl = URL.createObjectURL(file);
+      const key = name.trim().toLowerCase();
+      setFileUrlsMap(prev => {
+        if (prev[key]) {
+          URL.revokeObjectURL(prev[key]);
+        }
+        return {
+          ...prev,
+          [key]: objectUrl
+        };
+      });
+
+      const newItem: ResumeHistoryItem = {
+        id: `res-${Date.now()}`,
+        name: name,
+        size: sizeStr,
+        uploadedAt: timeStr
+      };
+
+      const updated = [newItem, ...resumesHistory.filter(item => item.name !== name)];
+      saveHistory(updated);
+      setResumeName(name);
+      setResumeUploaded(true);
+
+      setUploadStatus({
+        type: 'error',
+        message: 'Failed to upload/parse resume on server, fell back to local save.'
+      });
+    } finally {
+      setIsUploading(false);
+      setTimeout(() => setUploadStatus(null), 4000);
+    }
   };
 
   const handleActivateResume = (name: string) => {
@@ -718,10 +777,20 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                           className="px-2 py-1 bg-black border border-white/10 rounded text-[10px] text-white focus:outline-none"
                           placeholder="Branch/Major"
                         />
+                        <input
+                          type="text"
+                          value={targetRole}
+                          onChange={(e) => setTargetRole(e.target.value)}
+                          className="px-2 py-1 bg-black border border-white/10 rounded text-[10px] text-purple-400 focus:outline-none border-purple-500/20"
+                          placeholder="Target Role"
+                        />
                       </div>
                     ) : (
                       <>
                         <p className="text-[11px] text-slate-400 mt-1 font-semibold">{profileCollege} · {profileBranch}</p>
+                        {targetRole && (
+                          <p className="text-[11px] text-purple-400 mt-0.5 font-medium">Target Role: {targetRole}</p>
+                        )}
                         <p className="text-[10px] text-slate-500 mt-0.5">{profileYear}</p>
                       </>
                     )}
@@ -1455,31 +1524,48 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
                       {/* Interactive Drag & Drop Upload Zone */}
                       <div 
-                        onDragEnter={handleDrag}
-                        onDragOver={handleDrag}
-                        onDragLeave={handleDrag}
-                        onDrop={handleDrop}
-                        onClick={() => fileInputRef.current?.click()}
-                        className={`p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[140px] select-none ${
-                          dragActive 
-                            ? 'border-purple-500 bg-purple-950/15 shadow-[0_0_15px_rgba(168,85,247,0.1)]' 
-                            : 'border-white/10 hover:border-purple-500/30 bg-slate-950/20'
+                        onDragEnter={isUploading ? undefined : handleDrag}
+                        onDragOver={isUploading ? undefined : handleDrag}
+                        onDragLeave={isUploading ? undefined : handleDrag}
+                        onDrop={isUploading ? undefined : handleDrop}
+                        onClick={() => !isUploading && fileInputRef.current?.click()}
+                        className={`p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center transition-all duration-300 min-h-[140px] select-none ${
+                          isUploading
+                            ? 'border-purple-500/50 bg-purple-950/10 cursor-not-allowed'
+                            : dragActive 
+                              ? 'border-purple-500 bg-purple-950/15 shadow-[0_0_15px_rgba(168,85,247,0.1)] cursor-pointer' 
+                              : 'border-white/10 hover:border-purple-500/30 bg-slate-950/20 cursor-pointer'
                         }`}
                       >
                         <input 
                           type="file"
                           ref={fileInputRef}
                           onChange={handleFileChange}
+                          disabled={isUploading}
                           accept=".pdf,.docx,.doc"
                           className="hidden"
                         />
-                        <UploadCloud className={`w-8 h-8 mb-2 transition-transform duration-300 ${dragActive ? 'scale-110 text-purple-400' : 'text-slate-500 group-hover:scale-105'}`} />
-                        <span className="block text-xs font-bold text-white leading-relaxed">
-                          {dragActive ? 'Drop your resume here' : 'Drag & drop your resume, or click to browse'}
-                        </span>
-                        <span className="block text-[9px] text-slate-500 mt-1 font-semibold">
-                          PDF, DOCX, or DOC formats up to 5MB
-                        </span>
+                        {isUploading ? (
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="w-8 h-8 rounded-full border-2 border-t-purple-500 border-r-purple-500 border-b-white/10 border-l-white/10 animate-spin mb-3" />
+                            <span className="block text-xs font-bold text-purple-400 animate-pulse">
+                              AI extracting skills and target goals...
+                            </span>
+                            <span className="block text-[8px] text-slate-500 mt-1 font-semibold">
+                              Analyzing resume semantics & experience
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            <UploadCloud className={`w-8 h-8 mb-2 transition-transform duration-300 ${dragActive ? 'scale-110 text-purple-400' : 'text-slate-500 group-hover:scale-105'}`} />
+                            <span className="block text-xs font-bold text-white leading-relaxed">
+                              {dragActive ? 'Drop your resume here' : 'Drag & drop your resume, or click to browse'}
+                            </span>
+                            <span className="block text-[9px] text-slate-500 mt-1 font-semibold">
+                              PDF, DOCX, or DOC formats up to 5MB
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
 

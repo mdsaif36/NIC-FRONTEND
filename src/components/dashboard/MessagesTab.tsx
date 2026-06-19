@@ -44,9 +44,8 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
 }) => {
   const chatPartner = conversations.find(c => c.id === activeChatId) || alumniNetwork.find(a => a.id === activeChatId);
   
-  // A chat is unlocked if the user is alumni, or the seeker request is accepted/referred/hired/info, or they have message history, or it is a mock bot
+  // A chat is unlocked if the user is alumni, or the seeker request is accepted/referred/hired/info, or they have message history
   const isCurrentChatUnlocked = role === 'alumni' || 
-    (activeChatId !== null && activeChatId <= 6) || // Bypass for mock bots
     (requestsList && requestsList.some(r => r.alumniId === activeChatId && ['accepted', 'referred', 'hired', 'info'].includes(r.status))) ||
     (activeChatId && chatMessages[activeChatId] && chatMessages[activeChatId].length > 0);
 

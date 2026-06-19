@@ -6,6 +6,10 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        '3xl': '1920px',
+        '4xl': '2560px',
+      },
       colors: {
         'nic-navy': '#0A0F2E',
         'nic-blue': '#1A6BF5',

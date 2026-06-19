@@ -8,6 +8,7 @@ import { HowItWorks } from './components/HowItWorks';
 import { AuthPage } from './components/AuthPage';
 import { DashboardPage } from './components/DashboardPage';
 import { About } from './components/About';
+import { LandingLeaderboard } from './components/LandingLeaderboard';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard'>('landing');
@@ -124,7 +125,10 @@ function App() {
             {/* Section 2 — How It Works */}
             <HowItWorks />
 
-            {/* Section 3 — About NexInCampus */}
+            {/* Section 3 — Alumni Leaderboard / Hall of Fame */}
+            <LandingLeaderboard onNavigate={handleNavigate} />
+
+            {/* Section 4 — About NexInCampus */}
             <About />
             {/* Giant Brand Watermark with Sliced Tagline Cutout */}
             <div className="w-full overflow-hidden select-none pointer-events-none mt-12 mb-20 flex items-center justify-center relative h-32 md:h-44 bg-transparent" aria-hidden="true">

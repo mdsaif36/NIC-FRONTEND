@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  FileText, X
+  FileText, X, Star
 } from 'lucide-react';
 
 interface RequestsTabProps {
@@ -13,6 +13,7 @@ interface RequestsTabProps {
   setSelectedCompanyFilter: (filter: string) => void;
   setTrackerFilter: (filter: 'All' | 'Pending' | 'Accepted' | 'Declined' | 'Hired') => void;
   trackerFilter: 'All' | 'Pending' | 'Accepted' | 'Declined' | 'Hired';
+  fetchRequests?: () => Promise<void>;
 }
 
 export const RequestsTab: React.FC<RequestsTabProps> = ({
@@ -24,8 +25,64 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
   setExpandedRequest,
   setSelectedCompanyFilter,
   setTrackerFilter,
-  trackerFilter
+  trackerFilter,
+  fetchRequests
 }) => {
+  const [ratingVal, setRatingVal] = React.useState<number>(0);
+  const [hoverRating, setHoverRating] = React.useState<number>(0);
+  const [feedbackText, setFeedbackText] = React.useState<string>('');
+  const [isSubmittingRating, setIsSubmittingRating] = React.useState<boolean>(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setRatingVal(0);
+    setHoverRating(0);
+    setFeedbackText('');
+    setSubmitError(null);
+  }, [expandedRequest]);
+
+  const handleRatingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (ratingVal === 0) {
+      setSubmitError('Please select a star rating.');
+      return;
+    }
+    setIsSubmittingRating(true);
+    setSubmitError(null);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/requests/${expandedRequest.id}/rate`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          rating: ratingVal,
+          feedback: feedbackText
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit rating');
+      }
+
+      if (fetchRequests) {
+        await fetchRequests();
+      }
+      
+      // Update expandedRequest locally
+      expandedRequest.rating = ratingVal;
+      expandedRequest.ratingFeedback = feedbackText;
+      setExpandedRequest({ ...expandedRequest });
+    } catch (err: any) {
+      console.error("Error submitting rating:", err);
+      setSubmitError(err.message || 'Error submitting rating.');
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in-up text-left relative">
               
@@ -202,6 +259,78 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                           <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[11px] leading-relaxed text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.05)]">
                             <span className="block text-[8px] font-bold text-purple-400 uppercase tracking-wider mb-0.5 font-space-grotesk">Congratulations 🎉</span>
                             You have been hired at {expandedRequest.company}! Your network journey is complete. The next step is to transition to an alumni mentor to support future candidates.
+                          </div>
+                        )}
+
+                        {/* Student Ratings & Experience Feedback */}
+                        {(expandedRequest.status === 'accepted' || expandedRequest.status === 'referred' || expandedRequest.status === 'hired' || expandedRequest.status === 'declined') && (
+                          <div className="p-4 rounded-xl border border-white/5 bg-slate-950/20 space-y-3 mt-4">
+                            <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider font-space-grotesk">
+                              Rate Your Experience
+                            </span>
+                            
+                            {expandedRequest.rating ? (
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star 
+                                      key={star} 
+                                      className={`w-3.5 h-3.5 ${star <= expandedRequest.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-700'}`} 
+                                    />
+                                  ))}
+                                  <span className="text-[10px] text-white font-bold ml-1">{expandedRequest.rating} / 5</span>
+                                </div>
+                                {expandedRequest.ratingFeedback && (
+                                  <p className="text-[10px] text-slate-400 italic">"{expandedRequest.ratingFeedback}"</p>
+                                )}
+                              </div>
+                            ) : (
+                              <form onSubmit={handleRatingSubmit} className="space-y-3">
+                                <div className="flex items-center gap-1.5">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                      key={star}
+                                      type="button"
+                                      onClick={() => setRatingVal(star)}
+                                      onMouseEnter={() => setHoverRating(star)}
+                                      onMouseLeave={() => setHoverRating(0)}
+                                      className="transition transform active:scale-125 focus:outline-none"
+                                    >
+                                      <Star 
+                                        className={`w-5 h-5 ${
+                                          star <= (hoverRating || ratingVal) 
+                                            ? 'text-amber-450 fill-amber-400' 
+                                            : 'text-slate-700'
+                                        }`} 
+                                      />
+                                    </button>
+                                  ))}
+                                  <span className="text-[10px] text-slate-500 font-bold ml-1">
+                                    {ratingVal > 0 ? `${ratingVal} Stars` : 'Select rating'}
+                                  </span>
+                                </div>
+
+                                <textarea
+                                  rows={2}
+                                  value={feedbackText}
+                                  onChange={(e) => setFeedbackText(e.target.value)}
+                                  placeholder="Write a brief review of your experience..."
+                                  className="w-full p-2.5 bg-black border border-white/10 rounded-xl text-[10px] text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/40 resize-none leading-relaxed"
+                                />
+
+                                {submitError && (
+                                  <p className="text-[9px] text-rose-450 font-bold">{submitError}</p>
+                                )}
+
+                                <button
+                                  type="submit"
+                                  disabled={isSubmittingRating || ratingVal === 0}
+                                  className="w-full py-1.5 rounded-lg bg-purple-650 hover:bg-purple-600 text-white font-bold text-[9px] uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {isSubmittingRating ? 'Submitting review...' : 'Submit Rating'}
+                                </button>
+                              </form>
+                            )}
                           </div>
                         )}
                       </div>

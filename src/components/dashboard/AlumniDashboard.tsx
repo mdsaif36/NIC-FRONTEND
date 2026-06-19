@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
-  BarChart2, Bookmark, CheckCircle, Clock, FileText,
+  BarChart2, CheckCircle, Clock, FileText, Check,
   Home, LogOut, MessageSquare, ShieldCheck, TrendingUp,
   UserCheck, Users, XCircle, Send, Bell, Star,
   ChevronRight, Activity, Award, Zap, Settings, Briefcase,
-  Sparkles, Filter, Trash2, Plus, ChevronDown, X, Download
+  Sparkles, Filter, Trash2, Plus, ChevronDown, X, Download,
+  CalendarDays, Trophy
 } from 'lucide-react';
 import { MessagesTab } from './MessagesTab.js';
+import { SlotManagementTab } from './SlotManagementTab.js';
+import { LeaderboardTab } from './LeaderboardTab.js';
 
 interface AlumniDashboardProps {
   college: string;
@@ -31,9 +34,11 @@ interface AlumniDashboardProps {
   handleScheduleCall: () => void;
   conversations: any[];
   alumniNetwork: any[];
+  currentUser?: any;
+  fetchProfile?: () => Promise<void>;
 }
 
-type AlumniTab = 'overview' | 'inbox' | 'my_referrals' | 'messages' | 'analytics' | 'accounting' | 'profile';
+type AlumniTab = 'overview' | 'inbox' | 'my_referrals' | 'messages' | 'analytics' | 'accounting' | 'profile' | 'admin_panel' | 'slot_management' | 'leaderboard';
 
 export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   college,
@@ -57,7 +62,9 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   setScheduledTime,
   handleScheduleCall,
   conversations,
-  alumniNetwork
+  alumniNetwork,
+  currentUser,
+  fetchProfile
 }) => {
   const [activeTab, setActiveTab] = useState<AlumniTab>(() => {
     const savedTab = localStorage.getItem('alumniActiveTab');
@@ -67,6 +74,315 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   useEffect(() => {
     localStorage.setItem('alumniActiveTab', activeTab);
   }, [activeTab]);
+
+  const [compEmailInput, setCompEmailInput] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [selectedStudentReq, setSelectedStudentReq] = useState<any | null>(null);
+  const [linkedinUrlInput, setLinkedinUrlInput] = useState('');
+  const [isVerifyingLinkedin, setIsVerifyingLinkedin] = useState(false);
+  const [linkedinVerifyStep, setLinkedinVerifyStep] = useState('');
+  const [selectedScreenshot, setSelectedScreenshot] = useState<File | null>(null);
+  const [isUploadingScreenshot, setIsUploadingScreenshot] = useState(false);
+  const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState<string | null>(null);
+  const [messageNotification, setMessageNotification] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  // Profile Edit & Privacy State Hooks
+  const [bioInput, setBioInput] = useState('');
+  const [experienceInput, setExperienceInput] = useState('');
+  const [skillsInput, setSkillsInput] = useState('');
+  const [canHelpWithInput, setCanHelpWithInput] = useState<string[]>([]);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [isPrivateInput, setIsPrivateInput] = useState(false);
+  const [hideEmailInput, setHideEmailInput] = useState(false);
+  const [hidePhoneInput, setHidePhoneInput] = useState(false);
+  const [hideLinkedInInput, setHideLinkedInInput] = useState(false);
+  const [hideCompanyEmailInput, setHideCompanyEmailInput] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const [adminPendingReviews, setAdminPendingReviews] = useState<any[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+
+  const fetchPendingReviews = async () => {
+    setIsLoadingReviews(true);
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/users/verify/admin-list', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAdminPendingReviews(data);
+      }
+    } catch (error) {
+      console.error("Error fetching pending review list:", error);
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'admin_panel') {
+      fetchPendingReviews();
+    }
+  }, [activeTab]);
+
+  const handleAdminApprove = async (userId: number) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`/api/users/verify/admin-approve/${userId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setMessageNotification({ text: 'User successfully verified as Gold Alumni!', type: 'success' });
+        fetchPendingReviews();
+        if (fetchProfile) await fetchProfile();
+      } else {
+        const err = await res.json();
+        setMessageNotification({ text: err.message || 'Approval failed.', type: 'error' });
+      }
+    } catch (error) {
+      console.error(error);
+      setMessageNotification({ text: 'Network error approving user.', type: 'error' });
+    }
+  };
+
+  const handleAdminReject = async (userId: number) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`/api/users/verify/admin-reject/${userId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setMessageNotification({ text: 'User verification request rejected & reset.', type: 'info' });
+        fetchPendingReviews();
+        if (fetchProfile) await fetchProfile();
+      } else {
+        const err = await res.json();
+        setMessageNotification({ text: err.message || 'Rejection failed.', type: 'error' });
+      }
+    } catch (error) {
+      console.error(error);
+      setMessageNotification({ text: 'Network error rejecting user.', type: 'error' });
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.companyEmail) setCompEmailInput(currentUser.companyEmail);
+      if (currentUser.linkedinUrl) setLinkedinUrlInput(currentUser.linkedinUrl);
+      setBioInput(currentUser.bio || '');
+      setExperienceInput(currentUser.experience || '3 Years');
+      setSkillsInput(currentUser.skills ? currentUser.skills.join(', ') : '');
+      setCanHelpWithInput(currentUser.canHelpWith || ['Referrals', 'Resume Review', 'Mock Interviews', 'Career Guidance']);
+      setPhoneInput(currentUser.phone || '');
+      setIsPrivateInput(currentUser.isPrivateProfile || false);
+      setHideEmailInput(currentUser.hideEmail || false);
+      setHidePhoneInput(currentUser.hidePhone || false);
+      setHideLinkedInInput(currentUser.hideLinkedIn || false);
+      setHideCompanyEmailInput(currentUser.hideCompanyEmail || false);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (messageNotification) {
+      const timer = setTimeout(() => setMessageNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [messageNotification]);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingProfile(true);
+    const token = localStorage.getItem('token');
+    
+    // Parse skills from comma-separated string
+    const skillsArray = skillsInput
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    try {
+      const res = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          bio: bioInput,
+          experience: experienceInput,
+          skills: skillsArray,
+          canHelpWith: canHelpWithInput,
+          phone: phoneInput,
+          isPrivateProfile: isPrivateInput,
+          hideEmail: hideEmailInput,
+          hidePhone: hidePhoneInput,
+          hideLinkedIn: hideLinkedInInput,
+          hideCompanyEmail: hideCompanyEmailInput
+        })
+      });
+
+      if (res.ok) {
+        setMessageNotification({ text: 'Profile and privacy settings saved successfully!', type: 'success' });
+        if (fetchProfile) await fetchProfile();
+      } else {
+        const err = await res.json();
+        setMessageNotification({ text: err.message || 'Failed to update profile.', type: 'error' });
+      }
+    } catch (error) {
+      console.error("Error updating profile settings:", error);
+      setMessageNotification({ text: 'Network error saving profile.', type: 'error' });
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleRequestOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!compEmailInput) return;
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/users/verify/email-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ companyEmail: compEmailInput })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOtpSent(true);
+        setMessageNotification({
+          text: `Simulated OTP Sent! Check your console or use OTP: ${data.otp}`,
+          type: 'success'
+        });
+      } else {
+        const err = await res.json();
+        setMessageNotification({ text: err.message || 'Failed to send OTP.', type: 'error' });
+      }
+    } catch (error) {
+      console.error(error);
+      setMessageNotification({ text: 'Network error requesting OTP.', type: 'error' });
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpInput) return;
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/users/verify/email-confirm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ otp: otpInput })
+      });
+      if (res.ok) {
+        setMessageNotification({ text: 'Company email verified successfully! (Bronze Level)', type: 'success' });
+        setOtpSent(false);
+        setOtpInput('');
+        if (fetchProfile) await fetchProfile();
+      } else {
+        const err = await res.json();
+        setMessageNotification({ text: err.message || 'Invalid OTP.', type: 'error' });
+      }
+    } catch (error) {
+      console.error(error);
+      setMessageNotification({ text: 'Error verifying OTP.', type: 'error' });
+    }
+  };
+
+  const handleVerifyLinkedin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!linkedinUrlInput) return;
+    setIsVerifyingLinkedin(true);
+    setLinkedinVerifyStep('Connecting to LinkedIn API...');
+    
+    setTimeout(() => {
+      setLinkedinVerifyStep('Fetching profile: Name, Job Title & Company...');
+      setTimeout(() => {
+        setLinkedinVerifyStep('Verifying work history consistency...');
+        setTimeout(async () => {
+          const token = localStorage.getItem('token');
+          try {
+            const res = await fetch('/api/users/verify/linkedin', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ linkedinUrl: linkedinUrlInput })
+            });
+            if (res.ok) {
+              setMessageNotification({ text: 'LinkedIn credentials matched & verified! (Silver Level)', type: 'success' });
+              if (fetchProfile) await fetchProfile();
+            } else {
+              const err = await res.json();
+              setMessageNotification({ text: err.message || 'LinkedIn verification failed.', type: 'error' });
+            }
+          } catch (error) {
+            console.error(error);
+            setMessageNotification({ text: 'Network error verifying LinkedIn.', type: 'error' });
+          } finally {
+            setIsVerifyingLinkedin(false);
+            setLinkedinVerifyStep('');
+          }
+        }, 1000);
+      }, 1000);
+    }, 1000);
+  };
+
+  const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedScreenshot(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshotPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadScreenshot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedScreenshot) return;
+    setIsUploadingScreenshot(true);
+    const token = localStorage.getItem('token');
+    
+    const formData = new FormData();
+    formData.append('screenshot', selectedScreenshot);
+
+    try {
+      const res = await fetch('/api/users/verify/manual-upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      if (res.ok) {
+        setMessageNotification({ text: 'Employee screenshot uploaded! Pending admin approval. (Awaiting Gold)', type: 'success' });
+        setSelectedScreenshot(null);
+        setScreenshotPreviewUrl(null);
+        if (fetchProfile) await fetchProfile();
+      } else {
+        const err = await res.json();
+        setMessageNotification({ text: err.message || 'Failed to upload screenshot.', type: 'error' });
+      }
+    } catch (error) {
+      console.error(error);
+      setMessageNotification({ text: 'Error uploading screenshot file.', type: 'error' });
+    } finally {
+      setIsUploadingScreenshot(false);
+    }
+  };
 
   // Helper functions for candidate college tier mapping
   const getCandidateCollege = (req: any) => {
@@ -90,151 +406,17 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     return 'Private';
   };
 
-  // Local state for requests, fallback to mock if DB is empty
+  // Local state for requests, initialized with requests props or empty array
   const [localRequests, setLocalRequests] = useState<any[]>(() => {
-    const defaults = [
-      {
-        id: 101,
-        studentName: "Arjun Sharma",
-        college: "IIT Bombay",
-        class: "CSE Junior, IIT Bombay",
-        company: company,
-        role: "Software Engineer Intern",
-        score: "94%",
-        message: "Hi! I saw your profile and noticed you also graduated from IIT Bombay. I'm really interested in the SWE Intern roles at Google and would love to get a referral or some feedback on my projects, especially my work on distributed system simulations. Thanks!",
-        status: "pending",
-      },
-      {
-        id: 102,
-        studentName: "Priya Rao",
-        college: "BITS Pilani",
-        class: "EEE Senior, BITS Pilani",
-        company: company,
-        role: "Associate Product Manager",
-        score: "89%",
-        message: "Hello! I am a senior at BITS Pilani transitioning to Product Management. I have built 2 products during my internships and would appreciate a referral for the APM role at Google. My resume highlights my user research and product metrics work.",
-        status: "pending",
-      },
-      {
-        id: 103,
-        studentName: "Rohan Das",
-        college: "Delhi Technological University",
-        class: "IT Senior, Delhi Technological University",
-        company: company,
-        role: "Software Engineer",
-        score: "92%",
-        message: "Hello sir, I have 3 internships in Full Stack development and a 9.1 CGPA. I'm looking for a referral for the full-time SWE position. I've optimized databases and built React projects that handle 10k+ active users.",
-        status: "pending",
-      },
-      {
-        id: 104,
-        studentName: "Sneha Reddy",
-        college: "Vellore Institute of Technology",
-        class: "CSE Junior, Vellore Institute of Technology",
-        company: company,
-        role: "Data Scientist Intern",
-        score: "87%",
-        message: "Hi! I am working on deep learning for computer vision and have published a paper in a student journal. I'd love to apply for the Data Science Intern role. Although I am from VIT, I believe my research profile is a strong match for Google's ML team.",
-        status: "pending",
-      },
-      {
-        id: 105,
-        studentName: "Karan Johar",
-        college: "Mumbai University",
-        class: "IT Junior, Mumbai University",
-        company: company,
-        role: "Software Engineer Intern",
-        score: "78%",
-        message: "Hey, looking for a referral to Google for SWE role. Check out my resume.",
-        status: "pending",
-      }
-    ];
-
-    if (requests && requests.length > 0) {
-      const merged = [...requests];
-      defaults.forEach(def => {
-        if (!merged.some(r => r.studentName === def.studentName)) {
-          merged.push(def);
-        }
-      });
-      return merged;
-    }
-    return defaults;
+    return requests || [];
   });
 
   // Keep localRequests synchronized with requests props
   useEffect(() => {
     if (requests) {
-      setLocalRequests(prev => {
-        const merged = [...requests];
-        const defaults = [
-          {
-            id: 101,
-            studentName: "Arjun Sharma",
-            college: "IIT Bombay",
-            class: "CSE Junior, IIT Bombay",
-            company: company,
-            role: "Software Engineer Intern",
-            score: "94%",
-            message: "Hi! I saw your profile and noticed you also graduated from IIT Bombay. I'm really interested in the SWE Intern roles at Google and would love to get a referral or some feedback on my projects, especially my work on distributed system simulations. Thanks!",
-            status: "pending",
-          },
-          {
-            id: 102,
-            studentName: "Priya Rao",
-            college: "BITS Pilani",
-            class: "EEE Senior, BITS Pilani",
-            company: company,
-            role: "Associate Product Manager",
-            score: "89%",
-            message: "Hello! I am a senior at BITS Pilani transitioning to Product Management. I have built 2 products during my internships and would appreciate a referral for the APM role at Google. My resume highlights my user research and product metrics work.",
-            status: "pending",
-          },
-          {
-            id: 103,
-            studentName: "Rohan Das",
-            college: "Delhi Technological University",
-            class: "IT Senior, Delhi Technological University",
-            company: company,
-            role: "Software Engineer",
-            score: "92%",
-            message: "Hello sir, I have 3 internships in Full Stack development and a 9.1 CGPA. I'm looking for a referral for the full-time SWE position. I've optimized databases and built React projects that handle 10k+ active users.",
-            status: "pending",
-          },
-          {
-            id: 104,
-            studentName: "Sneha Reddy",
-            college: "Vellore Institute of Technology",
-            class: "CSE Junior, Vellore Institute of Technology",
-            company: company,
-            role: "Data Scientist Intern",
-            score: "87%",
-            message: "Hi! I am working on deep learning for computer vision and have published a paper in a student journal. I'd love to apply for the Data Science Intern role. Although I am from VIT, I believe my research profile is a strong match for Google's ML team.",
-            status: "pending",
-          },
-          {
-            id: 105,
-            studentName: "Karan Johar",
-            college: "Mumbai University",
-            class: "IT Junior, Mumbai University",
-            company: company,
-            role: "Software Engineer Intern",
-            score: "78%",
-            message: "Hey, looking for a referral to Google for SWE role. Check out my resume.",
-            status: "pending",
-          }
-        ];
-
-        defaults.forEach(def => {
-          if (!merged.some(r => r.studentName === def.studentName)) {
-            const existing = prev.find(p => p.studentName === def.studentName);
-            merged.push(existing ? { ...def, status: existing.status } : def);
-          }
-        });
-        return merged;
-      });
+      setLocalRequests(requests);
     }
-  }, [requests, company]);
+  }, [requests]);
 
   // Local tab filters
   const [inboxFilter, setInboxFilter] = useState<'All' | 'Pending' | 'Referred' | 'Info' | 'Declined'>('Pending');
@@ -304,12 +486,15 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   const referredCount = localRequests.filter(r => r.status === 'referred').length;
 
   const sidebarItems: { id: AlumniTab; label: string; icon: React.ElementType; badge?: number }[] = [
-    { id: 'overview',     label: 'Overview',     icon: Home },
-    { id: 'inbox',        label: 'Inbox',        icon: Users,        badge: pendingCount },
-    { id: 'my_referrals', label: 'My Referrals', icon: Briefcase },
-    { id: 'messages',     label: 'Messages',     icon: MessageSquare },
-    { id: 'analytics',    label: 'Analytics',    icon: BarChart2 },
-    { id: 'accounting',   label: 'Accounting',   icon: Settings },
+    { id: 'overview',        label: 'Overview',        icon: Home },
+    { id: 'inbox',           label: 'Inbox',           icon: Users,        badge: pendingCount },
+    { id: 'my_referrals',    label: 'My Referrals',    icon: Briefcase },
+    { id: 'slot_management', label: 'Slot Management', icon: CalendarDays },
+    { id: 'leaderboard',     label: 'Leaderboard',     icon: Trophy },
+    { id: 'messages',        label: 'Messages',        icon: MessageSquare },
+    { id: 'analytics',       label: 'Analytics',       icon: BarChart2 },
+    { id: 'accounting',      label: 'Accounting',      icon: Settings },
+    { id: 'admin_panel',     label: 'Admin Panel',     icon: ShieldCheck },
   ];
 
   return (
@@ -424,42 +609,47 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
       </aside>
 
       {/* ── Main Content ── */}
-      <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-24 md:pb-8 flex flex-col relative z-20">
+      <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-24 md:pb-8 flex flex-col relative z-20 w-full">
 
         {/* Top header bar */}
-        <header className="px-6 md:px-8 py-5 border-b border-white/5 bg-black/40 backdrop-blur-sm flex items-center justify-between shrink-0">
-          <div>
-            <h2 className="font-sora text-white text-base font-extrabold flex items-center gap-2">
-              {activeTab === 'overview'     && 'Alumni Overview'}
-              {activeTab === 'inbox'        && 'Candidate Inbox'}
-              {activeTab === 'my_referrals' && 'My Referrals'}
-              {activeTab === 'messages'     && 'Messages'}
-              {activeTab === 'analytics'    && 'Impact Analytics'}
-              {activeTab === 'accounting'   && 'Accounting'}
-              {activeTab === 'profile'      && 'My Profile'}
-            </h2>
-            <p className="text-[10px] text-slate-500 mt-0.5 font-medium">{company} · Verified Alumni Mentor</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <button type="button" className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition">
-                <Bell className="w-4 h-4" />
-              </button>
-              {pendingCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center">
-                  {pendingCount}
-                </span>
-              )}
+        <header className="border-b border-white/5 bg-black/40 backdrop-blur-sm shrink-0 w-full">
+          <div className="px-6 md:px-8 py-5 flex items-center justify-between w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
+            <div>
+              <h2 className="font-sora text-white text-base font-extrabold flex items-center gap-2">
+                {activeTab === 'overview'        && 'Alumni Overview'}
+                {activeTab === 'inbox'           && 'Candidate Inbox'}
+                {activeTab === 'my_referrals'    && 'My Referrals'}
+                {activeTab === 'slot_management' && 'Slot Management'}
+                {activeTab === 'leaderboard'     && '🏆 Hall of Fame'}
+                {activeTab === 'messages'        && 'Messages'}
+                {activeTab === 'analytics'       && 'Impact Analytics'}
+                {activeTab === 'accounting'      && 'Accounting'}
+                {activeTab === 'profile'         && 'My Profile'}
+                {activeTab === 'admin_panel'     && 'Admin Review Console'}
+              </h2>
+              <p className="text-[10px] text-slate-500 mt-0.5 font-medium">{company} · Verified Alumni Mentor</p>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <ShieldCheck className="w-3 h-3" />
-              Verified Alumni
-            </span>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <button type="button" className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition">
+                  <Bell className="w-4 h-4" />
+                </button>
+                {pendingCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center">
+                    {pendingCount}
+                  </span>
+                )}
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <ShieldCheck className="w-3 h-3" />
+                Verified Alumni
+              </span>
+            </div>
           </div>
         </header>
 
         {/* Tab content */}
-        <div className="flex-1 p-6 md:p-8">
+        <div className="flex-1 p-6 md:p-8 w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
 
           {/* ══════════════════════════════
               OVERVIEW TAB
@@ -549,7 +739,16 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-white truncate">{req.studentName}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const fullReq = localRequests.find(r => r.id === req.id);
+                                if (fullReq) setSelectedStudentReq(fullReq);
+                              }}
+                              className="text-xs font-bold text-white hover:text-purple-400 hover:underline truncate text-left"
+                            >
+                              {req.studentName}
+                            </button>
                             <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[8px] font-bold">{req.score}</span>
                           </div>
                           <span className="text-[10px] text-slate-500">{req.class} · {req.role} at {req.company}</span>
@@ -744,9 +943,14 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                                 </div>
                                 <div>
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-bold text-white text-sm">
-                                      {req.studentName} <span className="text-slate-400 font-normal">({cCollege})</span>
-                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setSelectedStudentReq(req)}
+                                      className="font-bold text-white text-sm hover:text-purple-400 hover:underline transition-all text-left"
+                                    >
+                                      {req.studentName}
+                                    </button>
+                                    <span className="text-slate-400 font-normal">({cCollege})</span>
                                     <span className="px-2 py-0.5 rounded-full text-[9px] font-bold border border-emerald-500/20 text-emerald-400 bg-emerald-500/5">
                                       {req.score.includes('%') ? req.score : `${req.score}%`} Match
                                     </span>
@@ -1411,66 +1615,486 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
               PROFILE TAB
           ══════════════════════════════ */}
           {activeTab === 'profile' && (
-            <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up text-left">
-              {/* Profile card */}
+            <div className="max-w-2xl mx-auto space-y-6 text-left pb-12">
+              
+              {/* Notification Banner */}
+              {messageNotification && (
+                <div className={`p-4 rounded-xl border text-xs font-semibold ${
+                  messageNotification.type === 'success' 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                }`}>
+                  {messageNotification.text}
+                </div>
+              )}
+
+              {/* Profile Card with Trust Score and Badge */}
               <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
                 <div className="flex flex-col sm:flex-row items-start gap-6 relative z-10">
                   <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-2xl font-black shadow-xl shrink-0">
                     {initials}
                   </div>
-                  <div className="flex-1">
+                  
+                  <div className="flex-1 w-full">
                     <div className="flex items-center gap-3 flex-wrap">
                       <h2 className="font-sora text-xl font-extrabold text-white">{name}</h2>
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      
+                      {/* Verification Badge */}
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold border ${
+                        (currentUser?.verificationLevel || 'Unverified') === 'Platinum' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+                        (currentUser?.verificationLevel || 'Unverified') === 'Gold' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                        (currentUser?.verificationLevel || 'Unverified') === 'Silver' ? 'bg-slate-300/10 text-slate-300 border-slate-300/20' :
+                        (currentUser?.verificationLevel || 'Unverified') === 'Bronze' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+                        'bg-white/5 text-slate-400 border-white/10'
+                      }`}>
                         <ShieldCheck className="w-3 h-3" />
-                        Verified Alumni
+                        {currentUser?.verificationLevel || 'Unverified'} Level
                       </span>
                     </div>
                     <p className="text-sm text-slate-400 font-medium mt-1">{company} · {college}</p>
-                    <div className="flex items-center gap-4 mt-4">
+                    
+                    {/* Trust Score indicator */}
+                    <div className="mt-5 space-y-2">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-slate-500 font-bold uppercase tracking-wider">Referral Trust Score</span>
+                        <span className="text-white font-black font-space-grotesk">{currentUser?.trustScore || 0}/100</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500" 
+                          style={{ width: `${currentUser?.trustScore || 0}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 mt-5">
                       <div className="text-center">
                         <span className="block font-sora text-lg font-bold text-white">{referralsSentCount}</span>
-                        <span className="block text-[9px] text-slate-500 uppercase tracking-wide">Referrals</span>
+                        <span className="block text-[9px] text-slate-550 uppercase tracking-wide">Referrals</span>
                       </div>
                       <div className="w-px h-8 bg-white/5" />
                       <div className="text-center">
                         <span className="block font-sora text-lg font-bold text-white">12</span>
-                        <span className="block text-[9px] text-slate-500 uppercase tracking-wide">Interviews</span>
+                        <span className="block text-[9px] text-slate-555 uppercase tracking-wide">Interviews</span>
                       </div>
                       <div className="w-px h-8 bg-white/5" />
                       <div className="text-center">
                         <span className="block font-sora text-lg font-bold text-white">4.9</span>
-                        <span className="block text-[9px] text-slate-500 uppercase tracking-wide">Rating</span>
+                        <span className="block text-[9px] text-slate-555 uppercase tracking-wide">Rating</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Badges */}
-              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
-                <h3 className="font-sora text-sm font-extrabold text-white mb-5">Achievements</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { icon: Award,    label: 'Gold Mentor',      sub: '25+ referrals', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-                    { icon: Zap,      label: 'Fast Responder',   sub: '< 1 day avg',   color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
-                    { icon: Star,     label: 'Top Rated',        sub: '4.9/5 score',   color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
-                    { icon: Bookmark, label: 'Most Saved',       sub: 'By 40+ seekers',color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
-                  ].map((badge) => {
-                    const Icon = badge.icon;
-                    return (
-                      <div key={badge.label} className={`flex items-center gap-3 p-4 rounded-xl border ${badge.color}`}>
-                        <div className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${badge.color}`}>
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <span className="block text-xs font-bold text-white">{badge.label}</span>
-                          <span className="block text-[9px] text-slate-400">{badge.sub}</span>
+              {/* Profile Editor and Privacy Control Form */}
+              <form onSubmit={handleSaveProfile} className="space-y-6">
+                
+                {/* Section 1: Edit Professional Profile */}
+                <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md space-y-4">
+                  <div>
+                    <h3 className="font-sora text-sm font-extrabold text-white">Edit Professional Profile</h3>
+                    <p className="text-[10px] text-slate-550 mt-1 leading-normal">
+                      Update your career details and how you can support student seekers on NextInCampus.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3.5">
+                    {/* Bio */}
+                    <div className="space-y-1">
+                      <label className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider font-space-grotesk">Professional Bio</label>
+                      <textarea
+                        rows={3}
+                        value={bioInput}
+                        onChange={(e) => setBioInput(e.target.value)}
+                        placeholder="Share a brief overview of your background, tech stacks, or domains you focus on..."
+                        className="w-full px-3 py-2 bg-black border border-white/10 rounded-xl text-white text-[11px] placeholder-slate-650 focus:outline-none focus:border-purple-500/40 resize-none leading-normal font-medium"
+                      />
+                    </div>
+
+                    {/* Grid of Experience & Phone */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider font-space-grotesk">Years of Experience</label>
+                        <select
+                          value={experienceInput}
+                          onChange={(e) => setExperienceInput(e.target.value)}
+                          className="w-full px-3 py-2 bg-black border border-white/10 rounded-xl text-white text-[11px] focus:outline-none focus:border-purple-500/40 font-medium"
+                        >
+                          <option>1 Year</option>
+                          <option>2 Years</option>
+                          <option>3 Years</option>
+                          <option>4 Years</option>
+                          <option>5 Years</option>
+                          <option>6 Years</option>
+                          <option>7 Years</option>
+                          <option>8 Years</option>
+                          <option>9 Years</option>
+                          <option>10+ Years</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider font-space-grotesk">Phone Number</label>
+                        <input
+                          type="text"
+                          value={phoneInput}
+                          onChange={(e) => setPhoneInput(e.target.value)}
+                          placeholder="e.g. +91 98765 43210"
+                          className="w-full px-3 py-2 bg-black border border-white/10 rounded-xl text-white text-[11px] placeholder-slate-650 focus:outline-none focus:border-purple-500/40 font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Skills comma-separated */}
+                    <div className="space-y-1">
+                      <label className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider font-space-grotesk">Skills (Comma-separated)</label>
+                      <input
+                        type="text"
+                        value={skillsInput}
+                        onChange={(e) => setSkillsInput(e.target.value)}
+                        placeholder="e.g. React, Node.js, Python, System Design, AWS"
+                        className="w-full px-3 py-2 bg-black border border-white/10 rounded-xl text-white text-[11px] placeholder-slate-650 focus:outline-none focus:border-purple-500/40 font-medium"
+                      />
+                    </div>
+
+                    {/* Can Help With Checklist */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider font-space-grotesk">Can Help With</label>
+                      <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-300 font-semibold font-inter">
+                        {['Referrals', 'Resume Review', 'Mock Interviews', 'Career Guidance'].map((option) => {
+                          const isChecked = canHelpWithInput.includes(option);
+                          return (
+                            <label key={option} className="flex items-center gap-2 cursor-pointer select-none bg-black/35 border border-white/5 px-3 py-2 rounded-xl hover:border-purple-500/25 transition">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {
+                                  if (isChecked) {
+                                    setCanHelpWithInput(prev => prev.filter(item => item !== option));
+                                  } else {
+                                    setCanHelpWithInput(prev => [...prev, option]);
+                                  }
+                                }}
+                                className="accent-purple-500 rounded border-white/10 bg-black cursor-pointer"
+                              />
+                              <span>{option}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 2: Privacy Controls */}
+                <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md space-y-4">
+                  <div>
+                    <h3 className="font-sora text-sm font-extrabold text-white">Privacy & Visibility Settings</h3>
+                    <p className="text-[10px] text-slate-550 mt-1 leading-normal">
+                      Control who can view your profile and hide/reveal specific personal contact details.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Public vs Private Profile Radio */}
+                    <div className="space-y-1">
+                      <label className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider font-space-grotesk">Profile Type</label>
+                      <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-350 font-inter">
+                        <label className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition ${!isPrivateInput ? 'bg-purple-950/15 border-purple-500/35 text-white' : 'bg-black/35 border-white/5'}`}>
+                          <input
+                            type="radio"
+                            name="profileType"
+                            checked={!isPrivateInput}
+                            onChange={() => setIsPrivateInput(false)}
+                            className="accent-purple-500 cursor-pointer"
+                          />
+                          <div>
+                            <span className="block">Public Profile</span>
+                            <span className="block text-[8px] font-normal text-slate-500 mt-0.5 font-space-grotesk">Visible to all student seekers</span>
+                          </div>
+                        </label>
+
+                        <label className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition ${isPrivateInput ? 'bg-purple-950/15 border-purple-500/35 text-white' : 'bg-black/35 border-white/5'}`}>
+                          <input
+                            type="radio"
+                            name="profileType"
+                            checked={isPrivateInput}
+                            onChange={() => setIsPrivateInput(true)}
+                            className="accent-purple-500 cursor-pointer"
+                          />
+                          <div>
+                            <span className="block">Private Profile</span>
+                            <span className="block text-[8px] font-normal text-slate-500 mt-0.5 font-space-grotesk">Hide contact details entirely</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Hide Checkboxes */}
+                    <div className={`space-y-2.5 transition ${isPrivateInput ? 'opacity-40 pointer-events-none' : ''}`}>
+                      <label className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider font-space-grotesk">Hide Contact Channels</label>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] text-slate-300 font-semibold font-inter">
+                        <label className="flex items-center justify-between bg-black/35 border border-white/5 px-3 py-2 rounded-xl hover:border-purple-500/25 transition cursor-pointer select-none">
+                          <span className="flex items-center gap-2">
+                            <span>Hide Personal Email</span>
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={hideEmailInput}
+                            onChange={() => setHideEmailInput(!hideEmailInput)}
+                            className="accent-purple-500 cursor-pointer"
+                          />
+                        </label>
+
+                        <label className="flex items-center justify-between bg-black/35 border border-white/5 px-3 py-2 rounded-xl hover:border-purple-500/25 transition cursor-pointer select-none">
+                          <span className="flex items-center gap-2">
+                            <span>Hide Company Email</span>
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={hideCompanyEmailInput}
+                            onChange={() => setHideCompanyEmailInput(!hideCompanyEmailInput)}
+                            className="accent-purple-500 cursor-pointer"
+                          />
+                        </label>
+
+                        <label className="flex items-center justify-between bg-black/35 border border-white/5 px-3 py-2 rounded-xl hover:border-purple-500/25 transition cursor-pointer select-none">
+                          <span className="flex items-center gap-2">
+                            <span>Hide LinkedIn Profile</span>
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={hideLinkedInInput}
+                            onChange={() => setHideLinkedInInput(!hideLinkedInInput)}
+                            className="accent-purple-500 cursor-pointer"
+                          />
+                        </label>
+
+                        <label className="flex items-center justify-between bg-black/35 border border-white/5 px-3 py-2 rounded-xl hover:border-purple-500/25 transition cursor-pointer select-none">
+                          <span className="flex items-center gap-2">
+                            <span>Hide Phone Number</span>
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={hidePhoneInput}
+                            onChange={() => setHidePhoneInput(!hidePhoneInput)}
+                            className="accent-purple-500 cursor-pointer"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Save Profile Button */}
+                <button
+                  type="submit"
+                  disabled={isSavingProfile}
+                  className="w-full py-3 rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 hover:opacity-95 text-white font-sora font-extrabold text-xs uppercase tracking-wider transition shadow-lg disabled:opacity-40"
+                >
+                  {isSavingProfile ? 'Saving Changes...' : 'Save Settings'}
+                </button>
+              </form>
+
+              {/* Verification Center */}
+              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md space-y-6">
+                <div>
+                  <h3 className="font-sora text-sm font-extrabold text-white">Verification Center</h3>
+                  <p className="text-[10px] text-slate-500 mt-1 leading-normal">
+                    Validate your identity to earn badges. Students instantly trust and prioritize requests to verified alumni.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Step 1: Company Email (Bronze) */}
+                  <div className="p-4 rounded-xl border border-white/5 bg-black/40 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-[9px] font-bold text-purple-400 uppercase tracking-wider font-space-grotesk">Level 1: Company Email</span>
+                        <h4 className="text-xs font-bold text-white mt-0.5">Corporate Domain Verification</h4>
+                      </div>
+                      {currentUser?.isEmailVerified ? (
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5">
+                          <Check className="w-2.5 h-2.5" /> Verified
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-slate-800 text-slate-400 border border-white/5">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+
+                    {currentUser?.isEmailVerified ? (
+                      <p className="text-[10px] text-slate-400">
+                        ✓ Verified company email: <strong className="text-white">{currentUser?.companyEmail}</strong> (Bronze Badge Earned +30 Points)
+                      </p>
+                    ) : (
+                      <div className="pt-2">
+                        {otpSent ? (
+                          <form onSubmit={handleVerifyOtp} className="flex gap-2">
+                            <input 
+                              type="text" 
+                              value={otpInput} 
+                              onChange={(e) => setOtpInput(e.target.value)}
+                              placeholder="Enter OTP" 
+                              className="px-3 py-1.5 bg-black border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-purple-500/40 w-32 font-space-grotesk font-bold tracking-widest text-center"
+                            />
+                            <button 
+                              type="submit" 
+                              className="px-4 py-1.5 bg-purple-650 hover:bg-purple-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition"
+                            >
+                              Verify OTP
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={() => setOtpSent(false)}
+                              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-[10px] font-bold uppercase tracking-wider transition"
+                            >
+                              Back
+                            </button>
+                          </form>
+                        ) : (
+                          <form onSubmit={handleRequestOtp} className="flex gap-2">
+                            <input 
+                              type="email" 
+                              value={compEmailInput} 
+                              onChange={(e) => setCompEmailInput(e.target.value)}
+                              placeholder="e.g. john@google.com" 
+                              className="px-3 py-1.5 bg-black border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-purple-500/40 w-56 font-medium"
+                              required
+                            />
+                            <button 
+                              type="submit" 
+                              className="px-4 py-1.5 bg-purple-650 hover:bg-purple-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition"
+                            >
+                              Send OTP
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Step 2: LinkedIn Verification (Silver) */}
+                  <div className={`p-4 rounded-xl border border-white/5 bg-black/40 space-y-3 transition-opacity duration-300 ${!currentUser?.isEmailVerified ? 'opacity-40 pointer-events-none' : ''}`}>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-[9px] font-bold text-purple-400 uppercase tracking-wider font-space-grotesk">Level 2: LinkedIn Verification</span>
+                        <h4 className="text-xs font-bold text-white mt-0.5">Profile Match & Validation</h4>
+                      </div>
+                      {currentUser?.isLinkedinVerified ? (
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5">
+                          <Check className="w-2.5 h-2.5" /> Verified
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-slate-800 text-slate-400 border border-white/5">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+
+                    {currentUser?.isLinkedinVerified ? (
+                      <p className="text-[10px] text-slate-400">
+                        ✓ Connected Profile: <a href={currentUser?.linkedinUrl} target="_blank" rel="noreferrer" className="text-blue-400 underline">{currentUser?.linkedinUrl}</a> (Silver Badge Earned +25 Points)
+                      </p>
+                    ) : isVerifyingLinkedin ? (
+                      <div className="flex items-center gap-2 pt-2 text-[10px] text-slate-400">
+                        <div className="w-3.5 h-3.5 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin" />
+                        <span>{linkedinVerifyStep}</span>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleVerifyLinkedin} className="flex gap-2 pt-2">
+                        <input 
+                          type="url" 
+                          value={linkedinUrlInput} 
+                          onChange={(e) => setLinkedinUrlInput(e.target.value)}
+                          placeholder="https://linkedin.com/in/username" 
+                          className="px-3 py-1.5 bg-black border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-purple-500/40 w-56 font-medium"
+                          required
+                        />
+                        <button 
+                          type="submit" 
+                          className="px-4 py-1.5 bg-purple-650 hover:bg-purple-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition"
+                        >
+                          Verify URL
+                        </button>
+                      </form>
+                    )}
+                  </div>
+
+                  {/* Step 3: Manual Verification (Gold) */}
+                  <div className={`p-4 rounded-xl border border-white/5 bg-black/40 space-y-3 transition-opacity duration-300 ${(!currentUser?.isEmailVerified || !currentUser?.isLinkedinVerified) ? 'opacity-40 pointer-events-none' : ''}`}>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-[9px] font-bold text-purple-400 uppercase tracking-wider font-space-grotesk">Level 3: Manual Review</span>
+                        <h4 className="text-xs font-bold text-white mt-0.5">Admin Badge Endorsement</h4>
+                      </div>
+                      {currentUser?.isAdminVerified ? (
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5">
+                          <Check className="w-2.5 h-2.5" /> Verified
+                        </span>
+                      ) : currentUser?.employeeScreenshot ? (
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-0.5 animate-pulse">
+                          Under Review
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-slate-800 text-slate-400 border border-white/5">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+
+                    {currentUser?.isAdminVerified ? (
+                      <p className="text-[10px] text-slate-400">
+                        ✓ Admin Approved & Endorsed. Gold Verified Alumni status unlocked (+25 Points)
+                      </p>
+                    ) : currentUser?.employeeScreenshot ? (
+                      <div className="text-[10px] text-slate-400 space-y-2">
+                        <p>Your ID verification request is pending. Admin will approve shortly.</p>
+                        <div className="relative w-32 h-20 rounded border border-white/10 overflow-hidden bg-black flex items-center justify-center">
+                          <img 
+                            src={`/api/users/verify/screenshot/${currentUser.id}`} 
+                            alt="ID Screenshot" 
+                            className="max-w-full max-h-full object-contain"
+                          />
                         </div>
                       </div>
-                    );
-                  })}
+                    ) : (
+                      <form onSubmit={handleUploadScreenshot} className="space-y-3 pt-2">
+                        <div className="flex items-center gap-3">
+                          <label className="px-4 py-2 border border-white/15 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-300 transition cursor-pointer">
+                            Choose ID/Badge Image
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={handleScreenshotChange}
+                              className="hidden" 
+                            />
+                          </label>
+                          <span className="text-[10px] text-slate-500">
+                            {selectedScreenshot ? selectedScreenshot.name : 'Select screenshot or photo of employee badge'}
+                          </span>
+                        </div>
+                        {screenshotPreviewUrl && (
+                          <div className="w-32 h-20 rounded border border-white/10 overflow-hidden bg-black flex items-center justify-center">
+                            <img src={screenshotPreviewUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
+                          </div>
+                        )}
+                        {selectedScreenshot && (
+                          <button 
+                            type="submit" 
+                            disabled={isUploadingScreenshot}
+                            className="px-4 py-2 bg-purple-650 hover:bg-purple-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition disabled:opacity-50"
+                          >
+                            {isUploadingScreenshot ? 'Uploading...' : 'Submit to Admin Review'}
+                          </button>
+                        )}
+                      </form>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1483,6 +2107,132 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 <LogOut className="w-4 h-4" />
                 Logout Account
               </button>
+            </div>
+          )}
+
+          {activeTab === 'slot_management' && (
+            <SlotManagementTab />
+          )}
+
+          {activeTab === 'leaderboard' && (
+            <LeaderboardTab />
+          )}
+
+          {activeTab === 'admin_panel' && (
+            <div className="max-w-3xl mx-auto space-y-6 text-left pb-12 font-inter">
+              
+              {/* Notification Banner */}
+              {messageNotification && (
+                <div className={`p-4 rounded-xl border text-xs font-semibold ${
+                  messageNotification.type === 'success' 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                }`}>
+                  {messageNotification.text}
+                </div>
+              )}
+
+              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
+                <h3 className="font-sora text-sm font-extrabold text-white">Manual Verification Requests</h3>
+                <p className="text-[10px] text-slate-500 mt-1 leading-normal">
+                  Review submitted employee ID badges and verify corporate email and LinkedIn matching details before endorsing.
+                </p>
+                
+                {isLoadingReviews ? (
+                  <div className="flex flex-col items-center justify-center py-12 gap-3">
+                    <div className="w-8 h-8 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin" />
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Fetching requests...</span>
+                  </div>
+                ) : adminPendingReviews.length === 0 ? (
+                  <div className="py-16 text-center border border-dashed border-white/5 rounded-2xl bg-black/20 mt-6">
+                    <ShieldCheck className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+                    <span className="block text-xs font-bold text-slate-400">All caught up!</span>
+                    <p className="text-[10px] text-slate-500 mt-1">No pending alumni manual verification requests found.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6 mt-6">
+                    {adminPendingReviews.map((reviewUser) => (
+                      <div key={reviewUser.id} className="p-5 rounded-xl border border-white/5 bg-black/40 flex flex-col md:flex-row gap-5 items-start justify-between">
+                        
+                        {/* Info details */}
+                        <div className="space-y-3 flex-1 min-w-0">
+                          <div>
+                            <h4 className="text-sm font-extrabold text-white">{reviewUser.name}</h4>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{reviewUser.jobTitle || 'Alumni'} @ <strong className="text-white">{reviewUser.company}</strong></p>
+                            <p className="text-[9px] text-slate-500 mt-0.5">Registration Email: {reviewUser.email}</p>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3 text-[10px] font-medium border-t border-white/5 pt-2">
+                            <div>
+                              <span className="block text-[8px] font-bold text-slate-550 uppercase tracking-wider">Company Email</span>
+                              <span className="text-white block mt-0.5 truncate">{reviewUser.companyEmail || 'N/A'}</span>
+                              <span className={`inline-block text-[8px] font-bold mt-1 px-1.5 py-0.2 rounded ${
+                                reviewUser.isEmailVerified ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10' : 'bg-rose-500/10 text-rose-450'
+                              }`}>
+                                {reviewUser.isEmailVerified ? 'Verified' : 'Unverified'}
+                              </span>
+                            </div>
+                            
+                            <div>
+                              <span className="block text-[8px] font-bold text-slate-550 uppercase tracking-wider">LinkedIn URL</span>
+                              {reviewUser.linkedinUrl ? (
+                                <a href={reviewUser.linkedinUrl} target="_blank" rel="noreferrer" className="text-blue-400 block mt-0.5 truncate hover:underline">
+                                  {reviewUser.linkedinUrl}
+                                </a>
+                              ) : (
+                                <span className="text-slate-500 block mt-0.5">Not Provided</span>
+                              )}
+                              <span className={`inline-block text-[8px] font-bold mt-1 px-1.5 py-0.2 rounded ${
+                                reviewUser.isLinkedinVerified ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10' : 'bg-rose-500/10 text-rose-450'
+                              }`}>
+                                {reviewUser.isLinkedinVerified ? 'Verified' : 'Unverified'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Screenshot preview */}
+                        <div className="shrink-0 space-y-1">
+                          <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider">Employee Badge Screenshot</span>
+                          <a 
+                            href={`/api/users/verify/screenshot/${reviewUser.id}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="relative block w-40 h-24 rounded border border-white/10 overflow-hidden bg-black hover:border-purple-500/50 transition cursor-zoom-in"
+                          >
+                            <img 
+                              src={`/api/users/verify/screenshot/${reviewUser.id}`} 
+                              alt="Manual Badge" 
+                              className="w-full h-full object-contain"
+                            />
+                          </a>
+                        </div>
+
+                        {/* Admin Action Buttons */}
+                        <div className="flex flex-row md:flex-col gap-2 shrink-0 self-center md:self-stretch justify-center">
+                          <button
+                            type="button"
+                            onClick={() => handleAdminApprove(reviewUser.id)}
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition shadow-md shrink-0"
+                          >
+                            Approve
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => handleAdminReject(reviewUser.id)}
+                            className="px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-450 border border-rose-650/30 rounded-lg text-[10px] font-bold uppercase tracking-wider transition shrink-0"
+                          >
+                            Reject
+                          </button>
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
             </div>
           )}
 
@@ -1574,6 +2324,205 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {/* SCREEN: STUDENT PUBLIC/SEMI-PUBLIC PROFILE DRAWER */}
+      {selectedStudentReq && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-end animate-fade-in cursor-pointer" onClick={() => setSelectedStudentReq(null)}>
+          <div 
+            className="w-full max-w-md bg-[#07070a] border-l border-white/5 h-full p-5 overflow-y-auto no-scrollbar shadow-2xl relative text-left flex flex-col justify-between cursor-default"
+            onClick={e => e.stopPropagation()}
+          >
+            <div>
+              {/* Header close panel */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest font-space-grotesk">Student Profile Details</span>
+                <button 
+                  onClick={() => setSelectedStudentReq(null)} 
+                  className="p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/5 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Basic student card */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-650 to-indigo-650 flex items-center justify-center font-bold text-white text-sm uppercase shadow-lg shrink-0">
+                  {selectedStudentReq.studentName[0]}{selectedStudentReq.studentName.split(' ')[1]?.[0] ?? ''}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-sora text-white text-base font-extrabold">{selectedStudentReq.studentName}</h3>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold border border-purple-500/20 text-purple-400 bg-purple-500/5">
+                      {selectedStudentReq.score.includes('%') ? selectedStudentReq.score : `${selectedStudentReq.score}%`} Match
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-350 mt-0.5 font-semibold">
+                    {selectedStudentReq.seeker?.targetRole || selectedStudentReq.role || 'Software Engineer Intern'}
+                  </p>
+                  <p className="text-[9px] text-slate-500 mt-0.5">
+                    {selectedStudentReq.class}
+                  </p>
+                </div>
+              </div>
+
+              {/* AI Career Summary / Bio */}
+              <div className="mb-5">
+                <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-space-grotesk">AI Career Summary</span>
+                <div className="p-3.5 rounded-xl border border-white/5 bg-slate-950/40 text-slate-350 text-[11px] leading-relaxed font-medium">
+                  {selectedStudentReq.seeker?.bio || 'CSE Student passionate about backend systems, database scaling, and machine learning architectures.'}
+                </div>
+              </div>
+
+              {/* Skills section */}
+              <div className="mb-5">
+                <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-2 font-space-grotesk">Skills & Proficiencies</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(selectedStudentReq.seeker?.skills && selectedStudentReq.seeker.skills.length > 0
+                    ? selectedStudentReq.seeker.skills
+                    : ['React', 'Node.js', 'Java', 'Python', 'System Design', 'SQL']
+                  ).map((skill: string, idx: number) => (
+                    <span key={idx} className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] text-slate-300 font-semibold">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Projects section */}
+              <div className="mb-5">
+                <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-2 font-space-grotesk">Technical Projects</span>
+                <div className="space-y-2">
+                  {(selectedStudentReq.seeker?.projects && selectedStudentReq.seeker.projects.length > 0
+                    ? selectedStudentReq.seeker.projects
+                    : ['PrepNerve', 'NextInCampus']
+                  ).map((proj: string, idx: number) => (
+                    <div key={idx} className="p-3 rounded-xl border border-white/5 bg-white/[0.01] flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center font-bold text-xs text-purple-400 uppercase font-space-grotesk shrink-0">
+                        {proj[0]}
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-bold text-white">{proj}</span>
+                        <span className="block text-[8.5px] text-slate-550 font-semibold mt-0.5">Developer · Web Application</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Target Companies */}
+              <div className="mb-5">
+                <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-2 font-space-grotesk">Target Companies</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(selectedStudentReq.seeker?.targetCompanies && selectedStudentReq.seeker.targetCompanies.length > 0
+                    ? selectedStudentReq.seeker.targetCompanies
+                    : ['Google', 'Microsoft', 'Amazon']
+                  ).map((comp: string, idx: number) => (
+                    <span key={idx} className="px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/25 text-[10px] text-purple-300 font-bold font-mono">
+                      {comp}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Seeker Private Profile Section (Resume, Contact info) */}
+              <div className="mb-5 p-3.5 rounded-2xl border border-purple-500/20 bg-purple-950/10 space-y-3 font-inter shadow-[0_4px_15px_rgba(168,85,247,0.03)]">
+                <div className="flex items-center gap-1.5 text-purple-400 font-bold font-space-grotesk text-[9px] uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4 text-purple-400" />
+                  <span>Verified Contact Details (Private Profile)</span>
+                </div>
+                
+                <div className="space-y-2.5 text-[10px]">
+                  {/* Email */}
+                  <div className="flex justify-between items-center bg-black/40 p-2 rounded-xl border border-white/5">
+                    <span className="text-slate-500 font-bold uppercase tracking-wider text-[8px]">Student Email</span>
+                    <span className="text-white font-mono font-semibold">{selectedStudentReq.seeker?.email || 'student@iitb.edu'}</span>
+                  </div>
+
+                  {/* LinkedIn & GitHub urls */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <a 
+                      href={selectedStudentReq.seeker?.linkedinUrl || 'https://linkedin.com'} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="p-2 bg-black/40 rounded-xl border border-white/5 text-center text-purple-400 hover:text-purple-300 transition-all font-semibold font-sora text-[9px] uppercase tracking-wider"
+                    >
+                      LinkedIn
+                    </a>
+                    <a 
+                      href={selectedStudentReq.seeker?.githubUrl || 'https://github.com'} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="p-2 bg-black/40 rounded-xl border border-white/5 text-center text-purple-400 hover:text-purple-300 transition-all font-semibold font-sora text-[9px] uppercase tracking-wider"
+                    >
+                      GitHub
+                    </a>
+                  </div>
+
+                  {/* Resume preview download */}
+                  <div className="p-2 bg-black/40 rounded-xl border border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-rose-500 shrink-0" />
+                      <span className="text-white font-bold truncate max-w-[150px]">{selectedStudentReq.resumeName || 'resume.pdf'}</span>
+                    </div>
+                    {selectedStudentReq.resumeUploaded ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleViewResume(selectedStudentReq.seekerId, selectedStudentReq.resumeName, selectedStudentReq.studentName);
+                          setSelectedStudentReq(null);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-purple-650 hover:bg-purple-600 text-white text-[8px] font-bold uppercase tracking-wider transition"
+                      >
+                        Preview Resume
+                      </button>
+                    ) : (
+                      <span className="text-slate-500 italic text-[9px]">No resume</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions panel */}
+            <div className="pt-3 border-t border-white/5 mt-auto">
+              {selectedStudentReq.status === 'pending' ? (
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onHandleAction(selectedStudentReq.id, 'referred');
+                      setSelectedStudentReq(null);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition shadow-md"
+                  >
+                    Refer Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onHandleAction(selectedStudentReq.id, 'info');
+                      setSelectedStudentReq(null);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 font-sora font-bold text-[10px] uppercase tracking-wider transition"
+                  >
+                    Need Info
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center py-2.5">
+                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
+                    selectedStudentReq.status === 'referred' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                    selectedStudentReq.status === 'info'     ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                    'bg-rose-500/10 text-rose-450 border-rose-500/20'
+                  }`}>
+                    Status: {selectedStudentReq.status}
+                  </span>
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       )}

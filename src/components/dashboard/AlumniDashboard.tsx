@@ -66,6 +66,13 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   currentUser,
   fetchProfile
 }) => {
+  const getGreeting = () => {
+    const hr = new Date().getHours();
+    if (hr < 12) return 'Good morning';
+    if (hr < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   const [activeTab, setActiveTab] = useState<AlumniTab>(() => {
     const savedTab = localStorage.getItem('alumniActiveTab');
     return (savedTab as AlumniTab) || 'overview';
@@ -668,7 +675,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                         {initials}
                       </div>
                       <div>
-                        <h1 className="font-sora text-xl font-extrabold text-white">Good morning, {name.split(' ')[0]} 👋</h1>
+                        <h1 className="font-sora text-xl font-extrabold text-white">{getGreeting()}, {name.split(' ')[0]} 👋</h1>
                         <p className="text-[11px] text-slate-400 font-medium">{college} · {company}</p>
                       </div>
                     </div>

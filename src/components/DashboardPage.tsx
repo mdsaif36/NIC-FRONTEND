@@ -22,6 +22,13 @@ const getNextResetDate = () => {
   return `${day} ${month} ${year}`;
 };
 
+export const getGreeting = () => {
+  const hr = new Date().getHours();
+  if (hr < 12) return 'Good morning';
+  if (hr < 17) return 'Good afternoon';
+  return 'Good evening';
+};
+
 interface DashboardPageProps {
   id: number;
   role: 'seeker' | 'alumni';
@@ -837,7 +844,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             <div className="px-6 md:px-8 py-4 flex items-center justify-between text-left w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
               <div>
                 <h2 className="font-sora text-white text-sm font-extrabold leading-tight">
-                  {activeTab === 'dashboard'      && <>{`Good morning, ${profileName.split(' ')[0]} 👋`}</>}
+                  {activeTab === 'dashboard'      && <>{`${getGreeting()}, ${profileName.split(' ')[0]} 👋`}</>}
                   {activeTab === 'referral_board' && 'Referral Board'}
                   {activeTab === 'network'        && 'Discover Network'}
                   {activeTab === 'my_referrals'   && 'My Referrals'}

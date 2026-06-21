@@ -36,6 +36,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
   const [role, setRole] = useState<'seeker' | 'alumni'>('seeker');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Grab the Render backend URL from Vercel's environment variables
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
   React.useEffect(() => {
     setIsLogin(initialMode === 'login');
     setShowPassword(false);
@@ -82,7 +85,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
         setError(null);
         setIsSubmitting(true);
         try {
-          const res = await fetch('/api/auth/github', {
+          const res = await fetch(`${API_BASE_URL}/api/auth/github`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -105,7 +108,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
       
       handleGithubCallback();
     }
-  }, [onSuccess]);
+  }, [onSuccess, API_BASE_URL]);
 
   // Testimonial slider state
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -157,7 +160,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
         ? { token: 'mock-google-token', role, email: emailInput, name: nameInput }
         : { code: 'mock-github-code', role, email: emailInput, name: nameInput };
 
-      const res = await fetch(endpoint, {
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -188,7 +191,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
           setError(null);
           setIsSubmitting(true);
           try {
-            const res = await fetch('/api/auth/google', {
+            const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -233,7 +236,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
 
     try {
       if (isLogin) {
-        const res = await fetch('/api/auth/login', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -253,7 +256,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
           setError(data.message || 'Login failed. Please check your credentials.');
         }
       } else {
-        const res = await fetch('/api/auth/signup', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

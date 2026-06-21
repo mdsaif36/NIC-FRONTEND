@@ -543,11 +543,20 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
                       {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                   </div>
+                  <div className="flex justify-end mt-2">
+                    <a 
+                      href="/forgot-password" 
+                      onClick={(e) => { e.preventDefault(); onForgotPassword(); }}
+                      className="text-[10px] text-purple-400 font-bold hover:text-purple-300 transition"
+                    >
+                      Forgot Password?
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Checkbox and Forgot Password (Sign In mode only) */}
+            {/* Checkbox (Sign In mode only) */}
             {isLogin && (
               <div className="flex items-center justify-between text-[11px] py-0.5 select-none shrink-0 text-slate-400">
                 <label className="flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-white transition">
@@ -557,9 +566,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
                   />
                   Keep me logged in
                 </label>
-                <a href="#forgot" onClick={(e) => { e.preventDefault(); onForgotPassword(); }} className="text-rose-450 hover:text-rose-350 font-semibold underline transition">
-                  Forgot Password
-                </a>
               </div>
             )}
 

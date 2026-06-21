@@ -29,9 +29,10 @@ interface AuthPageProps {
   initialMode?: 'login' | 'signup';
   onSuccess: (token: string, user: { id: number, role: 'seeker' | 'alumni', name: string, company?: string, college?: string }) => void;
   onBack: () => void;
+  onForgotPassword: () => void;
 }
 
-export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuccess, onBack }) => {
+export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuccess, onBack, onForgotPassword }) => {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [role, setRole] = useState<'seeker' | 'alumni'>('seeker');
   const [showPassword, setShowPassword] = useState(false);
@@ -556,7 +557,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
                   />
                   Keep me logged in
                 </label>
-                <a href="#forgot" onClick={(e) => e.preventDefault()} className="text-rose-450 hover:text-rose-350 font-semibold underline transition">
+                <a href="#forgot" onClick={(e) => { e.preventDefault(); onForgotPassword(); }} className="text-rose-450 hover:text-rose-350 font-semibold underline transition">
                   Forgot Password
                 </a>
               </div>

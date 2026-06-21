@@ -9,9 +9,11 @@ import { AuthPage } from './components/AuthPage';
 import { DashboardPage } from './components/DashboardPage';
 import { About } from './components/About';
 import { LandingLeaderboard } from './components/LandingLeaderboard';
+import { ForgotPassword } from './components/ForgotPassword';
+import { ResetPassword } from './components/ResetPassword';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard'>('landing');
+  const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard' | 'forgot-password' | 'reset-password'>('landing');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [session, setSession] = useState<{
     id: number;
@@ -22,10 +24,40 @@ function App() {
   } | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
+  // Simple path routing and popstate listener
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/forgot-password') {
+        setCurrentPage('forgot-password');
+      } else if (path === '/reset-password') {
+        setCurrentPage('reset-password');
+      } else if (path === '/login' || path === '/signup') {
+        setAuthMode(path === '/signup' ? 'signup' : 'login');
+        setCurrentPage('auth');
+      } else {
+        const hasToken = !!localStorage.getItem('token');
+        setCurrentPage(hasToken ? 'dashboard' : 'landing');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Check user session on startup
   useEffect(() => {
     const checkSession = async () => {
       const token = localStorage.getItem('token');
+      const path = window.location.pathname;
+
+      // Determine initial page from path first (for refreshes/direct links)
+      if (path === '/forgot-password') {
+        setCurrentPage('forgot-password');
+      } else if (path === '/reset-password') {
+        setCurrentPage('reset-password');
+      }
+
       if (token) {
         try {
           const res = await fetch('/api/auth/me', {
@@ -42,12 +74,28 @@ function App() {
               college: user.college,
               company: user.company
             });
-            setCurrentPage('dashboard');
+            // Only redirect to dashboard if we're not on reset or forgot password routes
+            if (path !== '/forgot-password' && path !== '/reset-password') {
+              setCurrentPage('dashboard');
+            }
           } else {
             localStorage.removeItem('token');
+            if (path !== '/forgot-password' && path !== '/reset-password') {
+              setCurrentPage('landing');
+            }
           }
         } catch (err) {
           console.error("Error validating session:", err);
+        }
+      } else {
+        // No token, check if we should be on landing page
+        if (path !== '/forgot-password' && path !== '/reset-password') {
+          if (path === '/login' || path === '/signup') {
+            setAuthMode(path === '/signup' ? 'signup' : 'login');
+            setCurrentPage('auth');
+          } else {
+            setCurrentPage('landing');
+          }
         }
       }
       setIsInitializing(false);
@@ -60,21 +108,34 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'instant' as any });
   }, [currentPage]);
 
-  const handleNavigate = (page: 'landing' | 'auth', mode: 'login' | 'signup' = 'login') => {
+  const handleNavigate = (page: 'landing' | 'auth' | 'forgot-password' | 'reset-password', mode: 'login' | 'signup' = 'login') => {
     setAuthMode(mode);
     setCurrentPage(page);
+
+    // Update browser URL history
+    if (page === 'forgot-password') {
+      window.history.pushState({}, '', '/forgot-password');
+    } else if (page === 'reset-password') {
+      window.history.pushState({}, '', '/reset-password' + window.location.search);
+    } else if (page === 'landing') {
+      window.history.pushState({}, '', '/');
+    } else if (page === 'auth') {
+      window.history.pushState({}, '', mode === 'signup' ? '/signup' : '/login');
+    }
   };
 
   const handleAuthSuccess = (token: string, user: { id: number; role: 'seeker' | 'alumni'; name: string; company?: string; college?: string }) => {
     localStorage.setItem('token', token);
     setSession(user);
     setCurrentPage('dashboard');
+    window.history.pushState({}, '', '/dashboard');
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     setSession(null);
     setCurrentPage('landing');
+    window.history.pushState({}, '', '/');
   };
 
   if (isInitializing) {
@@ -179,7 +240,16 @@ function App() {
             initialMode={authMode}
             onSuccess={handleAuthSuccess}
             onBack={() => handleNavigate('landing')}
+            onForgotPassword={() => handleNavigate('forgot-password')}
           />
+        )}
+
+        {currentPage === 'forgot-password' && (
+          <ForgotPassword onBack={() => handleNavigate('auth', 'login')} />
+        )}
+
+        {currentPage === 'reset-password' && (
+          <ResetPassword onBack={() => handleNavigate('auth', 'login')} />
         )}
 
         {currentPage === 'dashboard' && session && (

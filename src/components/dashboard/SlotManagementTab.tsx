@@ -109,7 +109,7 @@ const generateSlots = (
           startTime: fmt12(curH, curM),
           endTime: fmt12(realEndH, realEndM),
           type: mType.label,
-          status: Math.random() < 0.18 ? 'booked' : 'available',
+          status: 'available', // <--- REMOVED THE MATH.RANDOM DUMMY LOGIC HERE
         });
 
         dayCount++;

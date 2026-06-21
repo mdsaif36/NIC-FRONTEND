@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   BarChart2, CheckCircle, Clock, FileText, Check,
   Home, LogOut, MessageSquare, ShieldCheck, TrendingUp,
-  UserCheck, Users, XCircle, Send, Bell, Star,
+  UserCheck, Users, XCircle, Send, Bell, 
   ChevronRight, Activity, Award, Zap, Settings, Briefcase,
   Sparkles, Filter, Trash2, Plus, ChevronDown, X, Download,
   CalendarDays, Trophy
@@ -822,11 +822,11 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
               <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
                 <h3 className="font-sora text-sm font-extrabold text-white mb-5">Recent Activity</h3>
                 <div className="space-y-4">
-                  {(pendingCount === 0 && referralsSentCount === 0) ? [
+                  {((pendingCount === 0 && referralsSentCount === 0) ? [
                     { icon: ShieldCheck, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20', text: 'Welcome to your Alumni Dashboard! Wait for students to send requests.', time: 'Just now' }
                   ] : [
                     { icon: Activity, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', text: `You currently have ${pendingCount} pending requests to review.`, time: 'Recently' }
-                  ].map((item, i) => {
+                  ]).map((item, i) => {
                     const Icon = item.icon;
                     return (
                       <div key={i} className="flex items-start gap-4">
@@ -1380,6 +1380,34 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+
+              {/* Recent activity feed (Analytics version) */}
+              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
+                <div className="flex items-center gap-2 mb-5">
+                  <Award className="w-4 h-4 text-amber-400" />
+                  <h3 className="font-sora text-sm font-extrabold text-white">Recent Activity</h3>
+                </div>
+                <div className="space-y-4">
+                  {((pendingCount === 0 && referralsSentCount === 0) ? [
+                    { icon: ShieldCheck, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20', text: 'Welcome to your Alumni Dashboard! Wait for students to send requests.', time: 'Just now' }
+                  ] : [
+                    { icon: Activity, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', text: `You currently have ${pendingCount} pending requests to review.`, time: 'Recently' }
+                  ]).map((item, i) => {
+                    const Icon = item.icon;
+                    return (
+                      <div key={i} className="flex items-start gap-4">
+                        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 ${item.color}`}>
+                          <Icon className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-slate-300 leading-relaxed">{item.text}</p>
+                          <span className="text-[9px] text-slate-600 font-medium">{item.time}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

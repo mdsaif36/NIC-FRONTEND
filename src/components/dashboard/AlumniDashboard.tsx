@@ -697,10 +697,10 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
               {/* Metrics row */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Total Referrals', value: referralsSentCount, sub: '+3 this month', icon: Send, color: 'emerald', glow: 'rgba(16,185,129,0.15)' },
-                  { label: 'Interviews Secured', value: 12, sub: '42.8% conversion', icon: TrendingUp, color: 'blue', glow: 'rgba(59,130,246,0.15)' },
+                  { label: 'Total Referrals', value: referralsSentCount, sub: 'Active this month', icon: Send, color: 'emerald', glow: 'rgba(16,185,129,0.15)' },
+                  { label: 'Interviews Secured', value: 0, sub: '0% conversion', icon: TrendingUp, color: 'blue', glow: 'rgba(59,130,246,0.15)' },
                   { label: 'Pending Queue', value: pendingCount, sub: 'Needs your review', icon: Clock, color: 'amber', glow: 'rgba(245,158,11,0.15)' },
-                  { label: 'Success Rate', value: '86%', sub: 'Above platform avg', icon: Award, color: 'purple', glow: 'rgba(168,85,247,0.15)' },
+                  { label: 'Success Rate', value: '0%', sub: 'Platform avg: 40%', icon: Award, color: 'purple', glow: 'rgba(168,85,247,0.15)' },
                 ].map((metric) => {
                   const Icon = metric.icon;
                   const colorMap: Record<string, { text: string; bg: string; border: string }> = {
@@ -784,8 +784,8 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                   <div className="space-y-4">
                     {[
                       { label: 'Referrals sent', value: referralsSentCount, max: 50, color: 'bg-emerald-500' },
-                      { label: 'Interviews secured', value: 12, max: 30, color: 'bg-blue-500' },
-                      { label: 'Offers received', value: 7, max: 15, color: 'bg-purple-500' },
+                      { label: 'Interviews secured', value: 0, max: 30, color: 'bg-blue-500' },
+                      { label: 'Offers received', value: 0, max: 15, color: 'bg-purple-500' },
                     ].map((item) => (
                       <div key={item.label}>
                         <div className="flex items-center justify-between mb-1.5">
@@ -822,11 +822,10 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
               <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
                 <h3 className="font-sora text-sm font-extrabold text-white mb-5">Recent Activity</h3>
                 <div className="space-y-4">
-                  {[
-                    { icon: UserCheck, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', text: 'You referred Amit Sharma for SWE Intern at Google', time: '2 hours ago' },
-                    { icon: MessageSquare, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20', text: 'New message from Karan Patel about Associate SWE role', time: '5 hours ago' },
-                    { icon: Star, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20', text: 'You received a 5-star review from a referred candidate', time: '1 day ago' },
-                    { icon: Bell, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20', text: '2 new referral requests from IIT Delhi juniors', time: '2 days ago' },
+                  {(pendingCount === 0 && referralsSentCount === 0) ? [
+                    { icon: ShieldCheck, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20', text: 'Welcome to your Alumni Dashboard! Wait for students to send requests.', time: 'Just now' }
+                  ] : [
+                    { icon: Activity, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', text: `You currently have ${pendingCount} pending requests to review.`, time: 'Recently' }
                   ].map((item, i) => {
                     const Icon = item.icon;
                     return (
@@ -1160,10 +1159,10 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
               {/* Header metrics */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Referred Pipeline', value: (1 + localRequests.filter(r => r.status === 'referred').length), sub: 'Active candidates', color: 'blue' },
-                  { label: 'Interview Stage', value: 2, sub: 'Recruiter screen passed', color: 'emerald' },
-                  { label: 'Offers Secured', value: 1, sub: 'Success stories', color: 'purple' },
-                  { label: 'Avg Interview Conversion', value: '50%', sub: '2x platform average', color: 'amber' },
+                  { label: 'Referred Pipeline', value: localRequests.filter(r => r.status === 'referred').length, sub: 'Active candidates', color: 'blue' },
+                  { label: 'Interview Stage', value: 0, sub: 'Recruiter screen passed', color: 'emerald' },
+                  { label: 'Offers Secured', value: 0, sub: 'Success stories', color: 'purple' },
+                  { label: 'Avg Interview Conversion', value: '0%', sub: 'Platform average', color: 'amber' },
                 ].map((stat, i) => (
                   <div key={i} className="p-5 rounded-2xl border border-white/5 bg-white/[0.02]">
                     <span className="block font-sora text-2xl font-black text-white">{stat.value}</span>
@@ -1187,51 +1186,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
                 <div className="space-y-4">
                   {[
-                    {
-                      id: 201,
-                      seekerId: 8, // Seeded Amit Sharma ID
-                      name: "Amit Sharma",
-                      college: "IIT Delhi",
-                      role: "Software Engineer Intern",
-                      stage: "Interviewing",
-                      date: "Referred May 14, 2026",
-                      progress: 75,
-                      details: "Technical Round 2 scheduled for June 8"
-                    },
-                    {
-                      id: 202,
-                      seekerId: 9, // Seeded Karan Patel ID
-                      name: "Karan Patel",
-                      college: "BITS Pilani",
-                      role: "Associate SWE",
-                      stage: "Offered",
-                      date: "Referred May 10, 2026",
-                      progress: 100,
-                      details: "Offer letter sent! Base: ₹24LPA"
-                    },
-                    {
-                      id: 203,
-                      seekerId: 7, // Fallback to Arjun Singh
-                      name: "Riya Sen",
-                      college: "NIT Trichy",
-                      role: "Product Manager Intern",
-                      stage: "Referred",
-                      date: "Referred May 28, 2026",
-                      progress: 25,
-                      details: "Resume parsed & sent to hiring manager"
-                    },
-                    {
-                      id: 204,
-                      seekerId: 7, // Fallback to Arjun Singh
-                      name: "Sneha Rao",
-                      college: "IIT Bombay",
-                      role: "Data Scientist",
-                      stage: "Under Review",
-                      date: "Referred May 22, 2026",
-                      progress: 50,
-                      details: "Passed initial technical screening"
-                    },
-                    // Newly referred ones from localRequests
                     ...localRequests
                       .filter(r => r.status === 'referred')
                       .map((req, idx) => ({
@@ -1316,6 +1270,12 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                       </div>
                     </div>
                   ))}
+                  
+                  {localRequests.filter(r => r.status === 'referred').length === 0 && (
+                    <div className="text-center py-10 border border-white/5 border-dashed rounded-xl">
+                      <p className="text-xs text-slate-500">No candidates referred yet. Check your inbox!</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1353,9 +1313,9 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
               {/* Top metrics */}
               <div className="grid sm:grid-cols-3 gap-6">
                 {[
-                  { label: 'Total Referrals', value: referralsSentCount, delta: '+3 this month', positive: true, icon: Send },
-                  { label: 'Conversion Rate', value: '42.8%', delta: '+5% vs last month', positive: true, icon: TrendingUp },
-                  { label: 'Avg Response Time', value: '< 1 day', delta: 'Top 10% of mentors', positive: true, icon: Activity },
+                  { label: 'Total Referrals', value: referralsSentCount, delta: 'Active this month', positive: true, icon: Send },
+                  { label: 'Conversion Rate', value: '0%', delta: 'No data yet', positive: true, icon: TrendingUp },
+                  { label: 'Avg Response Time', value: 'N/A', delta: 'No data yet', positive: true, icon: Activity },
                 ].map((m) => {
                   const Icon = m.icon;
                   return (
@@ -1382,11 +1342,11 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                   <h3 className="font-sora text-sm font-extrabold text-white mb-6">Referral Funnel</h3>
                   <div className="space-y-4">
                     {[
-                      { stage: 'Requests Received', value: referralsSentCount + 10, pct: 100, color: 'bg-blue-500' },
-                      { stage: 'Reviewed',          value: referralsSentCount + 5,  pct: 87,  color: 'bg-purple-500' },
-                      { stage: 'Referred',          value: referralsSentCount,       pct: 72,  color: 'bg-emerald-500' },
-                      { stage: 'Interviewed',       value: 12,                       pct: 43,  color: 'bg-amber-500' },
-                      { stage: 'Offers',            value: 7,                        pct: 25,  color: 'bg-rose-500' },
+                      { stage: 'Requests Received', value: localRequests.length, pct: localRequests.length > 0 ? 100 : 0, color: 'bg-blue-500' },
+                      { stage: 'Reviewed',          value: localRequests.filter(r => r.status !== 'pending').length,  pct: localRequests.length > 0 ? 100 : 0,  color: 'bg-purple-500' },
+                      { stage: 'Referred',          value: referralsSentCount,       pct: localRequests.length > 0 ? 100 : 0,  color: 'bg-emerald-500' },
+                      { stage: 'Interviewed',       value: 0,                       pct: 0,  color: 'bg-amber-500' },
+                      { stage: 'Offers',            value: 0,                        pct: 0,  color: 'bg-rose-500' },
                     ].map((row) => (
                       <div key={row.stage} className="flex items-center gap-4">
                         <span className="w-32 text-[10px] text-slate-400 font-medium shrink-0">{row.stage}</span>
@@ -1423,33 +1383,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 </div>
               </div>
 
-              {/* Placed Success Stories */}
-              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
-                <div className="flex items-center gap-2 mb-5">
-                  <Award className="w-4 h-4 text-amber-400" />
-                  <h3 className="font-sora text-sm font-extrabold text-white">Referred Success Stories</h3>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {[
-                    { name: "Amit Sharma", college: "IIT Delhi", company: "Google", role: "SWE Intern", text: "Got referred by Arjun, cleared 3 rounds of interviews, and received an offer for the Summer 2026 cohort!", date: "Placed 2 weeks ago" },
-                    { name: "Sneha Rao", college: "IIT Bombay", company: "Microsoft", role: "Data Scientist", text: "Verified referral helped bypass the resume screening stage completely. Offer accepted!", date: "Placed 1 month ago" },
-                    { name: "Karan Patel", college: "BITS Pilani", company: "Amazon", role: "Software Engineer", text: "Referred for SWE-1. Received full preparation support from mentor and cracked the system design round.", date: "Placed 3 months ago" },
-                    { name: "Riya Sen", college: "NIT Trichy", company: "Google", role: "Product Manager Intern", text: "Arjun reviewed my mock interview pitches and referred me to the APM hiring manager. Joined this May!", date: "Placed 1 week ago" }
-                  ].map((story, i) => (
-                    <div key={i} className="p-4 rounded-xl border border-white/5 bg-black/45 flex flex-col justify-between hover:border-white/10 transition">
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-bold text-xs text-white">{story.name}</span>
-                          <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{story.company}</span>
-                        </div>
-                        <span className="block text-[9px] text-slate-500 font-semibold">{story.college} · {story.role}</span>
-                        <p className="text-[11px] text-slate-400 mt-2 leading-relaxed italic">"{story.text}"</p>
-                      </div>
-                      <span className="block text-[8px] text-slate-600 font-medium text-right mt-3">{story.date}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
 
@@ -1682,12 +1615,12 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                       </div>
                       <div className="w-px h-8 bg-white/5" />
                       <div className="text-center">
-                        <span className="block font-sora text-lg font-bold text-white">12</span>
+                        <span className="block font-sora text-lg font-bold text-white">0</span>
                         <span className="block text-[9px] text-slate-555 uppercase tracking-wide">Interviews</span>
                       </div>
                       <div className="w-px h-8 bg-white/5" />
                       <div className="text-center">
-                        <span className="block font-sora text-lg font-bold text-white">4.9</span>
+                        <span className="block font-sora text-lg font-bold text-white">New</span>
                         <span className="block text-[9px] text-slate-555 uppercase tracking-wide">Rating</span>
                       </div>
                     </div>

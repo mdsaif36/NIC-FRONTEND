@@ -476,6 +476,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   const [myReferralsSubTab, setMyReferralsSubTab] = useState<'candidates' | 'posts'>('candidates');
   const [alumniPosts, setAlumniPosts] = useState<any[]>([]);
   const [isPostingReferral, setIsPostingReferral] = useState(false);
+  const [selectedJdFile, setSelectedJdFile] = useState<File | null>(null);
   const [newPostData, setNewPostData] = useState({
     company: '',
     role: '',
@@ -526,25 +527,33 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     
     try {
       const token = localStorage.getItem('token');
-      const skillsArray = newPostData.skills 
-        ? newPostData.skills.split(',').map(s => s.trim()).filter(Boolean)
-        : [];
+      const formData = new FormData();
+      formData.append('company', newPostData.company);
+      formData.append('role', newPostData.role);
+      formData.append('location', newPostData.location);
+      formData.append('jobType', newPostData.jobType);
+      formData.append('domain', newPostData.domain);
+      formData.append('skills', newPostData.skills);
+      formData.append('description', newPostData.description);
+      formData.append('deadline', newPostData.deadline);
+      formData.append('slots', String(newPostData.slots));
+      
+      if (selectedJdFile) {
+        formData.append('pdf', selectedJdFile);
+      }
         
       const res = await fetch(`${API_BASE_URL}/api/referral-posts`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...newPostData,
-          skills: skillsArray
-        })
+        body: formData
       });
       
       if (res.ok) {
         alert("Referral post created successfully!");
         setIsPostingReferral(false);
+        setSelectedJdFile(null);
         setNewPostData({
           company: currentUser?.company || '',
           role: '',
@@ -575,10 +584,12 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE_URL}/api/referral-posts/${postId}`, {
-        method: 'DELETE',
+        method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({ isActive: false })
       });
       if (res.ok) {
         alert("Referral post closed successfully.");
@@ -589,6 +600,30 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     } catch (error) {
       console.error("Error closing post:", error);
       alert("Error closing post.");
+    }
+  };
+
+  const handleDeletePost = async (postId: number) => {
+    if (!confirm("Are you sure you want to permanently delete this referral post? This action cannot be undone.")) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/referral-posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        alert("Referral post permanently deleted.");
+        fetchAlumniPosts();
+      } else {
+        alert("Failed to delete referral post.");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Error deleting post.");
     }
   };
 
@@ -1476,6 +1511,17 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                               </span>
                             ))}
                           </div>
+                          {post.jdFileName && (
+                            <a
+                              href={`${API_BASE_URL}/api/referrals/files/${post.jdFileName}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-teal-500/10 border border-teal-500/15 text-[8.5px] font-bold text-teal-400 hover:bg-teal-500/20 transition mb-3"
+                            >
+                              <FileText className="w-2.5 h-2.5" />
+                              View Criteria PDF
+                            </a>
+                          )}
                         </div>
 
                         <div className="flex items-center justify-between pt-4 border-t border-white/5 text-[10px] text-slate-500">
@@ -1485,15 +1531,25 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                             <span>Applied: <strong className="text-white">{post.applyCount}</strong></span>
                           </div>
 
-                          {post.isActive && (
+                          <div className="flex gap-2">
+                            {post.isActive && (
+                              <button
+                                type="button"
+                                onClick={() => handleClosePost(post.id)}
+                                className="px-2.5 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-[9px] font-bold uppercase tracking-wider text-rose-450 hover:bg-rose-500/20 transition"
+                              >
+                                Close Post
+                              </button>
+                            )}
                             <button
                               type="button"
-                              onClick={() => handleClosePost(post.id)}
-                              className="px-2.5 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-[9px] font-bold uppercase tracking-wider text-rose-450 hover:bg-rose-500/20 transition"
+                              onClick={() => handleDeletePost(post.id)}
+                              className="px-2.5 py-1 rounded bg-red-650/15 border border-red-650/30 text-[9px] font-bold uppercase tracking-wider text-red-400 hover:bg-red-650/25 transition flex items-center gap-1"
                             >
-                              Close Post
+                              <Trash2 className="w-2.5 h-2.5" />
+                              Delete
                             </button>
-                          )}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -2873,6 +2929,31 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                     placeholder="Brief details about the role, referral process, or criteria..."
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 resize-none"
                   />
+                </div>
+
+                {/* PDF Job Description Upload */}
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Upload Job Description / Criteria PDF (Optional)
+                  </label>
+                  <div className="relative flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-350">
+                    <span className="truncate max-w-[200px]">
+                      {selectedJdFile ? selectedJdFile.name : 'No PDF selected'}
+                    </span>
+                    <label className="cursor-pointer px-2.5 py-1 rounded bg-white/10 hover:bg-white/15 text-[10px] font-bold text-white transition">
+                      Choose PDF
+                      <input
+                        type="file"
+                        accept=".pdf,.docx,.doc"
+                        onChange={e => {
+                          if (e.target.files && e.target.files[0]) {
+                            setSelectedJdFile(e.target.files[0]);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 {/* Submit button */}

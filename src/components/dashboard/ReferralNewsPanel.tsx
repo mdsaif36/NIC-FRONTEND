@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Newspaper, Search, Filter, RefreshCw, Building2, Bell,
   Flame, BarChart2, Globe, Code, Layers, Palette, Megaphone, Database,
-  SlidersHorizontal, X
+  SlidersHorizontal, X, FileText, Upload
 } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 
@@ -21,6 +21,7 @@ interface ReferralPost {
   viewCount: number;
   applyCount: number;
   createdAt: string;
+  jdFileName?: string;
   alumni: {
     id: number;
     name: string;
@@ -43,6 +44,8 @@ interface ReferralNewsPanelProps {
   alumniNetwork?: any[];
   setSelectedAlumni?: (alumni: any) => void;
   setActiveTab?: (tab: any) => void;
+  fetchProfile?: () => Promise<void>;
+  fetchRequests?: () => Promise<void>;
 }
 
 // Helpers
@@ -96,10 +99,12 @@ const AVATAR_GRADIENTS = [
 // Main Component
 export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
   seekerId: _seekerId,
-  resumeName: _resumeName = 'arjun_resume.pdf',
-  alumniNetwork = [],
-  setSelectedAlumni,
-  setActiveTab,
+  resumeName,
+  alumniNetwork: _alumniNetwork = [],
+  setSelectedAlumni: _setSelectedAlumni,
+  setActiveTab: _setActiveTab,
+  fetchProfile,
+  fetchRequests,
 }) => {
   const [posts, setPosts]           = useState<ReferralPost[]>([]);
   const [stats, setStats]           = useState<Stats | null>(null);
@@ -111,6 +116,124 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
   const [showFilters, setShowFilters] = useState(false);
   const [tickerOffset, setTickerOffset] = useState(0);
   const tickerRef = useRef<HTMLDivElement>(null);
+
+  // Apply Modal state
+  const [selectedPost, setSelectedPost] = useState<ReferralPost | null>(null);
+  const [pitchMessage, setPitchMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [localResumeName, setLocalResumeName] = useState(resumeName || '');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLocalResumeName(resumeName || '');
+  }, [resumeName]);
+
+  const handleUploadResumeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (ext !== 'pdf') {
+      setUploadError('Only PDF files are allowed here.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('File size exceeds 5MB limit.');
+      return;
+    }
+
+    setUploadError(null);
+    setIsUploadingResume(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('resume', file);
+
+      const response = await fetch(`${API_BASE_URL}/api/users/resume/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      setLocalResumeName(data.resumeName || file.name);
+      
+      if (fetchProfile) {
+        await fetchProfile();
+      }
+      
+      alert('Resume uploaded successfully!');
+    } catch (err: any) {
+      console.error(err);
+      setUploadError('Error uploading file. Please try again.');
+    } finally {
+      setIsUploadingResume(false);
+    }
+  };
+
+  const handleApply = async () => {
+    if (!selectedPost) return;
+    if (!localResumeName) {
+      alert("Please upload your PDF resume first.");
+      return;
+    }
+    if (!pitchMessage.trim()) {
+      alert("Please add a note/pitch for the alumni.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem('token');
+      
+      const resRequest = await fetch(`${API_BASE_URL}/api/requests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          alumniId: selectedPost.alumni.id,
+          targetRole: `${selectedPost.company} - ${selectedPost.role}`,
+          timeline: selectedPost.deadline || 'ASAP',
+          pitchMessage: pitchMessage
+        })
+      });
+
+      if (!resRequest.ok) {
+        const errData = await resRequest.json();
+        throw new Error(errData.message || 'Failed to submit referral request.');
+      }
+
+      await fetch(`${API_BASE_URL}/api/referral-posts/${selectedPost.id}/apply`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      alert("Referral request submitted successfully!");
+      fetchPosts();
+      if (fetchRequests) {
+        await fetchRequests();
+      }
+      setSelectedPost(null);
+      setPitchMessage('');
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "Failed to apply.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const domains = ['All', 'Engineering', 'Data & AI', 'Product', 'Design', 'Marketing', 'Finance', 'Operations'];
   const jobTypes = ['All', 'Full-time', 'Internship', 'Contract'];
@@ -459,32 +582,7 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
               <div
                 key={post.id}
                 onClick={() => {
-                  if (setSelectedAlumni && setActiveTab) {
-                    const alumni = alumniNetwork.find(
-                      a => a.id === post.alumni.id || a.name.toLowerCase() === post.alumni.name.toLowerCase()
-                    );
-                    if (alumni) {
-                      setSelectedAlumni(alumni);
-                      setActiveTab('network');
-                    } else {
-                      // Fallback matching details
-                      const fallbackAlumni = {
-                        id: post.alumni.id,
-                        name: post.alumni.name,
-                        initial: post.alumni.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
-                        role: post.alumni.jobTitle,
-                        company: post.alumni.company,
-                        college: post.alumni.college,
-                        color: avatarGrad,
-                        responseRate: '92%',
-                        responseSpeed: 'Within a day',
-                        successRate: `${post.applyCount} Referred`,
-                        bio: `Alumni member working at ${post.alumni.company} as ${post.alumni.jobTitle}. Aligned with the referral board post for ${post.role}.`
-                      };
-                      setSelectedAlumni(fallbackAlumni);
-                      setActiveTab('network');
-                    }
-                  }
+                  setSelectedPost(post);
                 }}
                 className="group relative p-5 rounded-2xl bg-[#08080d]/90 border border-white/5 hover:border-purple-500/20 transition-all duration-300 cursor-pointer hover:shadow-[0_4px_30px_rgba(168,85,247,0.08)] overflow-hidden flex flex-col justify-between animate-fade-in"
               >
@@ -494,10 +592,25 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
                 {/* Top row: News type badge & urgent banner */}
                 <div>
                   <div className="flex items-center justify-between mb-3.5">
-                    <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold uppercase tracking-widest">
-                      <Newspaper className="w-2.5 h-2.5" />
-                      {post.domain} News
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold uppercase tracking-widest">
+                        <Newspaper className="w-2.5 h-2.5" />
+                        {post.domain} News
+                      </span>
+                      {post.jdFileName && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(`${API_BASE_URL}/api/referrals/files/${post.jdFileName}`, '_blank');
+                          }}
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-[9px] font-bold text-teal-400 hover:bg-teal-500/20 transition-all cursor-pointer z-20"
+                        >
+                          <FileText className="w-2.5 h-2.5" />
+                          View PDF
+                        </button>
+                      )}
+                    </div>
                     {isUrgent && days > 0 && (
                       <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-[9px] font-bold text-rose-400">
                         <Flame className="w-2.5 h-2.5 animate-pulse" />
@@ -560,13 +673,167 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
                   </div>
 
                   <span className="text-[10px] font-bold text-purple-400 group-hover:text-purple-300 flex items-center gap-1 transition-colors">
-                    View Profile
+                    Apply Now
                     <span className="transform group-hover:translate-x-0.5 transition-transform">→</span>
                   </span>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Quick Apply Modal */}
+      {selectedPost && (
+        <div className="fixed inset-0 bg-[#020205]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#09090f] border border-white/10 rounded-2xl max-w-lg w-full overflow-hidden shadow-[0_10px_50px_rgba(0,0,0,0.5)] animate-fade-in flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-white/5">
+              <div>
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest text-left block">Quick Apply</span>
+                <h3 className="font-sora text-base font-bold text-white mt-0.5 text-left">Request Referral</h3>
+              </div>
+              <button 
+                onClick={() => { setSelectedPost(null); setPitchMessage(''); setUploadError(null); }}
+                className="p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/5 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 space-y-4 overflow-y-auto flex-1 font-inter text-xs text-slate-300 text-left">
+              {/* Role Info */}
+              <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-2">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="font-sora text-sm font-bold text-white">{selectedPost.role}</h4>
+                    <p className="text-slate-400 font-medium">{selectedPost.company} · {selectedPost.location}</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-[9px] font-bold text-purple-400 uppercase">
+                    {selectedPost.jobType}
+                  </span>
+                </div>
+                
+                {selectedPost.description && (
+                  <p className="text-slate-500 leading-relaxed pt-1.5 border-t border-white/5">
+                    {selectedPost.description}
+                  </p>
+                )}
+
+                {selectedPost.jdFileName && (
+                  <div className="pt-2 flex items-center justify-between">
+                    <span className="text-slate-500 text-[10px]">Attached Criteria / JD:</span>
+                    <button
+                      type="button"
+                      onClick={() => window.open(`${API_BASE_URL}/api/referrals/files/${selectedPost.jdFileName}`, '_blank')}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-teal-500/10 border border-teal-500/20 text-[10px] font-bold text-teal-400 hover:bg-teal-500/20 transition-all"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      View Criteria PDF
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Poster info */}
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-700 flex items-center justify-center text-[10px] font-black text-white shrink-0">
+                  {selectedPost.alumni.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="block text-[11px] text-slate-350 font-semibold">{selectedPost.alumni.name}</span>
+                  <span className="block text-[10px] text-slate-500 truncate">{selectedPost.alumni.jobTitle} · {selectedPost.alumni.company}</span>
+                </div>
+              </div>
+
+              {/* PDF Resume upload zone */}
+              <div className="space-y-2">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Your Resume (PDF Only)</label>
+                
+                {localResumeName ? (
+                  <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/10">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <span className="font-mono text-slate-300 truncate text-[11px]">
+                        {localResumeName}
+                      </span>
+                    </div>
+                    <label className="cursor-pointer text-[10px] font-bold text-emerald-400 hover:text-emerald-300 hover:underline">
+                      Replace
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleUploadResumeFile}
+                        className="hidden"
+                        disabled={isUploadingResume}
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="p-5 rounded-xl border border-dashed border-white/10 hover:border-purple-500/30 bg-white/2 hover:bg-purple-500/5 transition flex flex-col items-center justify-center text-center relative group">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleUploadResumeFile}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      disabled={isUploadingResume}
+                    />
+                    <Upload className="w-6 h-6 text-slate-500 group-hover:text-purple-400 mb-2 transition-colors" />
+                    <span className="text-[11px] font-bold text-slate-450 group-hover:text-purple-300 transition-colors">
+                      Click to upload your PDF Resume
+                    </span>
+                    <span className="text-[9px] text-slate-600 mt-1">
+                      Max file size 5MB (Required)
+                    </span>
+                  </div>
+                )}
+
+                {isUploadingResume && (
+                  <p className="text-[10px] text-purple-400 animate-pulse">Uploading and AI-parsing resume, please wait...</p>
+                )}
+                {uploadError && (
+                  <p className="text-[10px] text-rose-400">{uploadError}</p>
+                )}
+              </div>
+
+              {/* Pitch message */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Pitch Message *
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={pitchMessage}
+                  onChange={e => setPitchMessage(e.target.value)}
+                  placeholder={`Briefly explain to ${selectedPost.alumni.name} why you are a great fit for this ${selectedPost.role} role at ${selectedPost.company}. Mention relevant skills/projects.`}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 resize-none placeholder:text-slate-600"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-white/5 flex gap-3">
+              <button
+                type="button"
+                onClick={handleApply}
+                disabled={isSubmitting || isUploadingResume || !localResumeName || !pitchMessage.trim()}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-95 text-white font-sora font-extrabold text-xs uppercase tracking-wider transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setSelectedPost(null); setPitchMessage(''); setUploadError(null); }}
+                className="flex-1 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-450 font-sora font-bold text-xs uppercase tracking-wider transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

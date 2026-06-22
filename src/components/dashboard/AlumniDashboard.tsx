@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   BarChart2, CheckCircle, Clock, FileText, Check,
   Home, LogOut, MessageSquare, ShieldCheck, TrendingUp,
@@ -470,6 +470,126 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   };
   const [collegeTierFilter, setCollegeTierFilter] = useState<'All' | 'Top-tier' | 'State' | 'Private'>('All');
   const [declineReasonOpenId, setDeclineReasonOpenId] = useState<number | null>(null);
+
+  // Referral posts state
+  const [myReferralsSubTab, setMyReferralsSubTab] = useState<'candidates' | 'posts'>('candidates');
+  const [alumniPosts, setAlumniPosts] = useState<any[]>([]);
+  const [isPostingReferral, setIsPostingReferral] = useState(false);
+  const [newPostData, setNewPostData] = useState({
+    company: '',
+    role: '',
+    location: 'Remote',
+    jobType: 'Full-time',
+    domain: 'Engineering',
+    skills: '',
+    description: '',
+    deadline: '',
+    slots: 1
+  });
+
+  useEffect(() => {
+    if (currentUser?.company) {
+      setNewPostData(prev => ({ ...prev, company: currentUser.company }));
+    }
+  }, [currentUser]);
+
+  const fetchAlumniPosts = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/referral-posts/my', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAlumniPosts(data);
+      }
+    } catch (err) {
+      console.error("Error fetching alumni posts:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'my_referrals') {
+      fetchAlumniPosts();
+    }
+  }, [activeTab, fetchAlumniPosts]);
+
+  const handleCreatePost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPostData.company || !newPostData.role) {
+      alert("Company and role are required.");
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const skillsArray = newPostData.skills 
+        ? newPostData.skills.split(',').map(s => s.trim()).filter(Boolean)
+        : [];
+        
+      const res = await fetch('/api/referral-posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...newPostData,
+          skills: skillsArray
+        })
+      });
+      
+      if (res.ok) {
+        alert("Referral post created successfully!");
+        setIsPostingReferral(false);
+        setNewPostData({
+          company: currentUser?.company || '',
+          role: '',
+          location: 'Remote',
+          jobType: 'Full-time',
+          domain: 'Engineering',
+          skills: '',
+          description: '',
+          deadline: '',
+          slots: 1
+        });
+        fetchAlumniPosts();
+        if (fetchProfile) fetchProfile();
+      } else {
+        const errData = await res.json();
+        alert(errData.message || "Failed to create referral post.");
+      }
+    } catch (error) {
+      console.error("Failed to post referral:", error);
+      alert("Error posting referral.");
+    }
+  };
+
+  const handleClosePost = async (postId: number) => {
+    if (!confirm("Are you sure you want to close this referral post? Seekers will no longer see it.")) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/referral-posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        alert("Referral post closed successfully.");
+        fetchAlumniPosts();
+      } else {
+        alert("Failed to close referral post.");
+      }
+    } catch (error) {
+      console.error("Error closing post:", error);
+      alert("Error closing post.");
+    }
+  };
 
   // Accounting tab settings
   const [monthlyLimit, setMonthlyLimit] = useState<number>(10);
@@ -1156,128 +1276,242 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
           ══════════════════════════════ */}
           {activeTab === 'my_referrals' && (
             <div className="space-y-6 animate-fade-in-up text-left">
-              {/* Header metrics */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { label: 'Referred Pipeline', value: localRequests.filter(r => r.status === 'referred').length, sub: 'Active candidates', color: 'blue' },
-                  { label: 'Interview Stage', value: 0, sub: 'Recruiter screen passed', color: 'emerald' },
-                  { label: 'Offers Secured', value: 0, sub: 'Success stories', color: 'purple' },
-                  { label: 'Avg Interview Conversion', value: '0%', sub: 'Platform average', color: 'amber' },
-                ].map((stat, i) => (
-                  <div key={i} className="p-5 rounded-2xl border border-white/5 bg-white/[0.02]">
-                    <span className="block font-sora text-2xl font-black text-white">{stat.value}</span>
-                    <span className="block text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-1">{stat.label}</span>
-                    <span className="block text-[10px] text-slate-400 mt-0.5 font-medium">{stat.sub}</span>
-                  </div>
-                ))}
+              {/* Sub-navigation bar */}
+              <div className="flex gap-2 p-1 rounded-xl bg-white/[0.02] border border-white/5 max-w-md">
+                <button
+                  type="button"
+                  onClick={() => setMyReferralsSubTab('candidates')}
+                  className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                    myReferralsSubTab === 'candidates'
+                      ? 'bg-white/[0.05] border border-white/10 text-white'
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  Referred Candidates
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMyReferralsSubTab('posts')}
+                  className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+                    myReferralsSubTab === 'posts'
+                      ? 'bg-white/[0.05] border border-white/10 text-white'
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  Referral Posts ({alumniPosts.length})
+                </button>
               </div>
 
-              {/* Candidate Pipeline list */}
-              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="font-sora text-sm font-extrabold text-white">Referred Candidates Tracking</h3>
-                    <p className="text-[10px] text-slate-500 mt-0.5">Real-time application pipeline tracking for your referrals</p>
+              {myReferralsSubTab === 'candidates' ? (
+                <>
+                  {/* Header metrics */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Referred Pipeline', value: localRequests.filter(r => r.status === 'referred').length, sub: 'Active candidates', color: 'blue' },
+                      { label: 'Interview Stage', value: 0, sub: 'Recruiter screen passed', color: 'emerald' },
+                      { label: 'Offers Secured', value: 0, sub: 'Success stories', color: 'purple' },
+                      { label: 'Avg Interview Conversion', value: '0%', sub: 'Platform average', color: 'amber' },
+                    ].map((stat, i) => (
+                      <div key={i} className="p-5 rounded-2xl border border-white/5 bg-white/[0.02]">
+                        <span className="block font-sora text-2xl font-black text-white">{stat.value}</span>
+                        <span className="block text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-1">{stat.label}</span>
+                        <span className="block text-[10px] text-slate-400 mt-0.5 font-medium">{stat.sub}</span>
+                      </div>
+                    ))}
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-                    Pipeline Active
-                  </span>
-                </div>
 
-                <div className="space-y-4">
-                  {[
-                    ...localRequests
-                      .filter(r => r.status === 'referred')
-                      .map((req, idx) => ({
-                        id: 300 + idx,
-                        seekerId: req.seekerId,
-                        name: req.studentName,
-                        college: getCandidateCollege(req),
-                        role: req.role,
-                        stage: "Referred",
-                        date: "Referred just now",
-                        progress: 25,
-                        details: "Candidate referred. Resume sent to recruiter pipeline."
-                      }))
-                  ].map((candidate) => (
-                    <div key={candidate.id} className="p-4 rounded-xl border border-white/5 bg-black/40 hover:border-white/10 transition-all duration-300">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        {/* Name & role */}
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-[11px] text-white">
-                            {candidate.name[0]}{candidate.name.split(' ')[1]?.[0] ?? ''}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-xs text-white">{candidate.name}</span>
-                              <span className="text-[9px] text-slate-500">· {candidate.college}</span>
+                  {/* Candidate Pipeline list */}
+                  <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className="font-sora text-sm font-extrabold text-white">Referred Candidates Tracking</h3>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Real-time application pipeline tracking for your referrals</p>
+                      </div>
+                      <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                        Pipeline Active
+                      </span>
+                    </div>
+
+                    <div className="space-y-4">
+                      {[
+                        ...localRequests
+                          .filter(r => r.status === 'referred')
+                          .map((req, idx) => ({
+                            id: 300 + idx,
+                            seekerId: req.seekerId,
+                            name: req.studentName,
+                            college: getCandidateCollege(req),
+                            role: req.role,
+                            stage: "Referred",
+                            date: "Referred just now",
+                            progress: 25,
+                            details: "Candidate referred. Resume sent to recruiter pipeline."
+                          }))
+                      ].map((candidate) => (
+                        <div key={candidate.id} className="p-4 rounded-xl border border-white/5 bg-black/40 hover:border-white/10 transition-all duration-300">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            {/* Name & role */}
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-[11px] text-white">
+                                {candidate.name[0]}{candidate.name.split(' ')[1]?.[0] ?? ''}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-xs text-white">{candidate.name}</span>
+                                  <span className="text-[9px] text-slate-550">· {candidate.college}</span>
+                                </div>
+                                <span className="block text-[10px] text-slate-400 mt-0.5">{candidate.role}</span>
+                              </div>
                             </div>
-                            <span className="block text-[10px] text-slate-400 mt-0.5">{candidate.role}</span>
+
+                            {/* Progress visualizer */}
+                            <div className="flex-1 md:max-w-xs space-y-1.5">
+                              <div className="flex items-center justify-between text-[9px] font-bold">
+                                <span className="text-slate-500 uppercase tracking-wide">Progress</span>
+                                <span className="text-slate-300">{candidate.progress}%</span>
+                              </div>
+                              <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full rounded-full bg-gradient-to-r transition-all duration-500 ${
+                                    candidate.stage === 'Offered' ? 'from-purple-500 to-indigo-400' :
+                                    candidate.stage === 'Interviewing' ? 'from-blue-500 to-cyan-400' :
+                                    candidate.stage === 'Under Review' ? 'from-amber-500 to-yellow-400' :
+                                    'from-slate-600 to-slate-400'
+                                  }`} 
+                                  style={{ width: `${candidate.progress}%` }} 
+                                />
+                              </div>
+                            </div>
+
+                            {/* Status detail */}
+                            <div className="text-left md:text-right shrink-0 flex flex-col items-start md:items-end gap-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wide border ${
+                                  candidate.stage === 'Offered' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
+                                  candidate.stage === 'Interviewing' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
+                                  candidate.stage === 'Under Review' ? 'bg-amber-500/10 border-amber-500/25 text-amber-400' :
+                                  'bg-slate-500/10 border-slate-500/25 text-slate-400'
+                                }`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${
+                                    candidate.stage === 'Offered' ? 'bg-purple-400 animate-pulse' :
+                                    candidate.stage === 'Interviewing' ? 'bg-blue-400 animate-pulse' :
+                                    candidate.stage === 'Under Review' ? 'bg-amber-400 animate-pulse' :
+                                    'bg-slate-400'
+                                  }`} />
+                                  {candidate.stage}
+                                </span>
+                                
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab('messages');
+                                    setActiveChatId(candidate.seekerId);
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg border border-white/10 bg-white/5 text-slate-355 hover:text-white hover:bg-white/10 text-[9.5px] font-bold uppercase tracking-wider transition flex items-center gap-1"
+                                >
+                                  <MessageSquare className="w-3 h-3" />
+                                  Chat
+                                </button>
+                              </div>
+                              <span className="block text-[9.5px] text-slate-500 font-medium">{candidate.details}</span>
+                            </div>
                           </div>
                         </div>
-
-                        {/* Progress visualizer */}
-                        <div className="flex-1 md:max-w-xs space-y-1.5">
-                          <div className="flex items-center justify-between text-[9px] font-bold">
-                            <span className="text-slate-500 uppercase tracking-wide">Progress</span>
-                            <span className="text-slate-300">{candidate.progress}%</span>
-                          </div>
-                          <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full bg-gradient-to-r transition-all duration-500 ${
-                                candidate.stage === 'Offered' ? 'from-purple-500 to-indigo-400' :
-                                candidate.stage === 'Interviewing' ? 'from-blue-500 to-cyan-400' :
-                                candidate.stage === 'Under Review' ? 'from-amber-500 to-yellow-400' :
-                                'from-slate-600 to-slate-400'
-                              }`} 
-                              style={{ width: `${candidate.progress}%` }} 
-                            />
-                          </div>
+                      ))}
+                      
+                      {localRequests.filter(r => r.status === 'referred').length === 0 && (
+                        <div className="text-center py-10 border border-white/5 border-dashed rounded-xl">
+                          <p className="text-xs text-slate-500">No candidates referred yet. Check your inbox!</p>
                         </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-6">
+                  {/* Action Bar */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-sora text-sm font-extrabold text-white">Your Referral Posts</h3>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Manage job openings you can refer seekers for</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsPostingReferral(true)}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90 transition-all font-sora font-extrabold text-xs text-white uppercase tracking-wider"
+                    >
+                      Post Referral
+                    </button>
+                  </div>
 
-                        {/* Status detail */}
-                        <div className="text-left md:text-right shrink-0 flex flex-col items-start md:items-end gap-1.5">
-                          <div className="flex items-center gap-2">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wide border ${
-                              candidate.stage === 'Offered' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
-                              candidate.stage === 'Interviewing' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
-                              candidate.stage === 'Under Review' ? 'bg-amber-500/10 border-amber-500/25 text-amber-400' :
-                              'bg-slate-500/10 border-slate-500/25 text-slate-400'
+                  {/* Posts Grid */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {alumniPosts.map((post) => (
+                      <div key={post.id} className="p-5 rounded-2xl border border-white/5 bg-[#08080d]/80 hover:border-white/10 transition-all duration-300 relative overflow-hidden flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-start justify-between gap-2 mb-3">
+                            <div>
+                              <span className="inline-block px-2 py-0.5 rounded bg-white/5 text-[9px] font-bold text-slate-400 border border-white/5 mb-1.5 uppercase">
+                                {post.jobType}
+                              </span>
+                              <h4 className="font-sora font-bold text-sm text-white">{post.role}</h4>
+                              <p className="text-xs text-slate-400">{post.company} · {post.location}</p>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded-full text-[8.5px] font-black uppercase tracking-wider border ${
+                              post.isActive
+                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                : 'bg-slate-500/10 border-slate-500/20 text-slate-400'
                             }`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${
-                                candidate.stage === 'Offered' ? 'bg-purple-400 animate-pulse' :
-                                candidate.stage === 'Interviewing' ? 'bg-blue-400 animate-pulse' :
-                                candidate.stage === 'Under Review' ? 'bg-amber-400 animate-pulse' :
-                                'bg-slate-400'
-                              }`} />
-                              {candidate.stage}
+                              {post.isActive ? 'Active' : 'Closed'}
                             </span>
-                            
+                          </div>
+
+                          <p className="text-[11px] text-slate-400 line-clamp-3 mb-4">{post.description || 'No description provided.'}</p>
+
+                          <div className="flex flex-wrap gap-1.5 mb-4">
+                            {post.skills && post.skills.map((skill: string, sIdx: number) => (
+                              <span key={sIdx} className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/15 text-[8.5px] font-bold text-purple-400">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-4 border-t border-white/5 text-[10px] text-slate-500">
+                          <div className="flex gap-4">
+                            <span>Slots: <strong className="text-white">{post.slots}</strong></span>
+                            <span>Views: <strong className="text-white">{post.viewCount}</strong></span>
+                            <span>Applied: <strong className="text-white">{post.applyCount}</strong></span>
+                          </div>
+
+                          {post.isActive && (
                             <button
                               type="button"
-                              onClick={() => {
-                                setActiveTab('messages');
-                                setActiveChatId(candidate.seekerId);
-                              }}
-                              className="px-2.5 py-1 rounded-lg border border-white/10 bg-white/5 text-slate-355 hover:text-white hover:bg-white/10 text-[9.5px] font-bold uppercase tracking-wider transition flex items-center gap-1"
+                              onClick={() => handleClosePost(post.id)}
+                              className="px-2.5 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-[9px] font-bold uppercase tracking-wider text-rose-450 hover:bg-rose-500/20 transition"
                             >
-                              <MessageSquare className="w-3 h-3" />
-                              Chat
+                              Close Post
                             </button>
-                          </div>
-                          <span className="block text-[9.5px] text-slate-500 font-medium">{candidate.details}</span>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  
-                  {localRequests.filter(r => r.status === 'referred').length === 0 && (
-                    <div className="text-center py-10 border border-white/5 border-dashed rounded-xl">
-                      <p className="text-xs text-slate-500">No candidates referred yet. Check your inbox!</p>
-                    </div>
-                  )}
+                    ))}
+
+                    {alumniPosts.length === 0 && (
+                      <div className="col-span-2 text-center py-16 border border-white/5 border-dashed rounded-2xl">
+                        <p className="text-xs text-slate-500">You haven't posted any active referrals yet.</p>
+                        <button
+                          type="button"
+                          onClick={() => setIsPostingReferral(true)}
+                          className="mt-3 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-white/20 text-xs font-semibold transition"
+                        >
+                          Create your first referral post
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -2491,6 +2725,173 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
               )}
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ── Create Referral Post Modal ── */}
+      {isPostingReferral && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div 
+            className="w-full max-w-lg bg-[#07070a] border border-white/10 rounded-2xl p-6 shadow-2xl relative text-left flex flex-col justify-between animate-fade-in-up"
+            onClick={e => e.stopPropagation()}
+          >
+            <div>
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest font-space-grotesk">Post a New Referral Slot</span>
+                <button 
+                  onClick={() => setIsPostingReferral(false)} 
+                  className="p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/5 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleCreatePost} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Company */}
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Company *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newPostData.company}
+                      onChange={e => setNewPostData(prev => ({ ...prev, company: e.target.value }))}
+                      placeholder="e.g. Google"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+
+                  {/* Role */}
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Job Role *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newPostData.role}
+                      onChange={e => setNewPostData(prev => ({ ...prev, role: e.target.value }))}
+                      placeholder="e.g. Frontend Engineer"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Job Type */}
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Job Type</label>
+                    <select
+                      value={newPostData.jobType}
+                      onChange={e => setNewPostData(prev => ({ ...prev, jobType: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    >
+                      <option value="Full-time" className="bg-[#0a0a0f]">Full-time</option>
+                      <option value="Internship" className="bg-[#0a0a0f]">Internship</option>
+                      <option value="Contract" className="bg-[#0a0a0f]">Contract</option>
+                    </select>
+                  </div>
+
+                  {/* Domain */}
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Domain</label>
+                    <select
+                      value={newPostData.domain}
+                      onChange={e => setNewPostData(prev => ({ ...prev, domain: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    >
+                      <option value="Engineering" className="bg-[#0a0a0f]">Engineering</option>
+                      <option value="Data & AI" className="bg-[#0a0a0f]">Data & AI</option>
+                      <option value="Product" className="bg-[#0a0a0f]">Product</option>
+                      <option value="Design" className="bg-[#0a0a0f]">Design</option>
+                      <option value="Marketing" className="bg-[#0a0a0f]">Marketing</option>
+                      <option value="Finance" className="bg-[#0a0a0f]">Finance</option>
+                      <option value="Operations" className="bg-[#0a0a0f]">Operations</option>
+                    </select>
+                  </div>
+
+                  {/* Slots */}
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Available Slots</label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={newPostData.slots}
+                      onChange={e => setNewPostData(prev => ({ ...prev, slots: Number(e.target.value) }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Location */}
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Location</label>
+                    <input
+                      type="text"
+                      value={newPostData.location}
+                      onChange={e => setNewPostData(prev => ({ ...prev, location: e.target.value }))}
+                      placeholder="e.g. Remote, Bangalore"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+
+                  {/* Deadline */}
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Application Deadline</label>
+                    <input
+                      type="date"
+                      value={newPostData.deadline}
+                      onChange={e => setNewPostData(prev => ({ ...prev, deadline: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+                </div>
+
+                {/* Required Skills */}
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Required Skills (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={newPostData.skills}
+                    onChange={e => setNewPostData(prev => ({ ...prev, skills: e.target.value }))}
+                    placeholder="e.g. React, Node.js, TypeScript"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Description / Requirements</label>
+                  <textarea
+                    rows={3}
+                    value={newPostData.description}
+                    onChange={e => setNewPostData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Brief details about the role, referral process, or criteria..."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 resize-none"
+                  />
+                </div>
+
+                {/* Submit button */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-655 hover:opacity-95 text-white font-sora font-bold text-xs uppercase tracking-wider transition shadow-md"
+                  >
+                    Post Referral
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsPostingReferral(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 font-sora font-bold text-xs uppercase tracking-wider transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

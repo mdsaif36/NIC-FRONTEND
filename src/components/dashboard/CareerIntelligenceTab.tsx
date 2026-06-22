@@ -17,6 +17,8 @@ interface CareerIntelligenceTabProps {
   fetchProfile: () => Promise<void>;
 }
 
+import { API_BASE_URL } from '../../config';
+
 export const CareerIntelligenceTab: React.FC<CareerIntelligenceTabProps> = ({
   currentUser,
   fetchProfile
@@ -63,7 +65,7 @@ export const CareerIntelligenceTab: React.FC<CareerIntelligenceTabProps> = ({
     setRefreshSuccess(false);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/users/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -97,7 +99,7 @@ export const CareerIntelligenceTab: React.FC<CareerIntelligenceTabProps> = ({
     setUploadError(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/users/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +156,7 @@ export const CareerIntelligenceTab: React.FC<CareerIntelligenceTabProps> = ({
       const formData = new FormData();
       formData.append('resume', file);
 
-      const response = await fetch('/api/users/resume/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/users/resume/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

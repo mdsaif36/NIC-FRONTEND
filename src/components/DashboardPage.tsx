@@ -12,6 +12,7 @@ import { ProfileTab } from './dashboard/ProfileTab';
 import { AlumniDashboard } from './dashboard/AlumniDashboard';
 import { ReferralNewsPanel } from './dashboard/ReferralNewsPanel';
 import { CareerIntelligenceTab } from './dashboard/CareerIntelligenceTab';
+import { API_BASE_URL } from '../config';
 
 const getNextResetDate = () => {
   const now = new Date();
@@ -126,7 +127,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const fetchProfile = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -161,7 +162,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const fetchAlumni = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/users/alumni', {
+      const res = await fetch(`${API_BASE_URL}/api/users/alumni`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -194,7 +195,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     const token = localStorage.getItem('token');
     try {
       if (role === 'seeker') {
-        const res = await fetch('/api/requests/seeker', {
+        const res = await fetch(`${API_BASE_URL}/api/requests/seeker`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -215,7 +216,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           setRequestsList(formatted);
         }
       } else {
-        const res = await fetch('/api/requests/alumni', {
+        const res = await fetch(`${API_BASE_URL}/api/requests/alumni`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -245,7 +246,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const fetchConversations = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/messages/conversations', {
+      const res = await fetch(`${API_BASE_URL}/api/messages/conversations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -260,7 +261,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const fetchChatHistory = useCallback(async (partnerId: number) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`/api/messages/history/${partnerId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/messages/history/${partnerId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -356,7 +357,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     if (!alumniForRequest) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/requests', {
+      const res = await fetch(`${API_BASE_URL}/api/requests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -385,7 +386,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     if (!newMessageText.trim() || activeChatId === null) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/messages', {
+      const res = await fetch(`${API_BASE_URL}/api/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -421,7 +422,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     if (activeChatId === null) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/messages/schedule', {
+      const res = await fetch(`${API_BASE_URL}/api/messages/schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -457,7 +458,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const handleSaveProfile = async (updatedFields: any) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/users/profile', {
+      const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -498,7 +499,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/users/profile', {
+      const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -557,7 +558,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const handleAction = async (requestId: number, action: 'referred' | 'info' | 'declined') => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`/api/requests/${requestId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/requests/${requestId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

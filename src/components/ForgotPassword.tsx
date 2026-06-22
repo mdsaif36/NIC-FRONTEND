@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 
 interface ForgotPasswordProps {
   onBack: () => void;
@@ -9,7 +10,7 @@ export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+  // API_BASE_URL is imported from centralized config
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

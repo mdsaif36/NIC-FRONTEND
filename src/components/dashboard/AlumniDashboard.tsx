@@ -10,6 +10,7 @@ import {
 import { MessagesTab } from './MessagesTab.js';
 import { SlotManagementTab } from './SlotManagementTab.js';
 import { LeaderboardTab } from './LeaderboardTab.js';
+import { API_BASE_URL } from '../../config';
 
 interface AlumniDashboardProps {
   college: string;
@@ -114,7 +115,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     setIsLoadingReviews(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/users/verify/admin-list', {
+      const res = await fetch(`${API_BASE_URL}/api/users/verify/admin-list`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -137,7 +138,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   const handleAdminApprove = async (userId: number) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`/api/users/verify/admin-approve/${userId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/verify/admin-approve/${userId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -158,7 +159,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   const handleAdminReject = async (userId: number) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`/api/users/verify/admin-reject/${userId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/verify/admin-reject/${userId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -212,7 +213,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
       .filter(s => s.length > 0);
 
     try {
-      const res = await fetch('/api/users/profile', {
+      const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -252,7 +253,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     if (!compEmailInput) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/users/verify/email-request', {
+      const res = await fetch(`${API_BASE_URL}/api/users/verify/email-request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -282,7 +283,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     if (!otpInput) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/users/verify/email-confirm', {
+      const res = await fetch(`${API_BASE_URL}/api/users/verify/email-confirm`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -318,7 +319,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
         setTimeout(async () => {
           const token = localStorage.getItem('token');
           try {
-            const res = await fetch('/api/users/verify/linkedin', {
+            const res = await fetch(`${API_BASE_URL}/api/users/verify/linkedin`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -367,7 +368,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     formData.append('screenshot', selectedScreenshot);
 
     try {
-      const res = await fetch('/api/users/verify/manual-upload', {
+      const res = await fetch(`${API_BASE_URL}/api/users/verify/manual-upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -442,7 +443,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/users/resume/download/${seekerId}/${encodeURIComponent(resumeName)}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/resume/download/${seekerId}/${encodeURIComponent(resumeName)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -496,7 +497,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   const fetchAlumniPosts = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/referral-posts/my', {
+      const res = await fetch(`${API_BASE_URL}/api/referral-posts/my`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -529,7 +530,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
         ? newPostData.skills.split(',').map(s => s.trim()).filter(Boolean)
         : [];
         
-      const res = await fetch('/api/referral-posts', {
+      const res = await fetch(`${API_BASE_URL}/api/referral-posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -573,7 +574,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     }
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/referral-posts/${postId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/referral-posts/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

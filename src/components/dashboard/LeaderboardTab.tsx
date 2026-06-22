@@ -5,6 +5,7 @@ import {
   ArrowUp, ArrowDown, Minus,
   Calendar, Gift, BadgeCheck, Timer, Building2
 } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -487,7 +488,7 @@ export const LeaderboardTab: React.FC = () => {
     const fetchLeaderboard = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('/api/users/leaderboard', {
+        const res = await fetch(`${API_BASE_URL}/api/users/leaderboard`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

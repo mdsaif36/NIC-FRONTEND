@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 
 interface ResetPasswordProps {
   onBack: () => void;
@@ -13,7 +14,7 @@ export const ResetPassword: React.FC<ResetPasswordProps> = ({ onBack }) => {
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get('token');
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+  // API_BASE_URL is imported from centralized config
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

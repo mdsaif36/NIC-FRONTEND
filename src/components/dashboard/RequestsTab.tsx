@@ -2,6 +2,7 @@ import React from 'react';
 import {
   FileText, X, Star
 } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 
 interface RequestsTabProps {
   expandedRequest: any | null;
@@ -51,7 +52,7 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
     setSubmitError(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/requests/${expandedRequest.id}/rate`, {
+      const response = await fetch(`${API_BASE_URL}/api/requests/${expandedRequest.id}/rate`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

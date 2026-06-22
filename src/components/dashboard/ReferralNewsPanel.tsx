@@ -4,6 +4,7 @@ import {
   Flame, BarChart2, Globe, Code, Layers, Palette, Megaphone, Database,
   SlidersHorizontal, X
 } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 
 // Types
 interface ReferralPost {
@@ -125,7 +126,7 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
       if (jobTypeFilter !== 'All') params.set('jobType', jobTypeFilter);
       if (companyFilter !== 'All') params.set('company', companyFilter);
 
-      const res = await fetch(`/api/referral-posts?${params.toString()}`, {
+      const res = await fetch(`${API_BASE_URL}/api/referral-posts?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -142,7 +143,7 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
   const fetchStats = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/referral-posts/stats', {
+      const res = await fetch(`${API_BASE_URL}/api/referral-posts/stats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setStats(await res.json());

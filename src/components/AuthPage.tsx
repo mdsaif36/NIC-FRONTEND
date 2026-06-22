@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { Mail, Lock, User, Briefcase, GraduationCap, ChevronLeft, ChevronRight, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 interface Testimonial {
@@ -37,8 +38,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
   const [role, setRole] = useState<'seeker' | 'alumni'>('seeker');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Grab the Render backend URL from Vercel's environment variables
-  const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+  // API_BASE_URL is imported from centralized config
 
   React.useEffect(() => {
     setIsLogin(initialMode === 'login');

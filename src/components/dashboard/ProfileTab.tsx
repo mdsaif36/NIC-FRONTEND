@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Activity, Briefcase, Calendar, CheckCircle, CheckSquare, Edit, FileText, Fingerprint, Globe, Lock, Network, Plus, Send, Settings, ShieldCheck, TrendingUp, X, UploadCloud, Check, Trash2, Download
 } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 
 
 const dbName = "NexInCampus_ResumesDB";
@@ -191,7 +192,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     setLoadingActivity(true);
     
     const token = localStorage.getItem('token');
-    fetch(`/api/users/activity/${userId}`, {
+    fetch(`${API_BASE_URL}/api/users/activity/${userId}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -308,7 +309,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   const handleDownloadResume = async (name: string) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/users/resume/download/${userId}/${encodeURIComponent(name)}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/resume/download/${userId}/${encodeURIComponent(name)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -354,7 +355,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     });
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/users/resume/download/${userId}/${encodeURIComponent(name)}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/resume/download/${userId}/${encodeURIComponent(name)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -459,7 +460,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     setResumesHistory(history);
     const token = localStorage.getItem('token');
     try {
-      await fetch('/api/users/profile', {
+      await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -552,7 +553,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       const formData = new FormData();
       formData.append('resume', file);
 
-      const response = await fetch('/api/users/resume/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/users/resume/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

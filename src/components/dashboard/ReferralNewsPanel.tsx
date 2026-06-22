@@ -613,9 +613,21 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
                         </button>
                       )}
                     </div>
-                    {isUrgent && days > 0 && (
+                    {post.applyCount >= post.slots ? (
+                      <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-[9px] font-bold text-rose-400 uppercase tracking-wider">
+                        Slots Full
+                      </span>
+                    ) : days < 0 ? (
+                      <span className="px-2 py-0.5 rounded-full bg-slate-500/10 border border-slate-500/20 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        Expired
+                      </span>
+                    ) : isUrgent ? (
                       <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-[9px] font-bold text-rose-400">
                         <Flame className="w-2.5 h-2.5 animate-pulse" />
+                        {days}d left
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400">
                         {days}d left
                       </span>
                     )}
@@ -637,6 +649,10 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
                         <span className="text-white/10">·</span>
                         <span className={`text-[9.5px] font-bold px-1.5 py-px rounded border ${JOB_TYPE_COLORS[post.jobType] || JOB_TYPE_COLORS['Full-time']}`}>
                           {post.jobType}
+                        </span>
+                        <span className="text-white/10">·</span>
+                        <span className={`text-[10.5px] font-bold ${post.applyCount >= post.slots ? 'text-rose-400' : 'text-slate-450'}`}>
+                          {post.applyCount >= post.slots ? 'Slots Full' : `Applicants: ${post.applyCount}/${post.slots}`}
                         </span>
                       </div>
                     </div>
@@ -712,6 +728,17 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
               {modalStage === 'view' ? (
                 <>
                   {/* View stage: show all info */}
+                  {selectedPost.applyCount >= selectedPost.slots && (
+                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] font-semibold text-center mb-3">
+                      ⚠️ This referral slot is currently full. No more requests can be submitted.
+                    </div>
+                  )}
+                  {daysUntil(selectedPost.deadline) < 0 && (
+                    <div className="p-3 rounded-xl bg-slate-500/10 border border-slate-500/20 text-slate-400 text-[11px] font-semibold text-center mb-3">
+                      ⚠️ This referral post has expired.
+                    </div>
+                  )}
+
                   <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
@@ -728,11 +755,11 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
                         Domain: {selectedPost.domain}
                       </span>
                       <span className="px-2 py-0.5 rounded bg-white/5 text-[9px] text-slate-400 border border-white/5 font-semibold">
-                        Slots: {selectedPost.slots}
+                        Applicants: {selectedPost.applyCount} / {selectedPost.slots}
                       </span>
                       {selectedPost.deadline && (
                         <span className="px-2 py-0.5 rounded bg-white/5 text-[9px] text-slate-400 border border-white/5 font-semibold">
-                          Deadline: {selectedPost.deadline}
+                          Deadline: {selectedPost.deadline} ({daysUntil(selectedPost.deadline) >= 0 ? `${daysUntil(selectedPost.deadline)}d left` : 'Expired'})
                         </span>
                       )}
                     </div>
@@ -877,13 +904,31 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
             <div className="p-5 border-t border-white/5 flex gap-3">
               {modalStage === 'view' ? (
                 <>
-                  <button
-                    type="button"
-                    onClick={() => setModalStage('apply')}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-95 text-white font-sora font-extrabold text-xs uppercase tracking-wider transition shadow-md"
-                  >
-                    Request Referral
-                  </button>
+                  {selectedPost.applyCount >= selectedPost.slots ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="flex-1 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-sora font-extrabold text-[11px] uppercase tracking-wider cursor-not-allowed text-center"
+                    >
+                      Slots Full
+                    </button>
+                  ) : daysUntil(selectedPost.deadline) < 0 ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="flex-1 py-2.5 rounded-xl bg-slate-500/10 border border-slate-500/20 text-slate-500 font-sora font-extrabold text-[11px] uppercase tracking-wider cursor-not-allowed text-center"
+                    >
+                      Referral Expired
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setModalStage('apply')}
+                      className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-95 text-white font-sora font-extrabold text-xs uppercase tracking-wider transition shadow-md"
+                    >
+                      Request Referral
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => { setSelectedPost(null); setPitchMessage(''); setUploadError(null); }}

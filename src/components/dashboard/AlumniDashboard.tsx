@@ -486,7 +486,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     domain: 'Engineering',
     skills: '',
     description: '',
-    deadline: '',
+    activeDays: 7,
     slots: 1
   });
 
@@ -526,50 +526,55 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
       return;
     }
     
-    try {
-      const token = localStorage.getItem('token');
-      const formData = new FormData();
-      formData.append('company', newPostData.company);
-      formData.append('role', newPostData.role);
-      formData.append('location', newPostData.location);
-      formData.append('jobType', newPostData.jobType);
-      formData.append('domain', newPostData.domain);
-      formData.append('skills', newPostData.skills);
-      formData.append('description', newPostData.description);
-      formData.append('deadline', newPostData.deadline);
-      formData.append('slots', String(newPostData.slots));
-      
-      if (selectedJdFile) {
-        formData.append('pdf', selectedJdFile);
-      }
+      try {
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        formData.append('company', newPostData.company);
+        formData.append('role', newPostData.role);
+        formData.append('location', newPostData.location);
+        formData.append('jobType', newPostData.jobType);
+        formData.append('domain', newPostData.domain);
+        formData.append('skills', newPostData.skills);
+        formData.append('description', newPostData.description);
         
-      const res = await fetch(`${API_BASE_URL}/api/referral-posts`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-      
-      if (res.ok) {
-        const post = await res.json();
-        setCreatedPostSuccess(post);
-        setIsPostingReferral(false);
-        setSelectedJdFile(null);
-        setNewPostData({
-          company: currentUser?.company || '',
-          role: '',
-          location: 'Remote',
-          jobType: 'Full-time',
-          domain: 'Engineering',
-          skills: '',
-          description: '',
-          deadline: '',
-          slots: 1
+        const deadlineDate = new Date();
+        deadlineDate.setDate(deadlineDate.getDate() + (newPostData.activeDays || 7));
+        const deadlineStr = deadlineDate.toISOString().split('T')[0];
+        formData.append('deadline', deadlineStr);
+        
+        formData.append('slots', String(newPostData.slots));
+        
+        if (selectedJdFile) {
+          formData.append('pdf', selectedJdFile);
+        }
+          
+        const res = await fetch(`${API_BASE_URL}/api/referral-posts`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
         });
-        fetchAlumniPosts();
-        if (fetchProfile) fetchProfile();
-      } else {
+        
+        if (res.ok) {
+          const post = await res.json();
+          setCreatedPostSuccess(post);
+          setIsPostingReferral(false);
+          setSelectedJdFile(null);
+          setNewPostData({
+            company: currentUser?.company || '',
+            role: '',
+            location: 'Remote',
+            jobType: 'Full-time',
+            domain: 'Engineering',
+            skills: '',
+            description: '',
+            activeDays: 7,
+            slots: 1
+          });
+          fetchAlumniPosts();
+          if (fetchProfile) fetchProfile();
+        } else {
         const errData = await res.json();
         alert(errData.message || "Failed to create referral post.");
       }
@@ -2897,13 +2902,15 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                     />
                   </div>
 
-                  {/* Deadline */}
+                  {/* Active Duration in Days */}
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Application Deadline</label>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Active Duration (Days) *</label>
                     <input
-                      type="date"
-                      value={newPostData.deadline}
-                      onChange={e => setNewPostData(prev => ({ ...prev, deadline: e.target.value }))}
+                      type="number"
+                      min={1}
+                      required
+                      value={newPostData.activeDays}
+                      onChange={e => setNewPostData(prev => ({ ...prev, activeDays: Number(e.target.value) }))}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
                     />
                   </div>

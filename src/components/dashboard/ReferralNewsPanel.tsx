@@ -46,6 +46,7 @@ interface ReferralNewsPanelProps {
   setActiveTab?: (tab: any) => void;
   fetchProfile?: () => Promise<void>;
   fetchRequests?: () => Promise<void>;
+  refreshTrigger?: number;
 }
 
 // Helpers
@@ -105,6 +106,7 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
   setActiveTab: _setActiveTab,
   fetchProfile,
   fetchRequests,
+  refreshTrigger,
 }) => {
   const [posts, setPosts]           = useState<ReferralPost[]>([]);
   const [stats, setStats]           = useState<Stats | null>(null);
@@ -276,7 +278,7 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
     }
   }, []);
 
-  useEffect(() => { fetchPosts(); }, [fetchPosts]);
+  useEffect(() => { fetchPosts(); }, [fetchPosts, refreshTrigger]);
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
   // Auto-refresh every 60s

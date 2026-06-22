@@ -57,6 +57,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [activeToast, setActiveToast] = useState<any | null>(null);
+  const [referralTrigger, setReferralTrigger] = useState(0);
 
   // Profile data (Screen 6)
   const [profileName, setProfileName] = useState(name);
@@ -420,6 +421,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
       fetchUnreadCount();
       fetchNotifications();
       setActiveToast(notif);
+      if (notif.type === 'new_referral') {
+        setReferralTrigger(prev => prev + 1);
+      }
     });
 
     return () => {
@@ -995,6 +999,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 setActiveTab={setActiveTab as any}
                 fetchProfile={fetchProfile}
                 fetchRequests={fetchRequests}
+                refreshTrigger={referralTrigger}
               />
             )}
             {activeTab === 'network' && (
@@ -1286,44 +1291,39 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
 
         {/* ── Floating Toast Popup (Top Right Corner) ── */}
         {activeToast && (
-          <div className="fixed top-6 right-6 z-[60] w-full max-w-sm bg-[#09090f]/90 border border-purple-500/20 backdrop-blur-md rounded-2xl p-4 shadow-[0_10px_40px_rgba(168,85,247,0.15)] flex gap-3.5 animate-slide-in-right overflow-hidden relative group">
-            {/* Left glowing line */}
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-purple-500 to-blue-500" />
+          <div 
+            onClick={() => {
+              if (activeToast.actionUrl && activeToast.actionUrl.includes('tab=referral_board')) {
+                setActiveTab('referral_board');
+              } else if (activeToast.actionUrl && activeToast.actionUrl.includes('tab=my_referrals')) {
+                setActiveTab('my_referrals');
+              }
+              setActiveToast(null);
+            }}
+            className="fixed top-6 right-6 z-[60] w-72 bg-[#09090f]/95 border border-purple-500/30 backdrop-blur-md rounded-xl p-3 shadow-[0_8px_32px_rgba(168,85,247,0.2)] flex items-center justify-between gap-3 animate-slide-in-right cursor-pointer hover:border-purple-500/50 transition-all duration-300 select-none group"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-sm shrink-0">{activeToast.type === 'new_referral' ? '💼' : '🔔'}</span>
+              <div className="min-w-0">
+                <span className="block text-[9px] font-bold text-purple-400 uppercase tracking-wide leading-none">
+                  {activeToast.type === 'new_referral' ? 'New Referral Live' : activeToast.title}
+                </span>
+                <span className="block text-[11px] font-semibold text-white truncate mt-1 leading-tight group-hover:text-purple-300 transition-colors">
+                  {activeToast.type === 'new_referral' && activeToast.metadata
+                    ? `${activeToast.metadata.role} @ ${activeToast.metadata.company}`
+                    : activeToast.message}
+                </span>
+              </div>
+            </div>
             
-            <div className="text-xl shrink-0 select-none">
-              {activeToast.type === 'new_referral' ? '💼' : '🔔'}
-            </div>
-
-            <div className="flex-1 min-w-0 text-left">
-              <h4 className="font-sora text-xs font-bold text-white leading-tight">
-                {activeToast.title}
-              </h4>
-              <p className="text-[10.5px] text-slate-400 leading-relaxed mt-1 font-medium">
-                {activeToast.message}
-              </p>
-              
-              {activeToast.actionUrl && (
-                <button
-                  onClick={() => {
-                    if (activeToast.actionUrl.includes('tab=referral_board')) {
-                      setActiveTab('referral_board');
-                    } else if (activeToast.actionUrl.includes('tab=my_referrals')) {
-                      setActiveTab('my_referrals');
-                    }
-                    setActiveToast(null);
-                  }}
-                  className="mt-2.5 px-3 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 text-[9px] font-bold uppercase tracking-wider transition-all duration-200"
-                >
-                  View Details
-                </button>
-              )}
-            </div>
-
             <button 
-              onClick={() => setActiveToast(null)}
-              className="p-1 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition shrink-0 self-start"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveToast(null);
+              }}
+              className="p-1 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition shrink-0"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-3 h-3" />
             </button>
           </div>
         )}

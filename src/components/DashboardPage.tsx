@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper, Sparkles
+  Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper, Sparkles,
+  Bell, X
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { DashboardTab } from './dashboard/DashboardTab';
@@ -52,6 +53,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   }, [activeTab]);
 
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [activeToast, setActiveToast] = useState<any | null>(null);
 
   // Profile data (Screen 6)
   const [profileName, setProfileName] = useState(name);
@@ -282,13 +287,77 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     }
   }, [id]);
 
+  const fetchNotifications = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    } catch (err) {
+      console.error("Error loading notifications:", err);
+    }
+  }, []);
+
+  const fetchUnreadCount = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUnreadCount(data.count);
+      }
+    } catch (err) {
+      console.error("Error loading unread count:", err);
+    }
+  }, []);
+
+  const markAllNotificationsAsRead = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setUnreadCount(0);
+        fetchNotifications();
+      }
+    } catch (err) {
+      console.error("Error marking all read:", err);
+    }
+  };
+
+  const markNotificationAsRead = async (notificationId: number) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchUnreadCount();
+        fetchNotifications();
+      }
+    } catch (err) {
+      console.error("Error marking read:", err);
+    }
+  };
+
   // Load all initial data on mount
   useEffect(() => {
     fetchProfile();
     fetchAlumni();
     fetchRequests();
     fetchConversations();
-  }, [fetchProfile, fetchAlumni, fetchRequests, fetchConversations]);
+    fetchNotifications();
+    fetchUnreadCount();
+  }, [fetchProfile, fetchAlumni, fetchRequests, fetchConversations, fetchNotifications, fetchUnreadCount]);
 
   // Trigger history fetching when activeChatId changes
   useEffect(() => {
@@ -347,10 +416,26 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
       }
     });
 
+    socketInstance.on('notification', (notif: any) => {
+      fetchUnreadCount();
+      fetchNotifications();
+      setActiveToast(notif);
+    });
+
     return () => {
       socketInstance.disconnect();
     };
-  }, [id, role, fetchConversations, fetchRequests]);
+  }, [id, role, fetchConversations, fetchRequests, fetchNotifications, fetchUnreadCount]);
+
+  // Auto-clear active toast notifications after 6 seconds
+  useEffect(() => {
+    if (activeToast) {
+      const timer = setTimeout(() => {
+        setActiveToast(null);
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [activeToast]);
 
   // Seeker submits referral request
   const submitReferralRequest = async () => {
@@ -857,13 +942,30 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 </h2>
                 <p className="text-[10px] text-slate-600 font-medium mt-0.5">{profileCollege} · Seeker Dashboard</p>
               </div>
-              <button
-                onClick={() => setActiveTab('profile')}
-                className="text-[10px] text-purple-400 hover:text-purple-300 transition font-semibold flex items-center gap-1.5 bg-purple-500/10 px-3 py-1.5 rounded-full border border-purple-500/20 hover:border-purple-500/40"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-                {getProfileCompletion()}% Complete
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    setIsNotificationDrawerOpen(true);
+                    fetchNotifications();
+                    fetchUnreadCount();
+                  }}
+                  className="relative p-2 rounded-xl bg-white/5 border border-white/10 text-slate-350 hover:text-white hover:border-white/20 transition duration-200 flex items-center justify-center cursor-pointer active:scale-95"
+                >
+                  <Bell className="w-4 h-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-purple-500 text-white text-[8px] font-bold flex items-center justify-center animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className="text-[10px] text-purple-400 hover:text-purple-300 transition font-semibold flex items-center gap-1.5 bg-purple-500/10 px-3 py-1.5 rounded-full border border-purple-500/20 hover:border-purple-500/40"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+                  {getProfileCompletion()}% Complete
+                </button>
+              </div>
             </div>
           </header>
           <div className="flex-1 p-6 md:p-8 w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
@@ -1076,6 +1178,155 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             )}
           </div>
         </main>
+
+        {/* ── Notification Drawer (Right Side Slide-out) ── */}
+        {isNotificationDrawerOpen && (
+          <div className="fixed inset-0 z-50 flex justify-end">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
+              onClick={() => setIsNotificationDrawerOpen(false)}
+            />
+            {/* Drawer Body */}
+            <div className="relative w-full max-w-sm h-full bg-[#08080d]/95 border-l border-white/[0.08] backdrop-blur-xl shadow-2xl flex flex-col z-10 animate-slide-in-right p-6 text-left">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-white/5 mb-4 shrink-0">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-purple-400" />
+                  <h3 className="font-sora text-sm font-extrabold text-white">Notifications</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllNotificationsAsRead}
+                      className="text-[10px] font-bold text-purple-400 hover:text-purple-300 uppercase tracking-wider transition-colors mr-2 cursor-pointer"
+                    >
+                      Read All
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => setIsNotificationDrawerOpen(false)}
+                    className="p-1 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/5 transition"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Notifications List */}
+              <div className="flex-1 overflow-y-auto no-scrollbar space-y-3 pb-8 pr-1">
+                {notifications.length === 0 ? (
+                  <div className="text-center py-20 space-y-2 text-slate-550">
+                    <Bell className="w-8 h-8 mx-auto text-slate-600 opacity-40 animate-pulse" />
+                    <p className="text-xs font-semibold">All caught up!</p>
+                    <p className="text-[10px] text-slate-650">No new notifications at this time.</p>
+                  </div>
+                ) : (
+                  notifications.map((notif) => {
+                    const isUnread = !notif.isRead;
+                    // Icon mapping
+                    const iconMap: Record<string, string> = {
+                      new_referral: '💼',
+                      referral_received: '📬',
+                      referral_accepted: '✅',
+                      referral_declined: '❌',
+                      referral_referred: '🎉',
+                      referral_info: '💬',
+                      meeting_scheduled: '📅',
+                      system: '🔔',
+                      referral_rated: '⭐',
+                    };
+                    const typeIcon = iconMap[notif.type] || '🔔';
+
+                    return (
+                      <div
+                        key={notif.id}
+                        onClick={() => {
+                          markNotificationAsRead(notif.id);
+                          if (notif.actionUrl) {
+                            if (notif.actionUrl.includes('tab=referral_board')) {
+                              setActiveTab('referral_board');
+                            } else if (notif.actionUrl.includes('tab=my_referrals')) {
+                              setActiveTab('my_referrals');
+                            }
+                          }
+                          setIsNotificationDrawerOpen(false);
+                        }}
+                        className={`p-4 rounded-xl border transition-all duration-300 cursor-pointer text-left relative overflow-hidden group ${
+                          isUnread
+                            ? 'bg-purple-500/5 border-purple-500/15 hover:border-purple-500/25'
+                            : 'bg-white/2 border-white/5 hover:border-white/10'
+                        }`}
+                      >
+                        {isUnread && (
+                          <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-purple-400" />
+                        )}
+                        <div className="flex gap-3">
+                          <span className="text-base shrink-0 select-none mt-0.5">{typeIcon}</span>
+                          <div className="space-y-1">
+                            <h4 className="font-sora text-xs font-bold text-white group-hover:text-purple-300 transition-colors leading-tight">
+                              {notif.title}
+                            </h4>
+                            <p className="text-[10px] text-slate-400 leading-normal font-medium">
+                              {notif.message}
+                            </p>
+                            <span className="block text-[8px] text-slate-550 font-medium">
+                              {new Date(notif.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Floating Toast Popup (Top Right Corner) ── */}
+        {activeToast && (
+          <div className="fixed top-6 right-6 z-[60] w-full max-w-sm bg-[#09090f]/90 border border-purple-500/20 backdrop-blur-md rounded-2xl p-4 shadow-[0_10px_40px_rgba(168,85,247,0.15)] flex gap-3.5 animate-slide-in-right overflow-hidden relative group">
+            {/* Left glowing line */}
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-purple-500 to-blue-500" />
+            
+            <div className="text-xl shrink-0 select-none">
+              {activeToast.type === 'new_referral' ? '💼' : '🔔'}
+            </div>
+
+            <div className="flex-1 min-w-0 text-left">
+              <h4 className="font-sora text-xs font-bold text-white leading-tight">
+                {activeToast.title}
+              </h4>
+              <p className="text-[10.5px] text-slate-400 leading-relaxed mt-1 font-medium">
+                {activeToast.message}
+              </p>
+              
+              {activeToast.actionUrl && (
+                <button
+                  onClick={() => {
+                    if (activeToast.actionUrl.includes('tab=referral_board')) {
+                      setActiveTab('referral_board');
+                    } else if (activeToast.actionUrl.includes('tab=my_referrals')) {
+                      setActiveTab('my_referrals');
+                    }
+                    setActiveToast(null);
+                  }}
+                  className="mt-2.5 px-3 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 text-[9px] font-bold uppercase tracking-wider transition-all duration-200"
+                >
+                  View Details
+                </button>
+              )}
+            </div>
+
+            <button 
+              onClick={() => setActiveToast(null)}
+              className="p-1 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition shrink-0 self-start"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </section>
     );
   }

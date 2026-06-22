@@ -298,7 +298,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
 
   // Connect Socket.IO
   useEffect(() => {
-    const socketInstance = io({
+    const socketInstance = io('https://nic-backend-9q0n.onrender.com', {
       query: { userId: id }
     });
 

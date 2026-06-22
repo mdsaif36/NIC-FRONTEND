@@ -477,6 +477,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   const [alumniPosts, setAlumniPosts] = useState<any[]>([]);
   const [isPostingReferral, setIsPostingReferral] = useState(false);
   const [selectedJdFile, setSelectedJdFile] = useState<File | null>(null);
+  const [createdPostSuccess, setCreatedPostSuccess] = useState<any | null>(null);
   const [newPostData, setNewPostData] = useState({
     company: '',
     role: '',
@@ -551,7 +552,8 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
       });
       
       if (res.ok) {
-        alert("Referral post created successfully!");
+        const post = await res.json();
+        setCreatedPostSuccess(post);
         setIsPostingReferral(false);
         setSelectedJdFile(null);
         setNewPostData({
@@ -2974,6 +2976,50 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Premium Referral Post Success Modal */}
+      {createdPostSuccess && (
+        <div className="fixed inset-0 bg-[#020205]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#09090f] border border-white/10 rounded-2xl max-w-sm w-full overflow-hidden shadow-[0_10px_50px_rgba(0,0,0,0.5)] animate-fade-in flex flex-col p-6 items-center text-center font-inter">
+            {/* Sparkles / Glowing success icon */}
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4 relative shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+              <div className="absolute inset-0 rounded-full border border-emerald-500/30 animate-ping opacity-75" />
+              <CheckCircle className="w-8 h-8 text-emerald-400" />
+            </div>
+
+            <h3 className="font-sora text-base font-bold text-white mb-2">Referral Posted!</h3>
+            <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+              Your referral slot for <strong className="text-white">{createdPostSuccess.role}</strong> at <strong className="text-white">{createdPostSuccess.company}</strong> is now live on the Seeker board.
+            </p>
+
+            {/* Quick stats / summary */}
+            <div className="w-full p-3 rounded-xl bg-white/3 border border-white/5 space-y-1.5 text-[11px] text-slate-400 mb-5 text-left">
+              <div className="flex justify-between">
+                <span>Domain:</span>
+                <span className="text-white font-semibold">{createdPostSuccess.domain}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Slots Available:</span>
+                <span className="text-white font-semibold">{createdPostSuccess.slots}</span>
+              </div>
+              {createdPostSuccess.deadline && (
+                <div className="flex justify-between">
+                  <span>Deadline:</span>
+                  <span className="text-white font-semibold">{createdPostSuccess.deadline}</span>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setCreatedPostSuccess(null)}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-white font-sora font-extrabold text-xs uppercase tracking-wider transition shadow-md"
+            >
+              Great, thank you!
+            </button>
           </div>
         </div>
       )}

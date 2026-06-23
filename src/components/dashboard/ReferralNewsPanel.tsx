@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Newspaper, Search, Filter, RefreshCw, Building2, Bell,
   Flame, BarChart2, Globe, Code, Layers, Palette, Megaphone, Database,
-  SlidersHorizontal, X, FileText, Upload
+  SlidersHorizontal, X, FileText, Upload, CheckCircle
 } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 
@@ -127,10 +127,20 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
   const [isUploadingResume, setIsUploadingResume] = useState(false);
   const [localResumeName, setLocalResumeName] = useState(resumeName || '');
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [showApplySuccess, setShowApplySuccess] = useState<any | null>(null);
 
   useEffect(() => {
     setLocalResumeName(resumeName || '');
   }, [resumeName]);
+
+  useEffect(() => {
+    if (showApplySuccess) {
+      const timer = setTimeout(() => {
+        setShowApplySuccess(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showApplySuccess]);
 
   const handleUploadResumeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
@@ -223,7 +233,10 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
         }
       });
 
-      alert("Referral request submitted successfully!");
+      setShowApplySuccess({
+        role: selectedPost.role,
+        company: selectedPost.company
+      });
       fetchPosts();
       if (fetchRequests) {
         await fetchRequests();
@@ -960,6 +973,28 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Application Success Toast (Downside) ── */}
+      {showApplySuccess && (
+        <div className="fixed bottom-6 right-6 z-[60] max-w-sm w-full bg-[#09090f]/90 border border-purple-500/30 rounded-xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] animate-slide-up flex items-center gap-3 backdrop-blur-md">
+          <div className="w-8 h-8 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+            <CheckCircle className="w-4.5 h-4.5 text-purple-400" />
+          </div>
+          <div className="flex-grow min-w-0">
+            <h4 className="font-sora text-xs font-bold text-white">Application Submitted!</h4>
+            <p className="text-[10px] text-slate-455 truncate">
+              Referral requested for {showApplySuccess.role} at {showApplySuccess.company}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowApplySuccess(null)}
+            className="flex-shrink-0 text-slate-450 hover:text-white transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
     </div>

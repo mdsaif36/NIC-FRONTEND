@@ -511,6 +511,15 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     }
   }, [currentUser]);
 
+  useEffect(() => {
+    if (createdPostSuccess) {
+      const timer = setTimeout(() => {
+        setCreatedPostSuccess(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [createdPostSuccess]);
+
   const fetchAlumniPosts = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
@@ -3233,47 +3242,25 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
         </div>
       )}
 
-      {/* Premium Referral Post Success Modal */}
+      {/* Premium Referral Post Success Toast (Downside) */}
       {createdPostSuccess && (
-        <div className="fixed inset-0 bg-[#020205]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#09090f] border border-white/10 rounded-2xl max-w-sm w-full overflow-hidden shadow-[0_10px_50px_rgba(0,0,0,0.5)] animate-fade-in flex flex-col p-6 items-center text-center font-inter">
-            {/* Sparkles / Glowing success icon */}
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4 relative shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-              <div className="absolute inset-0 rounded-full border border-emerald-500/30 animate-ping opacity-75" />
-              <CheckCircle className="w-8 h-8 text-emerald-400" />
-            </div>
-
-            <h3 className="font-sora text-base font-bold text-white mb-2">Referral Posted!</h3>
-            <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-              Your referral slot for <strong className="text-white">{createdPostSuccess.role}</strong> at <strong className="text-white">{createdPostSuccess.company}</strong> is now live on the Seeker board.
-            </p>
-
-            {/* Quick stats / summary */}
-            <div className="w-full p-3 rounded-xl bg-white/3 border border-white/5 space-y-1.5 text-[11px] text-slate-400 mb-5 text-left">
-              <div className="flex justify-between">
-                <span>Domain:</span>
-                <span className="text-white font-semibold">{createdPostSuccess.domain}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Slots Available:</span>
-                <span className="text-white font-semibold">{createdPostSuccess.slots}</span>
-              </div>
-              {createdPostSuccess.deadline && (
-                <div className="flex justify-between">
-                  <span>Deadline:</span>
-                  <span className="text-white font-semibold">{createdPostSuccess.deadline}</span>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setCreatedPostSuccess(null)}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-white font-sora font-extrabold text-xs uppercase tracking-wider transition shadow-md"
-            >
-              Great, thank you!
-            </button>
+        <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-[#09090f]/90 border border-emerald-500/30 rounded-xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] animate-slide-up flex items-center gap-3 backdrop-blur-md">
+          <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+            <CheckCircle className="w-4.5 h-4.5 text-emerald-400" />
           </div>
+          <div className="flex-grow min-w-0">
+            <h4 className="font-sora text-xs font-bold text-white">Referral Posted Successfully!</h4>
+            <p className="text-[10px] text-slate-400 truncate">
+              Slot for <span className="text-white font-medium">{createdPostSuccess.role}</span> at <span className="text-white font-medium">{createdPostSuccess.company}</span> is live.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCreatedPostSuccess(null)}
+            className="flex-shrink-0 text-slate-400 hover:text-white transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
     </section>

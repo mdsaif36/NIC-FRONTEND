@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper, Sparkles,
-  Bell, X
+  Bell, X, CheckCircle
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { DashboardTab } from './dashboard/DashboardTab';
@@ -67,6 +67,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [activeToast, setActiveToast] = useState<any | null>(null);
+  const [requestSuccessData, setRequestSuccessData] = useState<any | null>(null);
   const [referralTrigger, setReferralTrigger] = useState(0);
 
   // Profile data (Screen 6)
@@ -516,6 +517,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     }
   }, [activeToast]);
 
+  // Auto-clear referral request success toast after 5 seconds
+  useEffect(() => {
+    if (requestSuccessData) {
+      const timer = setTimeout(() => {
+        setRequestSuccessData(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [requestSuccessData]);
+
   // Seeker submits referral request
   const submitReferralRequest = async () => {
     if (!alumniForRequest) return;
@@ -539,6 +550,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
         fetchRequests();
         setIsRequestModalOpen(false);
         setActiveTab('my_referrals');
+        setRequestSuccessData({
+          alumniName: alumniForRequest.name,
+          company: alumniForRequest.company,
+          role: targetRole
+        });
       }
     } catch (err) {
       console.error("Error submitting request:", err);
@@ -947,18 +963,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             >
               {activeTab === 'profile' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gradient-to-b from-purple-400 to-blue-500 rounded-r-full" />}
               <div className="relative w-8 h-8 shrink-0">
-                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 32 32">
-                  <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(168,85,247,0.12)" strokeWidth="2.5" />
-                  <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(168,85,247,0.75)" strokeWidth="2.5"
-                    strokeDasharray={`${(getProfileCompletion() / 100) * 81.68} 81.68`} strokeLinecap="round" />
-                </svg>
-                <div className="absolute inset-[3px] rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-[8px] font-black shadow-md">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-[9px] font-black shadow-md">
                   {profileName ? profileName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'S'}
                 </div>
               </div>
               <div className="flex-1 min-w-0">
                 <span className="block text-xs font-bold text-white truncate leading-tight">{profileName}</span>
-                <span className="block text-[9px] text-purple-400/70 font-medium">{getProfileCompletion()}% complete</span>
+                <span className="block text-[9px] text-slate-500 font-medium">Candidate Profile</span>
               </div>
             </button>
             <button
@@ -1038,13 +1049,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                     </span>
                   )}
                 </button>
-                <button
-                  onClick={() => setActiveTab('profile')}
-                  className="text-[10px] text-purple-400 hover:text-purple-300 transition font-semibold flex items-center gap-1.5 bg-purple-500/10 px-3 py-1.5 rounded-full border border-purple-500/20 hover:border-purple-500/40"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-                  {getProfileCompletion()}% Complete
-                </button>
+                {/* Profile completion badge removed */}
               </div>
             </div>
           </header>
@@ -1055,10 +1060,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             {activeTab === 'dashboard' && (
               <DashboardTab
                 profileCollege={profileCollege}
-                getProfileCompletion={getProfileCompletion}
-                resumeUploaded={resumeUploaded}
-                targetCompanies={targetCompanies}
-                skills={skills}
                 requestsList={requestsList}
                 savedAlumniIds={savedAlumniIds}
                 alumniNetwork={alumniNetwork}
@@ -1397,6 +1398,28 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
               className="p-1 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition shrink-0"
             >
               <X className="w-3 h-3" />
+            </button>
+          </div>
+        )}
+
+        {/* ── Referral Request Success Toast (Downside) ── */}
+        {requestSuccessData && (
+          <div className="fixed bottom-6 right-6 z-[60] max-w-sm w-full bg-[#09090f]/90 border border-purple-500/30 rounded-xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] animate-slide-up flex items-center gap-3 backdrop-blur-md">
+            <div className="w-8 h-8 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+              <CheckCircle className="w-4.5 h-4.5 text-purple-400" />
+            </div>
+            <div className="flex-grow min-w-0">
+              <h4 className="font-sora text-xs font-bold text-white">Referral Request Sent!</h4>
+              <p className="text-[10px] text-slate-400 truncate">
+                Requested {requestSuccessData.role} from {requestSuccessData.alumniName} at {requestSuccessData.company}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRequestSuccessData(null)}
+              className="flex-shrink-0 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}

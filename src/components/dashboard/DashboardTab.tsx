@@ -1,37 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  AlertCircle, ArrowRight, Bookmark, Check,
-  CheckCircle, Search, Send, Sparkles, TrendingUp, UserCheck, Zap
+  AlertCircle, ArrowRight, Bookmark, CheckCircle, Search, Send, Sparkles, UserCheck, Newspaper, Briefcase
 } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 
 interface DashboardTabProps {
   alumniNetwork: any[];
-  getProfileCompletion: () => number;
   openRequestModal: (alumni: any) => void;
   profileCollege: string;
   requestsList: any[];
-  resumeUploaded: boolean;
   savedAlumniIds: number[];
-  setActiveTab: (tab: 'dashboard' | 'discover' | 'requests' | 'messages' | 'saved' | 'profile') => void;
-  skills: string[];
-  targetCompanies: string[];
+  setActiveTab: (tab: 'dashboard' | 'discover' | 'requests' | 'messages' | 'saved' | 'profile' | 'referral_board') => void;
 }
 
 export const DashboardTab: React.FC<DashboardTabProps> = ({
   alumniNetwork,
-  getProfileCompletion,
   openRequestModal,
   profileCollege,
   requestsList,
-  resumeUploaded,
   savedAlumniIds,
   setActiveTab,
-  skills,
-  targetCompanies,
 }) => {
-  const completion = getProfileCompletion();
   const pendingRequests = requestsList.filter((r: any) => r.status === 'pending').length;
   const respondedRequests = requestsList.filter((r: any) => r.status !== 'pending').length;
+
+  const [feedPosts, setFeedPosts] = useState<any[]>([]);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [stats, setStats] = useState<{ totalOpen: number } | null>(null);
+
+  useEffect(() => {
+    const fetchFeedPosts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE_URL}/api/referral-posts`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Take top 4 active posts
+          setFeedPosts(data.slice(0, 4));
+        }
+      } catch (err) {
+        console.error("Error fetching feed posts:", err);
+      } finally {
+        setFeedLoading(false);
+      }
+    };
+
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE_URL}/api/referral-posts/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      }
+    };
+
+    fetchFeedPosts();
+    fetchStats();
+  }, []);
 
   return (
     <div className="space-y-6 animate-fade-in-up text-left">
@@ -39,7 +76,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
       {/* ── Hero Banner ── */}
       <div className="relative rounded-2xl overflow-hidden border border-purple-500/10 p-6 md:p-8">
         {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/25 via-[#07070a] to-blue-950/15" />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-955/25 via-[#07070a] to-blue-955/15" />
         <div className="absolute top-0 right-0 w-72 h-72 bg-purple-500/6 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-56 h-56 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
         {/* Grid texture */}
@@ -47,39 +84,20 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3">
-            {/* Completion ring + headline */}
+            {/* Seeker header */}
             <div className="flex items-center gap-4">
-              {/* Circular progress ring */}
-              <div className="relative w-14 h-14 shrink-0">
-                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 56 56">
-                  <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(168,85,247,0.1)" strokeWidth="3" />
-                  <circle
-                    cx="28" cy="28" r="24" fill="none"
-                    stroke="url(#hero-ring-grad)" strokeWidth="3"
-                    strokeDasharray={`${(completion / 100) * 150.8} 150.8`}
-                    strokeLinecap="round"
-                  />
-                  <defs>
-                    <linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#A855F7" />
-                      <stop offset="100%" stopColor="#3B82F6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-sora text-[11px] font-extrabold text-white">{completion}%</span>
-                </div>
+              {/* Glowing purple/blue gradient icon */}
+              <div className="relative w-12 h-12 shrink-0 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                <Sparkles className="w-5 h-5 animate-pulse" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-sora text-lg font-extrabold text-white leading-tight">
                     Career Command Center
                   </h3>
-                  {completion >= 80 && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase">
-                      <Zap className="w-2.5 h-2.5" /> Profile Strong
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[9px] font-bold uppercase">
+                    Seeker Portal
+                  </span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-medium mt-1 leading-relaxed">
                   {profileCollege} · {pendingRequests > 0
@@ -87,17 +105,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                     : 'All caught up — explore more alumni'}
                 </p>
               </div>
-            </div>
-
-            {/* Progress bar */}
-            <div className="flex items-center gap-3 max-w-sm">
-              <div className="flex-1 h-1.5 bg-slate-900/80 rounded-full overflow-hidden border border-white/5">
-                <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-700 shadow-[0_0_8px_rgba(168,85,247,0.4)]"
-                  style={{ width: `${completion}%` }}
-                />
-              </div>
-              <span className="text-[10px] text-slate-500 font-medium shrink-0">{completion}% complete</span>
             </div>
           </div>
 
@@ -111,10 +118,11 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               Find Alumni
             </button>
             <button
-              onClick={() => setActiveTab('profile')}
+              onClick={() => setActiveTab('referral_board')}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white font-sora font-semibold text-xs uppercase tracking-wider transition-all duration-300"
             >
-              Complete Profile
+              <Newspaper className="w-3.5 h-3.5" />
+              Referral Board
             </button>
           </div>
         </div>
@@ -151,13 +159,13 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             onClick: () => setActiveTab('saved'),
           },
           {
-            label: 'Profile Score',
-            value: `${completion}%`,
-            sub: completion >= 80 ? 'Fully optimised' : 'Needs completion',
-            icon: TrendingUp,
+            label: 'Open Opportunities',
+            value: stats ? stats.totalOpen : '...',
+            sub: 'Active referral slots',
+            icon: Briefcase,
             color: 'amber',
             glow: 'rgba(245,158,11,0.12)',
-            onClick: () => setActiveTab('profile'),
+            onClick: () => setActiveTab('referral_board'),
           },
         ].map((card) => {
           const Icon = card.icon;
@@ -187,73 +195,74 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         })}
       </div>
 
-      {/* ── Setup Checklist + Recommended Alumni ── */}
+      {/* ── Live Referral Feed + Recommended Alumni ── */}
       <div className="grid lg:grid-cols-3 gap-6">
 
-        {/* Profile checklist */}
-        <div className="lg:col-span-1 p-6 rounded-2xl border border-white/[0.055] bg-[#09090d] relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-28 h-28 bg-purple-500/4 rounded-full blur-2xl pointer-events-none" />
-          <h3 className="font-sora text-sm font-extrabold text-white mb-5 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-purple-400" />
-            Profile Setup
-          </h3>
-
-          <div className="space-y-3">
-            {[
-              {
-                step: '01',
-                title: 'Upload Resume',
-                desc: resumeUploaded ? 'Completed' : '+20% profile boost',
-                done: resumeUploaded,
-              },
-              {
-                step: '02',
-                title: 'Target Companies',
-                desc: targetCompanies.length >= 3 ? 'Completed' : `${targetCompanies.length}/3 added`,
-                done: targetCompanies.length >= 3,
-              },
-              {
-                step: '03',
-                title: 'Add Skills',
-                desc: skills.length >= 4 ? 'Completed' : `${skills.length}/4 skills added`,
-                done: skills.length >= 4,
-              },
-            ].map((item) => (
-              <button
-                key={item.step}
-                type="button"
-                onClick={() => setActiveTab('profile')}
-                className={`w-full flex items-center gap-4 p-3.5 rounded-xl border transition-all duration-200 text-left group ${
-                  item.done
-                    ? 'border-emerald-500/15 bg-emerald-950/5 hover:bg-emerald-950/8'
-                    : 'border-purple-500/15 bg-purple-950/5 hover:border-purple-500/25 hover:bg-purple-950/8'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-mono text-[10px] font-bold transition-all ${
-                  item.done
-                    ? 'bg-emerald-500/15 border border-emerald-500/20 text-emerald-400'
-                    : 'bg-purple-500/10 border border-purple-500/20 text-purple-400'
-                }`}>
-                  {item.done ? <Check className="w-3.5 h-3.5" /> : item.step}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className={`block text-xs font-bold leading-tight ${item.done ? 'text-slate-400' : 'text-white'}`}>
-                    {item.title}
-                  </span>
-                  <span className={`block text-[9px] font-medium mt-0.5 ${item.done ? 'text-emerald-500' : 'text-slate-500'}`}>
-                    {item.desc}
-                  </span>
-                </div>
-                {!item.done && (
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-                )}
-              </button>
-            ))}
+        {/* Live Referral Feed */}
+        <div className="lg:col-span-2 p-6 rounded-2xl border border-white/[0.055] bg-[#09090d] relative overflow-hidden text-left">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/4 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-sora text-sm font-extrabold text-white flex items-center gap-2">
+              <Newspaper className="w-4 h-4 text-purple-400" />
+              Live Referral Feed
+            </h3>
+            <button
+              onClick={() => setActiveTab('referral_board')}
+              className="text-[10px] font-bold text-purple-400 hover:text-purple-300 uppercase tracking-wider flex items-center gap-1 transition"
+            >
+              View Board <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
+
+          {feedLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <span className="text-xs text-slate-500 font-medium">Loading active slots...</span>
+            </div>
+          ) : feedPosts.length === 0 ? (
+            <div className="text-center py-12 border border-white/5 border-dashed rounded-xl">
+              <p className="text-xs text-slate-500">No active referral posts available right now.</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-4">
+              {feedPosts.map((post) => (
+                <div
+                  key={post.id}
+                  onClick={() => setActiveTab('referral_board')}
+                  className="p-4 rounded-xl border border-white/5 bg-black/20 hover:border-purple-500/20 hover:bg-purple-950/5 transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/15 text-[8.5px] font-bold text-purple-400 uppercase">
+                        {post.jobType}
+                      </span>
+                      <span className="text-[9px] text-slate-500">
+                        Slots: <strong className="text-white">{post.applyCount}/{post.slots}</strong>
+                      </span>
+                    </div>
+                    <h4 className="font-sora font-bold text-xs text-white leading-tight">{post.role}</h4>
+                    <p className="text-[10px] text-slate-450 mt-0.5">{post.company} · {post.location}</p>
+                    {post.skills && post.skills.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2.5">
+                        {post.skills.slice(0, 3).map((skill: string, sIdx: number) => (
+                          <span key={sIdx} className="px-1.5 py-0.5 rounded bg-white/5 text-[8px] font-bold text-slate-400">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-3.5 pt-2.5 border-t border-white/5 flex items-center justify-between text-[9px]">
+                    <span className="text-slate-500">By <strong className="text-slate-400 font-medium">{post.alumniName || post.alumni?.name}</strong></span>
+                    <span className="text-purple-400 font-bold uppercase tracking-wider">Request</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Top Alumni Matches */}
-        <div className="lg:col-span-2 p-6 rounded-2xl border border-white/[0.055] bg-[#09090d] relative overflow-hidden">
+        <div className="lg:col-span-1 p-6 rounded-2xl border border-white/[0.055] bg-[#09090d] relative overflow-hidden text-left">
           <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/4 rounded-full blur-3xl pointer-events-none" />
           <div className="flex items-center justify-between mb-5">
             <h3 className="font-sora text-sm font-extrabold text-white flex items-center gap-2">
@@ -272,7 +281,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             {alumniNetwork.slice(0, 3).map((alumni, idx) => (
               <div
                 key={alumni.id}
-                className="flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-black/20 hover:border-purple-500/20 hover:bg-purple-950/5 transition-all duration-300 group"
+                className="flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-black/20 hover:border-purple-500/20 hover:bg-purple-955/5 transition-all duration-300 group"
                 style={{ animationDelay: `${idx * 80}ms` }}
               >
                 {/* Avatar */}
@@ -311,14 +320,14 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
       <div className="grid lg:grid-cols-2 gap-6">
 
         {/* Activity feed */}
-        <div className="p-6 rounded-2xl border border-white/[0.055] bg-[#09090d] relative overflow-hidden">
+        <div className="p-6 rounded-2xl border border-white/[0.055] bg-[#09090d] relative overflow-hidden text-left">
           <h3 className="font-sora text-sm font-extrabold text-white mb-5">Recent Activity</h3>
           <div className="space-y-4">
             {[
               { txt: 'Priya S. accepted your referral request for Microsoft PM', time: '2 hours ago', icon: CheckCircle, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
               { txt: 'Rahul M. from Google viewed your profile', time: 'Yesterday', icon: Search, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
               { txt: `3 new alumni from ${profileCollege} joined NiC`, time: '2 days ago', icon: UserCheck, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
-              { txt: `Profile at ${completion}% — add resume to unlock all features`, time: '3 days ago', icon: AlertCircle, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
+              { txt: 'Keep your target companies updated to get matching referrals', time: '3 days ago', icon: AlertCircle, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
             ].map((item, i) => {
               const Icon = item.icon;
               return (
@@ -337,10 +346,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         </div>
 
         {/* Career command center card */}
-        <div className="p-6 rounded-2xl border border-purple-500/10 bg-gradient-to-br from-purple-950/8 to-[#09090d] relative overflow-hidden">
+        <div className="p-6 rounded-2xl border border-purple-500/10 bg-gradient-to-br from-purple-950/8 to-[#09090d] relative overflow-hidden text-left">
           <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
           <h3 className="font-sora text-sm font-extrabold text-white mb-2 relative z-10">Your Referral Funnel</h3>
-          <p className="text-[11px] text-slate-500 leading-relaxed mb-6 relative z-10">
+          <p className="text-[11px] text-slate-550 leading-relaxed mb-6 relative z-10">
             Track how your outreach converts into real opportunities.
           </p>
 
@@ -366,11 +375,11 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           </div>
 
           {/* Quick action row */}
-          <div className="grid grid-cols-3 gap-2 mt-6 pt-5 border-t border-white/5 relative z-10">
+          <div className="grid grid-cols-3 gap-2 mt-6 pt-5 border-t border-white/5 relative z-10 text-center">
             {[
               { label: 'Find Alumni', tab: 'discover', icon: Search },
               { label: 'Track Requests', tab: 'requests', icon: Send },
-              { label: 'My Profile', tab: 'profile', icon: TrendingUp },
+              { label: 'Referral Board', tab: 'referral_board', icon: Newspaper },
             ].map((btn) => {
               const Icon = btn.icon;
               return (
@@ -379,7 +388,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                   onClick={() => setActiveTab(btn.tab as any)}
                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:border-purple-500/20 hover:bg-purple-950/5 transition-all duration-200 group"
                 >
-                  <Icon className="w-4 h-4 text-slate-500 group-hover:text-purple-400 transition-colors" />
+                  <Icon className="w-4 h-4 text-slate-555 group-hover:text-purple-400 transition-colors" />
                   <span className="text-[8px] font-bold text-slate-500 group-hover:text-slate-300 uppercase tracking-wide transition-colors text-center leading-tight">{btn.label}</span>
                 </button>
               );

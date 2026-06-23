@@ -28,7 +28,7 @@ const testimonials: Testimonial[] = [
 
 interface AuthPageProps {
   initialMode?: 'login' | 'signup';
-  onSuccess: (token: string, user: { id: number, role: 'seeker' | 'alumni', name: string, company?: string, college?: string }) => void;
+  onSuccess: (token: string, user: { id: number, role: 'seeker' | 'alumni', name: string, email?: string, company?: string, college?: string }) => void;
   onBack: () => void;
   onForgotPassword: () => void;
 }
@@ -115,7 +115,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   // Form states
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('savedEmail') || '');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [college, setCollege] = useState('');
@@ -246,12 +246,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
         });
         const data = await res.json();
         if (res.ok) {
+          localStorage.setItem('savedEmail', email);
           onSuccess(data.token, {
             id: data.user.id,
             role: data.user.role,
             name: data.user.name,
             college: data.user.college,
-            company: data.user.company
+            company: data.user.company,
+            email: data.user.email
           });
         } else {
           setError(data.message || 'Login failed. Please check your credentials.');
@@ -274,12 +276,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
         });
         const data = await res.json();
         if (res.ok) {
+          localStorage.setItem('savedEmail', email);
           onSuccess(data.token, {
             id: data.user.id,
             role: data.user.role,
             name: data.user.name,
             college: data.user.college,
-            company: data.user.company
+            company: data.user.company,
+            email: data.user.email
           });
         } else {
           setError(data.message || 'Registration failed. Please check details.');

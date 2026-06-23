@@ -125,8 +125,11 @@ function App() {
     }
   };
 
-  const handleAuthSuccess = (token: string, user: { id: number; role: 'seeker' | 'alumni'; name: string; company?: string; college?: string }) => {
+  const handleAuthSuccess = (token: string, user: { id: number; role: 'seeker' | 'alumni'; name: string; email?: string; company?: string; college?: string }) => {
     localStorage.setItem('token', token);
+    if (user.email) {
+      localStorage.setItem('savedEmail', user.email);
+    }
     setSession(user);
     setCurrentPage('dashboard');
     window.history.pushState({}, '', '/dashboard');

@@ -70,10 +70,20 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   onTabChange
 }) => {
   const getGreeting = () => {
-    const hr = new Date().getHours();
-    if (hr < 12) return 'Good morning';
-    if (hr < 17) return 'Good afternoon';
-    return 'Good evening';
+    try {
+      const hr = parseInt(
+        new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata', hour: 'numeric', hour12: false }),
+        10
+      );
+      if (hr < 12) return 'Good morning';
+      if (hr < 17) return 'Good afternoon';
+      return 'Good evening';
+    } catch (err) {
+      const hr = new Date().getHours();
+      if (hr < 12) return 'Good morning';
+      if (hr < 17) return 'Good afternoon';
+      return 'Good evening';
+    }
   };
 
   const [activeTab, setActiveTab] = useState<AlumniTab>(() => {

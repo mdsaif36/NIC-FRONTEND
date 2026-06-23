@@ -53,7 +53,7 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
     <div className="grid lg:grid-cols-12 gap-6 h-[72vh] border border-white/5 bg-[#08080b]/90 rounded-2xl overflow-hidden animate-fade-in-up text-left relative z-20">
               
               {/* Left pane: lists active conversations */}
-              <div className="lg:col-span-4 border-r border-white/5 flex flex-col h-full bg-black/40">
+              <div className="lg:col-span-4 border-r border-white/5 flex flex-col h-full min-h-0 bg-black/40">
                 <div className="p-4 border-b border-white/5">
                   <h3 className="font-sora text-white text-xs font-bold uppercase tracking-wider font-space-grotesk">Outreach Messages</h3>
                 </div>
@@ -98,7 +98,7 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
               </div>
 
               {/* Right pane: displays current chat */}
-              <div className="lg:col-span-8 flex flex-col h-full justify-between bg-slate-950/10">
+              <div className="lg:col-span-8 flex flex-col h-full min-h-0 justify-between bg-slate-950/10">
                 {activeChatId === null ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-8 font-inter text-slate-500">
                     <Calendar className="w-10 h-10 text-slate-700 mb-3" />

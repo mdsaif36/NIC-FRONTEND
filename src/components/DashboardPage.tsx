@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper, Sparkles,
   Bell, X
@@ -128,6 +128,33 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
 
   // Alumni List (Loaded from DB)
   const [alumniNetwork, setAlumniNetwork] = useState<any[]>([]);
+
+  // Alumni active tab tracking
+  const [alumniActiveTab, setAlumniActiveTab] = useState<string>(() => {
+    return localStorage.getItem('alumniActiveTab') || 'overview';
+  });
+
+  // State synchronization refs for persistent socket listener
+  const activeChatIdRef = useRef(activeChatId);
+  const activeTabRef = useRef(activeTab);
+  const alumniActiveTabRef = useRef(alumniActiveTab);
+  const notificationsRef = useRef(notifications);
+
+  useEffect(() => {
+    activeChatIdRef.current = activeChatId;
+  }, [activeChatId]);
+
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  useEffect(() => {
+    alumniActiveTabRef.current = alumniActiveTab;
+  }, [alumniActiveTab]);
+
+  useEffect(() => {
+    notificationsRef.current = notifications;
+  }, [notifications]);
 
   // Fetch functions
   const fetchProfile = useCallback(async () => {
@@ -364,8 +391,29 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   useEffect(() => {
     if (activeChatId !== null) {
       fetchChatHistory(activeChatId);
+
+      // Find and mark unread message notifications from this activeChatId as read
+      const unreadNotifsFromSender = notificationsRef.current.filter((notif: any) => 
+        !notif.isRead && 
+        notif.type === 'message_received' && 
+        notif.metadata && 
+        Number(notif.metadata.senderId) === activeChatId
+      );
+
+      if (unreadNotifsFromSender.length > 0) {
+        const token = localStorage.getItem('token');
+        Promise.all(unreadNotifsFromSender.map((notif: any) => 
+          fetch(`${API_BASE_URL}/api/notifications/${notif.id}/read`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        )).then(() => {
+          fetchUnreadCount();
+          fetchNotifications();
+        }).catch(err => console.error("Error clearing notifications for chat:", err));
+      }
     }
-  }, [activeChatId, fetchChatHistory]);
+  }, [activeChatId, fetchChatHistory, fetchUnreadCount, fetchNotifications]);
 
   // Connect Socket.IO
   useEffect(() => {
@@ -418,6 +466,24 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     });
 
     socketInstance.on('notification', (notif: any) => {
+      // Suppress notification if talking live with the sender
+      const currentActiveTab = role === 'alumni' ? alumniActiveTabRef.current : activeTabRef.current;
+      const isTalkingLive = currentActiveTab === 'messages' && 
+                           notif.type === 'message_received' && 
+                           notif.metadata && 
+                           Number(notif.metadata.senderId) === activeChatIdRef.current;
+
+      if (isTalkingLive) {
+        // Silently mark as read on the backend
+        const token = localStorage.getItem('token');
+        fetch(`${API_BASE_URL}/api/notifications/${notif.id}/read`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(err => console.error("Error marking live notification as read:", err));
+        
+        return;
+      }
+
       fetchUnreadCount();
       fetchNotifications();
       setActiveToast(notif);
@@ -1358,6 +1424,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
       alumniNetwork={alumniNetwork}
       currentUser={currentUser}
       fetchProfile={fetchProfile}
+      onTabChange={setAlumniActiveTab}
     />
   );
 };

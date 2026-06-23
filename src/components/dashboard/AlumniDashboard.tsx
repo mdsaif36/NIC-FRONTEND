@@ -37,6 +37,7 @@ interface AlumniDashboardProps {
   alumniNetwork: any[];
   currentUser?: any;
   fetchProfile?: () => Promise<void>;
+  onTabChange?: (tab: string) => void;
 }
 
 type AlumniTab = 'overview' | 'inbox' | 'my_referrals' | 'messages' | 'analytics' | 'accounting' | 'profile' | 'admin_panel' | 'slot_management' | 'leaderboard';
@@ -65,7 +66,8 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   conversations,
   alumniNetwork,
   currentUser,
-  fetchProfile
+  fetchProfile,
+  onTabChange
 }) => {
   const getGreeting = () => {
     const hr = new Date().getHours();
@@ -81,7 +83,10 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
   useEffect(() => {
     localStorage.setItem('alumniActiveTab', activeTab);
-  }, [activeTab]);
+    if (onTabChange) {
+      onTabChange(activeTab);
+    }
+  }, [activeTab, onTabChange]);
 
   const [compEmailInput, setCompEmailInput] = useState('');
   const [otpSent, setOtpSent] = useState(false);

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  AlertCircle, ArrowRight, Bookmark, CheckCircle, Search, Send, Sparkles, UserCheck, Newspaper, Briefcase
+  AlertCircle, ArrowRight, Bookmark, CheckCircle, Search, Send, Sparkles, UserCheck, Newspaper, Briefcase, Bell
 } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 
@@ -26,7 +26,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
 
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [feedLoading, setFeedLoading] = useState(true);
-  const [stats, setStats] = useState<{ totalOpen: number } | null>(null);
+  const [stats, setStats] = useState<{ totalOpen: number; topCompanies: any[]; topDomains: any[] } | null>(null);
+
+  const [tickerOffset, setTickerOffset] = useState(0);
+  const tickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchFeedPosts = async () => {
@@ -69,6 +72,30 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
     fetchFeedPosts();
     fetchStats();
   }, []);
+
+  // Ticker animation
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setTickerOffset(prev => {
+        const el = tickerRef.current;
+        if (!el) return prev;
+        const max = el.scrollWidth - el.clientWidth;
+        if (prev >= max) return 0;
+        return prev + 1;
+      });
+    }, 30);
+    return () => clearInterval(iv);
+  }, []);
+
+  // Live ticker items
+  const tickerItems = stats
+    ? [
+        `${stats.totalOpen} referral slots open right now`,
+        ...stats.topCompanies.map(c => `${c.count} open at ${c.name}`),
+        ...stats.topDomains.map(d => `${d.count} roles in ${d.name}`),
+        `New referral posted every few hours - stay active!`,
+      ]
+    : ['Loading referral feed...'];
 
   return (
     <div className="space-y-6 animate-fade-in-up text-left">
@@ -124,6 +151,31 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               <Newspaper className="w-3.5 h-3.5" />
               Referral Board
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Live Moving Ticker Bar ── */}
+      <div className="relative flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#0d0d18] border border-purple-500/15 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent pointer-events-none" />
+        <div className="flex items-center gap-1.5 shrink-0 z-10">
+          <Bell className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+          <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest font-space-grotesk">Live Feed</span>
+          <div className="w-px h-4 bg-white/10 mx-1" />
+        </div>
+        <div className="overflow-hidden flex-1 z-10">
+          <div
+            ref={tickerRef}
+            className="flex gap-8 text-[11px] text-slate-400 font-medium whitespace-nowrap"
+            style={{ transform: `translateX(-${tickerOffset}px)`, transition: 'transform 0.03s linear' }}
+          >
+            {[...tickerItems, ...tickerItems].map((item, i) => (
+              <span key={i} className="shrink-0 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 inline-block animate-pulse" />
+                {item}
+                <span className="mx-4 text-white/10">|</span>
+              </span>
+            ))}
           </div>
         </div>
       </div>
@@ -188,7 +240,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                 <Icon className={`w-4 h-4 ${c.text}`} />
               </div>
               <span className="block font-sora text-2xl font-extrabold text-white tracking-tight">{card.value}</span>
-              <span className="block text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-1">{card.label}</span>
+              <span className="block text-[9px] text-slate-550 font-bold uppercase tracking-wider mt-1">{card.label}</span>
               <span className={`block text-[10px] font-semibold mt-0.5 ${c.text}`}>{card.sub}</span>
             </button>
           );
@@ -216,11 +268,11 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
 
           {feedLoading ? (
             <div className="flex items-center justify-center py-12">
-              <span className="text-xs text-slate-500 font-medium">Loading active slots...</span>
+              <span className="text-xs text-slate-550 font-medium">Loading active slots...</span>
             </div>
           ) : feedPosts.length === 0 ? (
             <div className="text-center py-12 border border-white/5 border-dashed rounded-xl">
-              <p className="text-xs text-slate-500">No active referral posts available right now.</p>
+              <p className="text-xs text-slate-550">No active referral posts available right now.</p>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
@@ -235,7 +287,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                       <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/15 text-[8.5px] font-bold text-purple-400 uppercase">
                         {post.jobType}
                       </span>
-                      <span className="text-[9px] text-slate-500">
+                      <span className="text-[9px] text-slate-550">
                         Slots: <strong className="text-white">{post.applyCount}/{post.slots}</strong>
                       </span>
                     </div>
@@ -252,7 +304,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                     )}
                   </div>
                   <div className="mt-3.5 pt-2.5 border-t border-white/5 flex items-center justify-between text-[9px]">
-                    <span className="text-slate-500">By <strong className="text-slate-400 font-medium">{post.alumniName || post.alumni?.name}</strong></span>
+                    <span className="text-slate-550">By <strong className="text-slate-400 font-medium">{post.alumniName || post.alumni?.name}</strong></span>
                     <span className="text-purple-400 font-bold uppercase tracking-wider">Request</span>
                   </div>
                 </div>
@@ -297,7 +349,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                       {alumni.match}% Match
                     </span>
                   </div>
-                  <span className="block text-[10px] text-slate-500 font-medium mt-0.5">
+                  <span className="block text-[10px] text-slate-550 font-medium mt-0.5">
                     {alumni.company} · {alumni.college}
                   </span>
                 </div>
@@ -337,7 +389,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                   </div>
                   <div>
                     <p className="text-[11px] text-slate-300 leading-relaxed font-medium">{item.txt}</p>
-                    <span className="block text-[9px] text-slate-600 mt-0.5">{item.time}</span>
+                    <span className="block text-[9px] text-slate-655 mt-0.5">{item.time}</span>
                   </div>
                 </div>
               );
@@ -361,7 +413,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             ].map((row) => (
               <div key={row.label}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] text-slate-400 font-semibold">{row.label}</span>
+                  <span className="text-[10px] text-slate-455 font-semibold">{row.label}</span>
                   <span className="text-[10px] font-bold text-white">{row.value}</span>
                 </div>
                 <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">

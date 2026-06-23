@@ -100,60 +100,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   return (
     <div className="space-y-6 animate-fade-in-up text-left">
 
-      {/* ── Hero Banner ── */}
-      <div className="relative rounded-2xl overflow-hidden border border-purple-500/10 p-6 md:p-8">
-        {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-955/25 via-[#07070a] to-blue-955/15" />
-        <div className="absolute top-0 right-0 w-72 h-72 bg-purple-500/6 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-56 h-56 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-        {/* Grid texture */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:28px_28px] pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3">
-            {/* Seeker header */}
-            <div className="flex items-center gap-4">
-              {/* Glowing purple/blue gradient icon */}
-              <div className="relative w-12 h-12 shrink-0 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                <Sparkles className="w-5 h-5 animate-pulse" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-sora text-lg font-extrabold text-white leading-tight">
-                    Career Command Center
-                  </h3>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[9px] font-bold uppercase">
-                    Seeker Portal
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400 font-medium mt-1 leading-relaxed">
-                  {profileCollege} · {pendingRequests > 0
-                    ? `${pendingRequests} request${pendingRequests > 1 ? 's' : ''} awaiting response`
-                    : 'All caught up — explore more alumni'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA group */}
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              onClick={() => setActiveTab('discover')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-sora font-bold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.25)] hover:shadow-[0_0_28px_rgba(168,85,247,0.4)] hover:opacity-95 transition-all duration-300"
-            >
-              <Search className="w-3.5 h-3.5" />
-              Find Alumni
-            </button>
-            <button
-              onClick={() => setActiveTab('referral_board')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white font-sora font-semibold text-xs uppercase tracking-wider transition-all duration-300"
-            >
-              <Newspaper className="w-3.5 h-3.5" />
-              Referral Board
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* ── Live Moving Ticker Bar ── */}
       <div className="relative flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#0d0d18] border border-purple-500/15 overflow-hidden">

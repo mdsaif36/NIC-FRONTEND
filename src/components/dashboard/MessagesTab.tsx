@@ -42,12 +42,21 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
   role,
   requestsList
 }) => {
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const chatPartner = conversations.find(c => c.id === activeChatId) || alumniNetwork.find(a => a.id === activeChatId);
   
   // A chat is unlocked if the user is alumni, or the seeker request is accepted/referred/hired/info, or they have message history
   const isCurrentChatUnlocked = role === 'alumni' || 
     (requestsList && requestsList.some(r => r.alumniId === activeChatId && ['accepted', 'referred', 'hired', 'info'].includes(r.status))) ||
     (activeChatId && chatMessages[activeChatId] && chatMessages[activeChatId].length > 0);
+
+  const activeMessages = activeChatId ? (chatMessages[activeChatId] || []) : [];
+
+  React.useEffect(() => {
+    if (isCurrentChatUnlocked) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activeMessages, isCurrentChatUnlocked]);
 
   return (
     <div className="grid lg:grid-cols-12 gap-6 h-[72vh] border border-white/5 bg-[#08080b]/90 rounded-2xl overflow-hidden animate-fade-in-up text-left relative z-20">
@@ -172,6 +181,7 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
                           </div>
                         );
                       })}
+                      <div ref={messagesEndRef} />
                     </div>
 
                     {/* Smart Quick Prompts */}

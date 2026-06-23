@@ -369,7 +369,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
 
   // Connect Socket.IO
   useEffect(() => {
-    const socketInstance = io('https://nic-backend-9q0n.onrender.com', {
+    const socketInstance = io(API_BASE_URL, {
       query: { userId: id }
     });
 
@@ -643,8 +643,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     setIsEditMode(mode);
   };
 
-  // Alumni updates request status (refer/info/decline)
-  const handleAction = async (requestId: number, action: 'referred' | 'info' | 'declined') => {
+  // Alumni updates request status (refer/info/decline/accept)
+  const handleAction = async (requestId: number, action: 'referred' | 'info' | 'declined' | 'accepted') => {
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE_URL}/api/requests/${requestId}/status`, {

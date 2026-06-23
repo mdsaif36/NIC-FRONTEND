@@ -147,7 +147,7 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                           {req.status === 'hired' ? 'Hired 🎉' : req.status}
                         </span>
 
-                        {(req.status === 'accepted' || req.status === 'referred' || req.status === 'hired') && (
+                        {(req.status === 'accepted' || req.status === 'referred' || req.status === 'hired' || req.status === 'info') && (
                           <button
                             onClick={() => {
                               setActiveTab('messages');

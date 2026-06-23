@@ -15,7 +15,7 @@ import { API_BASE_URL } from '../../config';
 interface AlumniDashboardProps {
   college: string;
   company: string;
-  handleAction: (id: number, action: 'referred' | 'info' | 'declined') => void;
+  handleAction: (id: number, action: 'referred' | 'info' | 'declined' | 'accepted') => void;
   name: string;
   onLogout: () => void;
   referralsSentCount: number;
@@ -646,7 +646,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   const [isAddingTemplate, setIsAddingTemplate] = useState(false);
 
   // Wrap handler
-  const onHandleAction = (id: number, action: 'referred' | 'info' | 'declined') => {
+  const onHandleAction = (id: number, action: 'referred' | 'info' | 'declined' | 'accepted') => {
     handleAction(id, action);
     setLocalRequests(prev => prev.map(r => r.id === id ? { ...r, status: action } : r));
   };
@@ -1180,6 +1180,14 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                               <>
                                 <button
                                   type="button"
+                                  onClick={() => onHandleAction(req.id, 'accepted')}
+                                  className="w-full py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition shadow-md"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                  Accept
+                                </button>
+                                <button
+                                  type="button"
                                   onClick={() => onHandleAction(req.id, 'referred')}
                                   className="w-full py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-white font-sora font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition shadow-md"
                                 >
@@ -1242,8 +1250,27 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                               <div className={`p-4 rounded-xl border text-center flex flex-col items-center justify-center gap-2 w-full ${
                                 req.status === 'referred' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' :
                                 req.status === 'info'     ? 'bg-amber-500/5 border-amber-500/20 text-amber-400' :
+                                req.status === 'accepted' ? 'bg-purple-500/5 border-purple-500/20 text-purple-400' :
                                 'bg-rose-500/5 border-rose-500/20 text-rose-400'
                               }`}>
+                                {req.status === 'accepted' && (
+                                  <>
+                                    <CheckCircle className="w-6 h-6 text-purple-450" />
+                                    <span className="text-xs font-bold uppercase tracking-wider">Accepted!</span>
+                                    <span className="text-[8px] text-slate-400">Chat activated</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveTab('messages');
+                                        setActiveChatId(req.seekerId);
+                                      }}
+                                      className="mt-2 w-full py-1.5 rounded-xl border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 text-[10px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5"
+                                    >
+                                      <MessageSquare className="w-3.5 h-3.5" />
+                                      Message
+                                    </button>
+                                  </>
+                                )}
                                 {req.status === 'referred' && (
                                   <>
                                     <CheckCircle className="w-6 h-6 animate-logo-pulse" />
@@ -2754,37 +2781,64 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
             {/* Actions panel */}
             <div className="pt-3 border-t border-white/5 mt-auto">
               {selectedStudentReq.status === 'pending' ? (
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-2">
                   <button
                     type="button"
                     onClick={() => {
-                      onHandleAction(selectedStudentReq.id, 'referred');
+                      onHandleAction(selectedStudentReq.id, 'accepted');
                       setSelectedStudentReq(null);
                     }}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition shadow-md"
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition shadow-md"
                   >
-                    Refer Student
+                    Accept Request
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onHandleAction(selectedStudentReq.id, 'info');
-                      setSelectedStudentReq(null);
-                    }}
-                    className="flex-1 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 font-sora font-bold text-[10px] uppercase tracking-wider transition"
-                  >
-                    Need Info
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onHandleAction(selectedStudentReq.id, 'referred');
+                        setSelectedStudentReq(null);
+                      }}
+                      className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition shadow-md"
+                    >
+                      Refer Student
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onHandleAction(selectedStudentReq.id, 'info');
+                        setSelectedStudentReq(null);
+                      }}
+                      className="flex-1 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 font-sora font-bold text-[10px] uppercase tracking-wider transition"
+                    >
+                      Need Info
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-2.5">
                   <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
                     selectedStudentReq.status === 'referred' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                     selectedStudentReq.status === 'info'     ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                    selectedStudentReq.status === 'accepted' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
                     'bg-rose-500/10 text-rose-450 border-rose-500/20'
                   }`}>
                     Status: {selectedStudentReq.status}
                   </span>
+                  {selectedStudentReq.status === 'accepted' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('messages');
+                        setActiveChatId(selectedStudentReq.seekerId);
+                        setSelectedStudentReq(null);
+                      }}
+                      className="mt-3 w-full py-2 rounded-xl bg-purple-650 hover:bg-purple-600 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition flex items-center justify-center gap-1.5"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      Message Candidate
+                    </button>
+                  )}
                 </div>
               )}
             </div>

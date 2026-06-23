@@ -18,12 +18,10 @@ interface DiscoverTabProps {
   alumniForRequest: any | null;
   alumniNetwork: any[];
   availabilityFilter: string;
-  collegeOnlyFilter: boolean;
   getFilteredAlumni: () => any[];
   isRequestModalOpen: boolean;
   openRequestModal: (alumni: any) => void;
   pitchMessage: string;
-  profileCollege: string;
   resumeName: string;
   savedAlumniIds: number[];
   searchQuery: string;
@@ -32,7 +30,6 @@ interface DiscoverTabProps {
   selectedRoleFilter: string;
   setAiMatchToggle: (toggle: boolean) => void;
   setAvailabilityFilter: (filter: string) => void;
-  setCollegeOnlyFilter: (filter: boolean) => void;
   setIsRequestModalOpen: (open: boolean) => void;
   setPitchMessage: (message: string) => void;
   setSavedAlumniIds: React.Dispatch<React.SetStateAction<number[]>>;
@@ -60,12 +57,10 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
   alumniForRequest,
   alumniNetwork,
   availabilityFilter,
-  collegeOnlyFilter,
   getFilteredAlumni,
   isRequestModalOpen,
   openRequestModal,
   pitchMessage,
-  profileCollege,
   resumeName,
   savedAlumniIds,
   searchQuery,
@@ -74,7 +69,6 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
   selectedRoleFilter,
   setAiMatchToggle,
   setAvailabilityFilter,
-  setCollegeOnlyFilter,
   setIsRequestModalOpen,
   setPitchMessage,
   setSavedAlumniIds,
@@ -231,24 +225,6 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 select-none self-end sm:self-auto">
-                      {/* College Toggle */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1 font-space-grotesk">
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          Show {profileCollege} only
-                        </span>
-                        <button
-                          onClick={() => setCollegeOnlyFilter(!collegeOnlyFilter)}
-                          className={`w-9 h-5 rounded-full flex items-center transition-colors p-0.5 ${
-                            collegeOnlyFilter ? 'bg-purple-650' : 'bg-slate-800'
-                          }`}
-                        >
-                          <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
-                            collegeOnlyFilter ? 'translate-x-4' : 'translate-x-0'
-                          }`} />
-                        </button>
-                      </div>
-
                       {/* AI Match Toggle */}
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1 font-space-grotesk">
@@ -420,7 +396,7 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                       <Search className="w-10 h-10 text-slate-600 mx-auto mb-3" />
                       <span className="block text-xs font-bold text-slate-400">No alumni match your filters</span>
                       <p className="text-[10px] text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
-                        {collegeOnlyFilter ? `Try turning off the "Show ${profileCollege} only" toggle to search alumni from all campuses.` : 'Try widening your search queries or resetting company filters.'}
+                        Try widening your search queries or resetting company filters.
                       </p>
                     </div>
                   )}

@@ -90,7 +90,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   // Discover state (Screen 2)
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [collegeOnlyFilter, setCollegeOnlyFilter] = useState(true);
   const [privacyCollegeOnly, setPrivacyCollegeOnly] = useState(true);
   const [selectedCompanyFilter, setSelectedCompanyFilter] = useState('All');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState('All');
@@ -789,8 +788,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const getFilteredAlumni = () => {
     let list = [...alumniNetwork];
     
-    if (collegeOnlyFilter) {
-      list = list.filter(a => a.college.toLowerCase() === college.toLowerCase());
+    const targetCollege = profileCollege || college;
+    if (targetCollege) {
+      list = list.filter(a => a.college.toLowerCase() === targetCollege.toLowerCase());
     }
     
     if (searchQuery.trim()) {
@@ -1074,8 +1074,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 setSearchQuery={setSearchQuery}
                 showSuggestions={showSuggestions}
                 setShowSuggestions={setShowSuggestions}
-                collegeOnlyFilter={collegeOnlyFilter}
-                setCollegeOnlyFilter={setCollegeOnlyFilter}
                 availabilityFilter={availabilityFilter}
                 setAvailabilityFilter={setAvailabilityFilter}
                 aiMatchToggle={aiMatchToggle}
@@ -1085,7 +1083,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 openRequestModal={openRequestModal}
                 getFilteredAlumni={getFilteredAlumni}
                 alumniNetwork={alumniNetwork}
-                profileCollege={profileCollege}
                 selectedAlumni={selectedAlumni}
                 setSelectedAlumni={setSelectedAlumni}
                 isRequestModalOpen={isRequestModalOpen}

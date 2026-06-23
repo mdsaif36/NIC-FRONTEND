@@ -40,7 +40,7 @@ interface AlumniDashboardProps {
   onTabChange?: (tab: string) => void;
 }
 
-type AlumniTab = 'overview' | 'inbox' | 'my_referrals' | 'messages' | 'analytics' | 'accounting' | 'profile' | 'admin_panel' | 'slot_management' | 'leaderboard';
+type AlumniTab = 'overview' | 'inbox' | 'my_referrals' | 'messages' | 'analytics' | 'accounting' | 'profile' | 'admin_panel' | 'slot_management' | 'leaderboard' | 'post_referral';
 
 export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   college,
@@ -565,6 +565,8 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
           const post = await res.json();
           setCreatedPostSuccess(post);
           setIsPostingReferral(false);
+          setActiveTab('my_referrals');
+          setMyReferralsSubTab('posts');
           setSelectedJdFile(null);
           setNewPostData({
             company: currentUser?.company || '',
@@ -664,6 +666,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     { id: 'overview',        label: 'Overview',        icon: Home },
     { id: 'inbox',           label: 'Inbox',           icon: Users,        badge: pendingCount },
     { id: 'my_referrals',    label: 'My Referrals',    icon: Briefcase },
+    { id: 'post_referral',   label: 'Post Referral',   icon: Plus },
     { id: 'slot_management', label: 'Slot Management', icon: CalendarDays },
     { id: 'leaderboard',     label: 'Leaderboard',     icon: Trophy },
     { id: 'messages',        label: 'Messages',        icon: MessageSquare },
@@ -794,6 +797,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 {activeTab === 'overview'        && 'Alumni Overview'}
                 {activeTab === 'inbox'           && 'Candidate Inbox'}
                 {activeTab === 'my_referrals'    && 'My Referrals'}
+                {activeTab === 'post_referral'   && 'Post Referral Slot'}
                 {activeTab === 'slot_management' && 'Slot Management'}
                 {activeTab === 'leaderboard'     && '🏆 Hall of Fame'}
                 {activeTab === 'messages'        && 'Messages'}
@@ -2405,6 +2409,179 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 <LogOut className="w-4 h-4" />
                 Logout Account
               </button>
+            </div>
+          )}
+
+          {activeTab === 'post_referral' && (
+            <div className="max-w-xl mx-auto space-y-6 animate-fade-in-up text-left bg-[#08080d]/80 border border-white/5 p-6 rounded-2xl">
+              <div>
+                <h3 className="font-sora text-base font-extrabold text-white">Create a New Referral Post</h3>
+                <p className="text-[10.5px] text-slate-500 mt-1">Publish a job role that seekers can request a referral for.</p>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleCreatePost} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Company */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Company Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newPostData.company}
+                      onChange={e => setNewPostData(prev => ({ ...prev, company: e.target.value }))}
+                      placeholder="e.g. Google"
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+
+                  {/* Role */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Job Role / Title *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newPostData.role}
+                      onChange={e => setNewPostData(prev => ({ ...prev, role: e.target.value }))}
+                      placeholder="e.g. Frontend Engineer"
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Job Type */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Job Type</label>
+                    <select
+                      value={newPostData.jobType}
+                      onChange={e => setNewPostData(prev => ({ ...prev, jobType: e.target.value }))}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500/50 font-inter"
+                    >
+                      <option value="Full-time" className="bg-[#0a0a0f] text-white">Full-time</option>
+                      <option value="Internship" className="bg-[#0a0a0f] text-white">Internship</option>
+                      <option value="Contract" className="bg-[#0a0a0f] text-white">Contract</option>
+                    </select>
+                  </div>
+
+                  {/* Domain */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Domain</label>
+                    <select
+                      value={newPostData.domain}
+                      onChange={e => setNewPostData(prev => ({ ...prev, domain: e.target.value }))}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500/50 font-inter"
+                    >
+                      <option value="Engineering" className="bg-[#0a0a0f] text-white">Engineering</option>
+                      <option value="Data & AI" className="bg-[#0a0a0f] text-white">Data & AI</option>
+                      <option value="Product" className="bg-[#0a0a0f] text-white">Product</option>
+                      <option value="Design" className="bg-[#0a0a0f] text-white">Design</option>
+                      <option value="Marketing" className="bg-[#0a0a0f] text-white">Marketing</option>
+                      <option value="Finance" className="bg-[#0a0a0f] text-white">Finance</option>
+                      <option value="Operations" className="bg-[#0a0a0f] text-white">Operations</option>
+                    </select>
+                  </div>
+
+                  {/* Slots */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Available Slots</label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={newPostData.slots}
+                      onChange={e => setNewPostData(prev => ({ ...prev, slots: Number(e.target.value) }))}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Location */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Location</label>
+                    <input
+                      type="text"
+                      value={newPostData.location}
+                      onChange={e => setNewPostData(prev => ({ ...prev, location: e.target.value }))}
+                      placeholder="e.g. Remote, Bangalore"
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+
+                  {/* Active Duration in Days */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Active Duration (Days) *</label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={newPostData.activeDays}
+                      onChange={e => setNewPostData(prev => ({ ...prev, activeDays: Number(e.target.value) }))}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+                </div>
+
+                {/* Required Skills */}
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Required Skills (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={newPostData.skills}
+                    onChange={e => setNewPostData(prev => ({ ...prev, skills: e.target.value }))}
+                    placeholder="e.g. React, Node.js, TypeScript"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Description / Requirements</label>
+                  <textarea
+                    rows={4}
+                    value={newPostData.description}
+                    onChange={e => setNewPostData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Brief details about the role, referral process, or criteria..."
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 resize-none font-inter"
+                  />
+                </div>
+
+                {/* PDF Job Description Upload */}
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Upload Job Description / Criteria PDF (Optional)
+                  </label>
+                  <div className="relative flex items-center justify-between bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-350">
+                    <span className="truncate max-w-[300px]">
+                      {selectedJdFile ? selectedJdFile.name : 'No PDF selected'}
+                    </span>
+                    <label className="cursor-pointer px-3 py-1.5 rounded bg-white/10 hover:bg-white/15 text-[10px] font-bold text-white transition font-space-grotesk">
+                      Choose PDF
+                      <input
+                        type="file"
+                        accept=".pdf,.docx,.doc"
+                        onChange={e => {
+                          if (e.target.files && e.target.files[0]) {
+                            setSelectedJdFile(e.target.files[0]);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Submit button */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-white font-sora font-extrabold text-xs uppercase tracking-wider transition shadow-md"
+                  >
+                    Post Referral
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 

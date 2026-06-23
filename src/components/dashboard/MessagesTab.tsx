@@ -130,43 +130,38 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
                         </span>
                       </div>
                       
-                      <button
-                        type="button"
-                        onClick={() => setIsSchedulerOpen(true)}
-                        className="px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-semibold text-[10px] uppercase tracking-wider transition shadow-md flex items-center gap-1.5"
-                      >
-                        <Calendar className="w-3.5 h-3.5" />
-                        Schedule Call
-                      </button>
+                      {role === 'alumni' && (
+                        <button
+                          type="button"
+                          onClick={() => setIsSchedulerOpen(true)}
+                          className="px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-semibold text-[10px] uppercase tracking-wider transition shadow-md flex items-center gap-1.5"
+                        >
+                          <Calendar className="w-3.5 h-3.5" />
+                          Schedule Meeting
+                        </button>
+                      )}
                     </div>
 
                     {/* Messages feed */}
                     <div className="flex-1 p-4 overflow-y-auto no-scrollbar space-y-4 flex flex-col bg-slate-950/10 font-inter">
                       {(chatMessages[activeChatId] || []).map((msg, index) => {
                         const isSelf = msg.sender === 'seeker';
-                        const isCallMeeting = msg.text.startsWith('📅 Scheduled a call');
+                        const isMeeting = msg.text.startsWith('📅 Scheduled a meeting') || msg.text.startsWith('📅 Scheduled a call');
                         
                         return (
                           <div 
                             key={index}
                             className={`flex flex-col max-w-[85%] sm:max-w-[70%] ${isSelf ? 'self-end items-end' : 'self-start items-start'}`}
                           >
-                            {isCallMeeting ? (
-                              <div className="p-4 rounded-2xl border border-purple-500/20 bg-purple-950/20 shadow-[0_0_15px_rgba(168,85,247,0.05)] text-left space-y-3">
+                            {isMeeting ? (
+                              <div className="p-4 rounded-2xl border border-purple-500/20 bg-purple-950/20 shadow-[0_0_15px_rgba(168,85,247,0.05)] text-left space-y-2">
                                 <div className="flex items-center gap-2 text-purple-300 text-xs font-bold uppercase tracking-wider">
                                   <Calendar className="w-4 h-4 text-purple-400" />
-                                  Video Call Scheduled
+                                  Meeting Scheduled
                                 </div>
                                 <p className="text-xs text-slate-200 leading-relaxed font-semibold">
                                   {msg.text.split('(')[0]}
                                 </p>
-                                <button
-                                  type="button"
-                                  onClick={() => alert('Starting video call room...')}
-                                  className="px-4 py-1.5 rounded-xl bg-purple-650 hover:bg-purple-600 text-white font-bold text-[9px] uppercase tracking-wider transition"
-                                >
-                                  Join Video Room
-                                </button>
                               </div>
                             ) : (
                               <div className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium ${
@@ -253,12 +248,12 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
                     
                     <h4 className="font-sora text-white text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-1.5">
                       <Calendar className="w-4 h-4 text-purple-400" />
-                      Select Availability
+                      Schedule Meeting
                     </h4>
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-550 uppercase tracking-wider mb-1 font-space-grotesk">Call Date</label>
+                        <label className="block text-[9px] font-bold text-slate-550 uppercase tracking-wider mb-1 font-space-grotesk">Meeting Date</label>
                         <input
                           type="date"
                           value={scheduledDate}
@@ -267,7 +262,7 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-550 uppercase tracking-wider mb-1 font-space-grotesk">Call Time (IST)</label>
+                        <label className="block text-[9px] font-bold text-slate-550 uppercase tracking-wider mb-1 font-space-grotesk">Meeting Time (IST)</label>
                         <input
                           type="time"
                           value={scheduledTime}

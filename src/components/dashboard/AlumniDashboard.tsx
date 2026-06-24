@@ -2724,7 +2724,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
       {/* ── Premium Resume Viewer Overlay Drawer ── */}
       {previewingResume && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-4xl h-[85vh] rounded-[2rem] border border-white/10 bg-[#08080b] p-6 shadow-2xl flex flex-col justify-between animate-fade-in-up">
+          <div className="relative w-[95vw] max-w-6xl h-[90vh] rounded-[2rem] border border-white/10 bg-[#08080b] p-6 shadow-2xl flex flex-col justify-between animate-fade-in-up">
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-white/5 shrink-0">
               <div>
@@ -2745,9 +2745,9 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
             </div>
 
             {/* Viewer Area */}
-            <div className="flex-1 my-5 rounded-xl border border-white/5 bg-slate-950/40 relative overflow-hidden flex items-center justify-center p-4 min-h-[300px]">
+            <div className="flex-1 my-5 rounded-xl border border-white/5 bg-slate-950/40 relative overflow-hidden min-h-[400px]">
               {isLoadingFile ? (
-                <div className="flex flex-col items-center gap-3">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                   <div className="w-8 h-8 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin" />
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Loading PDF from server...</span>
                 </div>
@@ -2755,11 +2755,11 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 previewingResume.resumeName.toLowerCase().endsWith('.pdf') ? (
                   <iframe 
                     src={fileUrl} 
-                    className="w-full h-full rounded-xl border border-white/10"
+                    className="w-full h-full border-none"
                     title="Resume PDF Preview"
                   />
                 ) : (
-                  <div className="text-center p-8">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
                     <FileText className="w-12 h-12 text-slate-500 mx-auto mb-3" />
                     <p className="text-xs text-slate-400 font-semibold mb-3">
                       Word Documents (.docx/.doc) cannot be previewed directly in the browser.
@@ -2775,7 +2775,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                   </div>
                 )
               ) : (
-                <div className="text-center p-8">
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
                   <XCircle className="w-12 h-12 text-rose-500/40 mx-auto mb-3" />
                   <p className="text-xs text-slate-400">Failed to load resume file. It might have been deleted or moved.</p>
                 </div>

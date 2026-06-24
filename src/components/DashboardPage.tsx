@@ -95,8 +95,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const [githubUrl, setGithubUrl] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
-  const [referralCreditsRemaining, setReferralCreditsRemaining] = useState(10);
-  const [monthlyReferralLimit, setMonthlyReferralLimit] = useState(10);
+  const [referralCreditsRemaining, setReferralCreditsRemaining] = useState(5);
+  const [monthlyReferralLimit, setMonthlyReferralLimit] = useState(5);
   const [isOutOfCreditsModalOpen, setIsOutOfCreditsModalOpen] = useState(false);
 
   // Discover state (Screen 2)
@@ -192,8 +192,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           setResumeUploaded(data.resumeUploaded);
           setResumeName(data.resumeName || '');
           setResumesHistory(data.resumesHistory || []);
-          setReferralCreditsRemaining(data.referralCreditsRemaining !== undefined ? data.referralCreditsRemaining : 10);
-          setMonthlyReferralLimit(data.monthlyReferralLimit !== undefined ? data.monthlyReferralLimit : 10);
+          setReferralCreditsRemaining(data.referralCreditsRemaining !== undefined ? data.referralCreditsRemaining : 5);
+          setMonthlyReferralLimit(data.monthlyReferralLimit !== undefined ? data.monthlyReferralLimit : 5);
         } else {
           setReferralsSentCount(data.referralsSentCount);
         }
@@ -728,8 +728,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           setResumeUploaded(data.resumeUploaded);
           setResumeName(data.resumeName);
           setResumesHistory(data.resumesHistory || []);
-          setReferralCreditsRemaining(data.referralCreditsRemaining !== undefined ? data.referralCreditsRemaining : 4);
-          setMonthlyReferralLimit(data.monthlyReferralLimit !== undefined ? data.monthlyReferralLimit : 4);
+          setReferralCreditsRemaining(data.referralCreditsRemaining !== undefined ? data.referralCreditsRemaining : 5);
+          setMonthlyReferralLimit(data.monthlyReferralLimit !== undefined ? data.monthlyReferralLimit : 5);
         }
       }
     } catch (err) {
@@ -1509,7 +1509,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                     Referral Credits Exhausted
                   </h3>
                   <p className="text-[11px] text-slate-450 leading-relaxed max-w-xs mx-auto">
-                    You have utilized all of your <strong className="text-white">10/10 monthly referral credits</strong>. Submitting new requests is locked until the next billing cycle.
+                    You have utilized all of your <strong className="text-white">{monthlyReferralLimit}/{monthlyReferralLimit} monthly referral credits</strong>. Submitting new requests is locked until the next billing cycle.
                   </p>
                 </div>
                 

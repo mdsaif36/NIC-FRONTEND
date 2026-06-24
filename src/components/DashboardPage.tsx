@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper, Sparkles,
-  Bell, X, CheckCircle, Clock, AlertCircle
+  Bell, X, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { DashboardTab } from './dashboard/DashboardTab';
@@ -992,43 +992,34 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           </div>
 
           {role === 'seeker' && (
-            <div className="px-4 py-4 mx-3 my-3 bg-gradient-to-b from-[#0e0e15] to-[#07070a] border border-white/[0.08] rounded-2xl space-y-3.5 font-inter text-left shadow-[0_10px_30px_rgba(0,0,0,0.4)] relative overflow-hidden group hover:border-purple-500/20 transition-all duration-300">
-              {/* Radial glow */}
-              <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-purple-500/5 blur-2xl group-hover:bg-purple-500/10 transition-all duration-500 pointer-events-none" />
-              
-              <div className="flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  <span className="block text-[8.5px] font-black text-slate-400 uppercase tracking-widest font-sora">Referral Power</span>
-                </div>
-                <span className="text-[10px] font-black text-purple-300 font-mono bg-purple-500/5 px-2 py-0.5 rounded-md border border-purple-500/10">
+            <div className="px-4 py-3.5 mx-3 my-3 bg-[#08080c] border border-white/5 rounded-xl space-y-3 font-inter text-left shadow-md relative">
+              <div className="flex items-center justify-between">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sora">Referral Credits</span>
+                <span className="text-[10px] font-bold text-purple-400 font-mono bg-purple-550/10 px-2 py-0.5 rounded-md">
                   {referralCreditsRemaining} / {monthlyReferralLimit}
                 </span>
               </div>
               
-              {/* Equalizer Indicator Showing All Credits at Once */}
-              <div className="flex items-end justify-between gap-1 py-2 px-1 bg-black/40 border border-white/5 rounded-xl relative z-10 h-10">
+              {/* Simple Dots showing all credits at once */}
+              <div className="flex items-center justify-between gap-1 py-1 px-0.5">
                 {Array.from({ length: monthlyReferralLimit }).map((_, idx) => {
                   const isActive = idx < referralCreditsRemaining;
                   return (
                     <div 
                       key={idx} 
-                      className={`w-1.5 rounded-full transition-all duration-500 transform hover:scale-y-125 origin-bottom ${
+                      className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                         isActive 
-                          ? 'h-6 bg-gradient-to-t from-indigo-500 via-purple-500 to-fuchsia-400 shadow-[0_0_8px_rgba(168,85,247,0.5)]' 
-                          : 'h-2 bg-white/5 border border-white/5'
+                          ? 'bg-purple-500' 
+                          : 'bg-white/10'
                       }`} 
-                      title={isActive ? "Active Referral Token" : "Spent Referral Token"}
+                      title={isActive ? "Active Credit" : "Spent Credit"}
                     />
                   );
                 })}
               </div>
 
-              <div className="flex items-center justify-between text-[8px] text-slate-500 font-semibold relative z-10 pt-0.5">
-                <div className="flex items-center gap-1">
-                  <Clock className="w-2.5 h-2.5 text-slate-600" />
-                  <span>Cycle resets: {getNextResetDate()}</span>
-                </div>
+              <div className="text-[8.5px] text-slate-500 font-medium">
+                Cycle resets on {getNextResetDate()}
               </div>
             </div>
           )}

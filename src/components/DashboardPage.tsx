@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper, Sparkles,
-  Bell, X, CheckCircle, Zap, Clock
+  Bell, X, CheckCircle, Zap, Clock, AlertCircle
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { DashboardTab } from './dashboard/DashboardTab';
@@ -97,6 +97,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const [isEditMode, setIsEditMode] = useState(false);
   const [referralCreditsRemaining, setReferralCreditsRemaining] = useState(10);
   const [monthlyReferralLimit, setMonthlyReferralLimit] = useState(10);
+  const [isOutOfCreditsModalOpen, setIsOutOfCreditsModalOpen] = useState(false);
 
   // Discover state (Screen 2)
   const [searchQuery, setSearchQuery] = useState('');
@@ -588,6 +589,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   // Seeker submits referral request
   const submitReferralRequest = async () => {
     if (!alumniForRequest) return;
+    if (referralCreditsRemaining <= 0) {
+      setIsOutOfCreditsModalOpen(true);
+      setIsRequestModalOpen(false);
+      return;
+    }
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE_URL}/api/requests`, {
@@ -911,6 +917,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
 
   // Open referral request modal
   const openRequestModal = (alumni: any) => {
+    if (referralCreditsRemaining <= 0) {
+      setIsOutOfCreditsModalOpen(true);
+      return;
+    }
     setAlumniForRequest(alumni);
     setPitchMessage('');
     setIsRequestModalOpen(true);
@@ -991,9 +1001,36 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                   <Zap className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
                   <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider font-sora">Referral Credits</span>
                 </div>
-                <span className="text-[10px] font-black text-purple-400 font-mono bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
-                  {referralCreditsRemaining}/{monthlyReferralLimit}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-black text-purple-400 font-mono bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+                    {referralCreditsRemaining}/{monthlyReferralLimit}
+                  </span>
+                  {referralCreditsRemaining < monthlyReferralLimit && (
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const token = localStorage.getItem('token');
+                        try {
+                          const res = await fetch(`${API_BASE_URL}/api/users/refill-credits`, {
+                            method: 'POST',
+                            headers: {
+                              'Authorization': `Bearer ${token}`
+                            }
+                          });
+                          if (res.ok) {
+                            setReferralCreditsRemaining(10);
+                          }
+                        } catch (err) {
+                          console.error("Error refilling credits:", err);
+                        }
+                      }}
+                      className="text-[8px] font-extrabold text-white bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/30 px-1.5 py-0.5 rounded transition uppercase tracking-wider cursor-pointer"
+                      title="Refill Credits to 10"
+                    >
+                      Refill
+                    </button>
+                  )}
+                </div>
               </div>
               
               <div className="flex flex-wrap items-center gap-1.5 py-1 relative z-10">
@@ -1480,6 +1517,85 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             >
               <X className="w-4 h-4" />
             </button>
+          </div>
+        )}
+
+        {/* Out of Credits Modal */}
+        {isOutOfCreditsModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+            <div 
+              className="w-full max-w-md bg-[#07070a] border border-red-500/20 p-6 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.1)] relative text-left animate-modal-scale-in"
+              onClick={e => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setIsOutOfCreditsModalOpen(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/5 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              
+              <div className="text-center space-y-4 pt-2">
+                <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/25 flex items-center justify-center mx-auto shadow-[0_0_15px_rgba(239,68,68,0.15)] animate-pulse">
+                  <AlertCircle className="w-6 h-6 text-red-500" />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <h3 className="font-sora text-sm font-extrabold text-white uppercase tracking-wider">
+                    Referral Credits Exhausted
+                  </h3>
+                  <p className="text-[11px] text-slate-450 leading-relaxed max-w-xs mx-auto">
+                    You have utilized all of your <strong className="text-white">10/10 monthly referral credits</strong>. Submitting new requests is locked until the next billing cycle.
+                  </p>
+                </div>
+                
+                <div className="p-3.5 rounded-xl bg-red-950/10 border border-red-500/10 text-left space-y-2">
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-slate-500 font-bold uppercase tracking-wider">Reset Cycle</span>
+                    <span className="text-red-400 font-bold font-mono">{getNextResetDate()}</span>
+                  </div>
+                  <p className="text-[9.5px] text-slate-400 leading-normal border-t border-white/5 pt-2">
+                    Credits prevent platform spam and ensure alumni receive high-quality requests. You can still message existing accepted contacts or view active alumni.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsOutOfCreditsModalOpen(false);
+                      setActiveTab('messages');
+                    }}
+                    className="py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-350 hover:text-white font-sora font-bold text-[10px] uppercase tracking-wider transition"
+                  >
+                    Go to Chats
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const token = localStorage.getItem('token');
+                      try {
+                        const res = await fetch(`${API_BASE_URL}/api/users/refill-credits`, {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${token}`
+                          }
+                        });
+                        if (res.ok) {
+                          setReferralCreditsRemaining(10);
+                          setIsOutOfCreditsModalOpen(false);
+                        }
+                      } catch (err) {
+                        console.error("Error refilling credits:", err);
+                      }
+                    }}
+                    className="py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition shadow-md flex items-center justify-center gap-1"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    Instant Refill (Demo)
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </section>

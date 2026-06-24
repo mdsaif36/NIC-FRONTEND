@@ -619,7 +619,7 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.open(`${API_BASE_URL}/api/referrals/files/${post.jdFileName}`, '_blank');
+                            window.open(post.jdFileName?.startsWith('http') ? post.jdFileName : `${API_BASE_URL}/api/referrals/files/${post.jdFileName}`, '_blank');
                           }}
                           className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-[9px] font-bold text-teal-400 hover:bg-teal-500/20 transition-all cursor-pointer z-20"
                         >
@@ -808,7 +808,7 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
                       <span className="text-[10px] text-teal-400 font-semibold">Attached Job Specification PDF:</span>
                       <button
                         type="button"
-                        onClick={() => window.open(`${API_BASE_URL}/api/referrals/files/${selectedPost.jdFileName}`, '_blank')}
+                        onClick={() => window.open(selectedPost.jdFileName?.startsWith('http') ? selectedPost.jdFileName : `${API_BASE_URL}/api/referrals/files/${selectedPost.jdFileName}`, '_blank')}
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-teal-500/15 border border-teal-500/30 text-[10px] font-bold text-teal-350 hover:bg-teal-500/25 transition-all"
                       >
                         <FileText className="w-3.5 h-3.5" />

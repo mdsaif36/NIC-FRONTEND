@@ -4,6 +4,24 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 
+const getCleanFilename = (name: string): string => {
+  if (!name) return '';
+  if (name.startsWith('http://') || name.startsWith('https://')) {
+    try {
+      const decoded = decodeURIComponent(name);
+      const lastSegment = decoded.split('/').pop() || '';
+      const parts = lastSegment.split('-');
+      if (parts.length > 1 && !isNaN(Number(parts[0]))) {
+        return parts.slice(1).join('-');
+      }
+      return lastSegment;
+    } catch {
+      return name;
+    }
+  }
+  return name;
+};
+
 
 const dbName = "NexInCampus_ResumesDB";
 const storeName = "resumes";
@@ -307,6 +325,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   }, [activityMap]);
 
   const handleDownloadResume = async (name: string) => {
+    if (name.startsWith('http://') || name.startsWith('https://')) {
+      window.open(name, '_blank');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE_URL}/api/users/resume/download/${userId}/${encodeURIComponent(name)}`, {
@@ -349,6 +372,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   };
 
   const handleViewResume = async (name: string) => {
+    if (name.startsWith('http://') || name.startsWith('https://')) {
+      window.open(name, '_blank');
+      return;
+    }
+
     setUploadStatus({
       type: 'success',
       message: `Fetching secure document stream for "${name}"...`
@@ -412,11 +440,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       const namesToLoad = new Set<string>();
       
       for (const item of resumesHistory) {
-        if (item.name.toLowerCase().endsWith('.pdf')) {
+        if (item.name.toLowerCase().endsWith('.pdf') && !item.name.startsWith('http')) {
           namesToLoad.add(item.name);
         }
       }
-      if (resumeName && resumeName.toLowerCase().endsWith('.pdf')) {
+      if (resumeName && resumeName.toLowerCase().endsWith('.pdf') && !resumeName.startsWith('http')) {
         namesToLoad.add(resumeName);
       }
 
@@ -1489,7 +1517,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                           </div>
                           <div>
                             <span className="block font-bold text-white text-xs truncate max-w-[200px] sm:max-w-[280px]" title={resumeName}>
-                              {resumeName}
+                              {getCleanFilename(resumeName)}
                             </span>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[8px] text-slate-500 font-mono">
@@ -1601,7 +1629,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                                       className={`block text-[10px] font-bold truncate max-w-[130px] sm:max-w-[180px] ${isActive ? 'text-white' : 'text-slate-350'}`}
                                       title={item.name}
                                     >
-                                      {item.name}
+                                      {getCleanFilename(item.name)}
                                     </span>
                                     <span className="block text-[7.5px] text-slate-500 mt-0.5 font-medium">
                                       {item.size} · {item.uploadedAt}

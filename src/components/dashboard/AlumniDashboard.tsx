@@ -12,6 +12,24 @@ import { SlotManagementTab } from './SlotManagementTab.js';
 import { LeaderboardTab } from './LeaderboardTab.js';
 import { API_BASE_URL } from '../../config';
 
+const getCleanFilename = (name: string): string => {
+  if (!name) return '';
+  if (name.startsWith('http://') || name.startsWith('https://')) {
+    try {
+      const decoded = decodeURIComponent(name);
+      const lastSegment = decoded.split('/').pop() || '';
+      const parts = lastSegment.split('-');
+      if (parts.length > 1 && !isNaN(Number(parts[0]))) {
+        return parts.slice(1).join('-');
+      }
+      return lastSegment;
+    } catch {
+      return name;
+    }
+  }
+  return name;
+};
+
 interface AlumniDashboardProps {
   college: string;
   company: string;
@@ -445,6 +463,11 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   const [inboxFilter, setInboxFilter] = useState<'All' | 'Pending' | 'Accepted' | 'Referred' | 'Info' | 'Declined'>('Pending');
 
   const handleViewResume = async (seekerId: number, resumeName: string) => {
+    if (resumeName.startsWith('http://') || resumeName.startsWith('https://')) {
+      window.open(resumeName, '_blank');
+      return;
+    }
+
     // Open a blank tab synchronously to prevent popup blockers
     const newTab = window.open('', '_blank');
     if (newTab) {
@@ -1204,7 +1227,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                                     className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-purple-400 hover:text-purple-355 transition"
                                   >
                                     <FileText className="w-3.5 h-3.5 text-rose-500" />
-                                    {req.resumeName}
+                                    <span title={req.resumeName}>{getCleanFilename(req.resumeName)}</span>
                                   </button>
                                 ) : (
                                   <span className="text-[10px] text-slate-500 italic">No resume uploaded</span>
@@ -1575,7 +1598,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                           </div>
                           {post.jdFileName && (
                             <a
-                              href={`${API_BASE_URL}/api/referrals/files/${post.jdFileName}`}
+                              href={post.jdFileName.startsWith('http') ? post.jdFileName : `${API_BASE_URL}/api/referrals/files/${post.jdFileName}`}
                               target="_blank"
                               rel="noreferrer"
                               className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-teal-500/10 border border-teal-500/15 text-[8.5px] font-bold text-teal-400 hover:bg-teal-500/20 transition mb-3"
@@ -2377,7 +2400,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                         <p>Your ID verification request is pending. Admin will approve shortly.</p>
                         <div className="relative w-32 h-20 rounded border border-white/10 overflow-hidden bg-black flex items-center justify-center">
                           <img 
-                            src={`/api/users/verify/screenshot/${currentUser.id}`} 
+                            src={currentUser.employeeScreenshot.startsWith('http') ? currentUser.employeeScreenshot : `${API_BASE_URL}/api/users/verify/screenshot/${currentUser.id}`} 
                             alt="ID Screenshot" 
                             className="max-w-full max-h-full object-contain"
                           />
@@ -2689,13 +2712,13 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                         <div className="shrink-0 space-y-1">
                           <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider">Employee Badge Screenshot</span>
                           <a 
-                            href={`/api/users/verify/screenshot/${reviewUser.id}`} 
+                            href={reviewUser.employeeScreenshot.startsWith('http') ? reviewUser.employeeScreenshot : `${API_BASE_URL}/api/users/verify/screenshot/${reviewUser.id}`} 
                             target="_blank" 
                             rel="noreferrer"
                             className="relative block w-40 h-24 rounded border border-white/10 overflow-hidden bg-black hover:border-purple-500/50 transition cursor-zoom-in"
                           >
                             <img 
-                              src={`/api/users/verify/screenshot/${reviewUser.id}`} 
+                              src={reviewUser.employeeScreenshot.startsWith('http') ? reviewUser.employeeScreenshot : `${API_BASE_URL}/api/users/verify/screenshot/${reviewUser.id}`} 
                               alt="Manual Badge" 
                               className="w-full h-full object-contain"
                             />
@@ -2871,7 +2894,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                   <div className="p-2 bg-black/40 rounded-xl border border-white/5 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-rose-500 shrink-0" />
-                      <span className="text-white font-bold truncate max-w-[150px]">{selectedStudentReq.resumeName || 'resume.pdf'}</span>
+                      <span className="text-white font-bold truncate max-w-[150px]" title={selectedStudentReq.resumeName}>{getCleanFilename(selectedStudentReq.resumeName) || 'resume.pdf'}</span>
                     </div>
                     {selectedStudentReq.resumeUploaded ? (
                       <button

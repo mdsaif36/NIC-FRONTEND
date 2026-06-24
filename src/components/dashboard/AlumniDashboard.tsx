@@ -442,7 +442,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   }, [requests]);
 
   // Local tab filters
-  const [inboxFilter, setInboxFilter] = useState<'All' | 'Pending' | 'Referred' | 'Info' | 'Declined'>('Pending');
+  const [inboxFilter, setInboxFilter] = useState<'All' | 'Pending' | 'Accepted' | 'Referred' | 'Info' | 'Declined'>('Pending');
   const [previewingResume, setPreviewingResume] = useState<{ seekerId: number; resumeName: string; studentName: string } | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [isLoadingFile, setIsLoadingFile] = useState(false);
@@ -1045,11 +1045,17 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-white/5 bg-white/[0.01] backdrop-blur-md">
                 {/* Status Filters */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  {['All', 'Pending', 'Referred', 'Info', 'Declined'].map((filter) => {
+                  {['All', 'Pending', 'Accepted', 'Referred', 'Info', 'Declined'].map((filter) => {
                     const count = filter === 'Pending' 
                       ? localRequests.filter(r => r.status === 'pending').length 
+                      : filter === 'Accepted'
+                      ? localRequests.filter(r => r.status === 'accepted').length
                       : filter === 'Referred' 
                       ? localRequests.filter(r => r.status === 'referred').length
+                      : filter === 'Info'
+                      ? localRequests.filter(r => r.status === 'info').length
+                      : filter === 'Declined'
+                      ? localRequests.filter(r => r.status === 'declined').length
                       : 0;
                     return (
                       <button
@@ -1204,16 +1210,32 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
                           {/* Action panel */}
                           <div className="flex flex-col gap-2.5 shrink-0 md:w-44 relative">
-                            {req.status === 'pending' ? (
+                            {req.status === 'pending' || req.status === 'accepted' || req.status === 'info' ? (
                               <>
-                                <button
-                                  type="button"
-                                  onClick={() => onHandleAction(req.id, 'accepted')}
-                                  className="w-full py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition shadow-md"
-                                >
-                                  <Check className="w-3.5 h-3.5" />
-                                  Accept
-                                </button>
+                                {req.status === 'accepted' && (
+                                  <div className="text-center p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                                    <Check className="w-3 h-3" /> Accepted
+                                  </div>
+                                )}
+                                {req.status === 'info' && (
+                                  <div className="text-center p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                                    <Clock className="w-3 h-3" /> Info Requested
+                                  </div>
+                                )}
+
+                                {/* Accept button - only show for pending and info */}
+                                {(req.status === 'pending' || req.status === 'info') && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onHandleAction(req.id, 'accepted')}
+                                    className="w-full py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition shadow-md"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                    Accept
+                                  </button>
+                                )}
+
+                                {/* Refer button */}
                                 <button
                                   type="button"
                                   onClick={() => onHandleAction(req.id, 'referred')}
@@ -1222,14 +1244,34 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                                   <UserCheck className="w-3.5 h-3.5" />
                                   Refer
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => onHandleAction(req.id, 'info')}
-                                  className="w-full py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition"
-                                >
-                                  <Clock className="w-3.5 h-3.5" />
-                                  Need Info
-                                </button>
+
+                                {/* Message button - only show for accepted and info */}
+                                {(req.status === 'accepted' || req.status === 'info') && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveTab('messages');
+                                      setActiveChatId(req.seekerId);
+                                    }}
+                                    className="w-full py-2.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5"
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                    Message
+                                  </button>
+                                )}
+
+                                {/* Need Info button - only show for pending and accepted */}
+                                {(req.status === 'pending' || req.status === 'accepted') && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onHandleAction(req.id, 'info')}
+                                    className="w-full py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition"
+                                  >
+                                    <Clock className="w-3.5 h-3.5" />
+                                    Need Info
+                                  </button>
+                                )}
+
                                 <div className="relative w-full">
                                   <button
                                     type="button"
@@ -1277,28 +1319,8 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                             ) : (
                               <div className={`p-4 rounded-xl border text-center flex flex-col items-center justify-center gap-2 w-full ${
                                 req.status === 'referred' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' :
-                                req.status === 'info'     ? 'bg-amber-500/5 border-amber-500/20 text-amber-400' :
-                                req.status === 'accepted' ? 'bg-purple-500/5 border-purple-500/20 text-purple-400' :
                                 'bg-rose-500/5 border-rose-500/20 text-rose-400'
                               }`}>
-                                {req.status === 'accepted' && (
-                                  <>
-                                    <CheckCircle className="w-6 h-6 text-purple-450" />
-                                    <span className="text-xs font-bold uppercase tracking-wider">Accepted!</span>
-                                    <span className="text-[8px] text-slate-400">Chat activated</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveTab('messages');
-                                        setActiveChatId(req.seekerId);
-                                      }}
-                                      className="mt-2 w-full py-1.5 rounded-xl border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 text-[10px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5"
-                                    >
-                                      <MessageSquare className="w-3.5 h-3.5" />
-                                      Message
-                                    </button>
-                                  </>
-                                )}
                                 {req.status === 'referred' && (
                                   <>
                                     <CheckCircle className="w-6 h-6 animate-logo-pulse" />
@@ -1317,24 +1339,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                                     </button>
                                   </>
                                 )}
-                                {req.status === 'info' && (
-                                  <>
-                                    <Clock className="w-6 h-6" />
-                                    <span className="text-xs font-bold uppercase tracking-wider">Info Requested</span>
-                                    <span className="text-[8px] text-slate-400">Candidate notified</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveTab('messages');
-                                        setActiveChatId(req.seekerId);
-                                      }}
-                                      className="mt-2 w-full py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 text-[10px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5"
-                                    >
-                                      <MessageSquare className="w-3.5 h-3.5" />
-                                      Message
-                                    </button>
-                                  </>
-                                )}
                                 {req.status === 'declined' && (
                                   <>
                                     <XCircle className="w-6 h-6" />
@@ -1345,6 +1349,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                               </div>
                             )}
                           </div>
+
                         </div>
                       </div>
                     );
@@ -1462,24 +1467,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                               </div>
                             </div>
 
-                            {/* Progress visualizer */}
-                            <div className="flex-1 md:max-w-xs space-y-1.5">
-                              <div className="flex items-center justify-between text-[9px] font-bold">
-                                <span className="text-slate-500 uppercase tracking-wide">Progress</span>
-                                <span className="text-slate-300">{candidate.progress}%</span>
-                              </div>
-                              <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
-                                <div 
-                                  className={`h-full rounded-full bg-gradient-to-r transition-all duration-500 ${
-                                    candidate.stage === 'Offered' ? 'from-purple-500 to-indigo-400' :
-                                    candidate.stage === 'Interviewing' ? 'from-blue-500 to-cyan-400' :
-                                    candidate.stage === 'Under Review' ? 'from-amber-500 to-yellow-400' :
-                                    'from-slate-600 to-slate-400'
-                                  }`} 
-                                  style={{ width: `${candidate.progress}%` }} 
-                                />
-                              </div>
-                            </div>
+
 
                             {/* Status detail */}
                             <div className="text-left md:text-right shrink-0 flex flex-col items-start md:items-end gap-1.5">
@@ -2981,19 +2969,36 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
             {/* Actions panel */}
             <div className="pt-3 border-t border-white/5 mt-auto">
-              {selectedStudentReq.status === 'pending' ? (
+              {selectedStudentReq.status === 'pending' || selectedStudentReq.status === 'accepted' || selectedStudentReq.status === 'info' ? (
                 <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onHandleAction(selectedStudentReq.id, 'accepted');
-                      setSelectedStudentReq(null);
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition shadow-md"
-                  >
-                    Accept Request
-                  </button>
+                  {/* Status indicator inside modal */}
+                  {selectedStudentReq.status === 'accepted' && (
+                    <div className="text-center p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                      <Check className="w-3 h-3" /> Accepted
+                    </div>
+                  )}
+                  {selectedStudentReq.status === 'info' && (
+                    <div className="text-center p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                      <Clock className="w-3 h-3" /> Info Requested
+                    </div>
+                  )}
+
+                  {/* Accept Request button - only for pending and info */}
+                  {(selectedStudentReq.status === 'pending' || selectedStudentReq.status === 'info') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onHandleAction(selectedStudentReq.id, 'accepted');
+                        setSelectedStudentReq(null);
+                      }}
+                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition shadow-md"
+                    >
+                      Accept Request
+                    </button>
+                  )}
+
                   <div className="flex gap-2">
+                    {/* Refer Student button */}
                     <button
                       type="button"
                       onClick={() => {
@@ -3004,29 +3009,24 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                     >
                       Refer Student
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onHandleAction(selectedStudentReq.id, 'info');
-                        setSelectedStudentReq(null);
-                      }}
-                      className="flex-1 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 font-sora font-bold text-[10px] uppercase tracking-wider transition"
-                    >
-                      Need Info
-                    </button>
+
+                    {/* Need Info button - only for pending and accepted */}
+                    {(selectedStudentReq.status === 'pending' || selectedStudentReq.status === 'accepted') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onHandleAction(selectedStudentReq.id, 'info');
+                          setSelectedStudentReq(null);
+                        }}
+                        className="flex-1 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 font-sora font-bold text-[10px] uppercase tracking-wider transition"
+                      >
+                        Need Info
+                      </button>
+                    )}
                   </div>
-                </div>
-              ) : (
-                <div className="text-center py-2.5">
-                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
-                    selectedStudentReq.status === 'referred' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                    selectedStudentReq.status === 'info'     ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                    selectedStudentReq.status === 'accepted' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                    'bg-rose-500/10 text-rose-450 border-rose-500/20'
-                  }`}>
-                    Status: {selectedStudentReq.status}
-                  </span>
-                  {selectedStudentReq.status === 'accepted' && (
+
+                  {/* Message Candidate button - only for accepted and info */}
+                  {(selectedStudentReq.status === 'accepted' || selectedStudentReq.status === 'info') && (
                     <button
                       type="button"
                       onClick={() => {
@@ -3034,12 +3034,21 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                         setActiveChatId(selectedStudentReq.seekerId);
                         setSelectedStudentReq(null);
                       }}
-                      className="mt-3 w-full py-2 rounded-xl bg-purple-650 hover:bg-purple-600 text-white font-sora font-bold text-[10px] uppercase tracking-wider transition flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 font-sora font-bold text-[10px] uppercase tracking-wider transition flex items-center justify-center gap-1.5"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
                       Message Candidate
                     </button>
                   )}
+                </div>
+              ) : (
+                <div className="text-center py-2.5">
+                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
+                    selectedStudentReq.status === 'referred' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                    'bg-rose-500/10 text-rose-450 border-rose-500/20'
+                  }`}>
+                    Status: {selectedStudentReq.status}
+                  </span>
                 </div>
               )}
             </div>

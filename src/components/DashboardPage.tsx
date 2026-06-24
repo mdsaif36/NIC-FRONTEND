@@ -387,6 +387,48 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     }
   };
 
+  const handleNotificationNavigation = (notif: any) => {
+    markNotificationAsRead(notif.id);
+    const actionUrl = notif.actionUrl || '';
+    
+    if (role === 'alumni') {
+      if (actionUrl.includes('tab=inbox')) {
+        setAlumniActiveTab('inbox');
+      } else if (actionUrl.includes('tab=messages') || notif.type === 'message_received') {
+        setAlumniActiveTab('messages');
+        if (notif.metadata?.senderId) {
+          setActiveChatId(notif.metadata.senderId);
+        } else if (notif.metadata?.seekerId) {
+          setActiveChatId(notif.metadata.seekerId);
+        }
+      } else if (actionUrl.includes('tab=my_referrals')) {
+        setAlumniActiveTab('my_referrals');
+      } else if (actionUrl.includes('tab=leaderboard')) {
+        setAlumniActiveTab('leaderboard');
+      } else {
+        setAlumniActiveTab('overview');
+      }
+    } else {
+      // Seeker navigation
+      if (actionUrl.includes('tab=referral_board')) {
+        setActiveTab('referral_board');
+      } else if (actionUrl.includes('tab=my_referrals')) {
+        setActiveTab('my_referrals');
+      } else if (actionUrl.includes('tab=messages') || notif.type === 'message_received') {
+        setActiveTab('messages');
+        if (notif.metadata?.senderId) {
+          setActiveChatId(notif.metadata.senderId);
+        } else if (notif.metadata?.alumniId) {
+          setActiveChatId(notif.metadata.alumniId);
+        }
+      } else if (actionUrl.includes('tab=leaderboard')) {
+        setActiveTab('dashboard');
+      } else {
+        setActiveTab('dashboard');
+      }
+    }
+  };
+
   // Load all initial data on mount
   useEffect(() => {
     fetchProfile();
@@ -1321,14 +1363,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                       <div
                         key={notif.id}
                         onClick={() => {
-                          markNotificationAsRead(notif.id);
-                          if (notif.actionUrl) {
-                            if (notif.actionUrl.includes('tab=referral_board')) {
-                              setActiveTab('referral_board');
-                            } else if (notif.actionUrl.includes('tab=my_referrals')) {
-                              setActiveTab('my_referrals');
-                            }
-                          }
+                          handleNotificationNavigation(notif);
                           setIsNotificationDrawerOpen(false);
                         }}
                         className={`p-4 rounded-xl border transition-all duration-300 cursor-pointer text-left relative overflow-hidden group ${
@@ -1367,11 +1402,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
         {activeToast && (
           <div 
             onClick={() => {
-              if (activeToast.actionUrl && activeToast.actionUrl.includes('tab=referral_board')) {
-                setActiveTab('referral_board');
-              } else if (activeToast.actionUrl && activeToast.actionUrl.includes('tab=my_referrals')) {
-                setActiveTab('my_referrals');
-              }
+              handleNotificationNavigation(activeToast);
               setActiveToast(null);
             }}
             className="fixed top-6 right-6 z-[60] w-72 bg-[#09090f]/95 border border-purple-500/30 backdrop-blur-md rounded-xl p-3 shadow-[0_8px_32px_rgba(168,85,247,0.2)] flex items-center justify-between gap-3 animate-slide-in-right cursor-pointer hover:border-purple-500/50 transition-all duration-300 select-none group"

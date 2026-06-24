@@ -4,7 +4,7 @@ import {
   Home, LogOut, MessageSquare, ShieldCheck, TrendingUp,
   UserCheck, Users, XCircle, Send, Bell, 
   ChevronRight, Activity, Award, Zap, Settings, Briefcase,
-  Sparkles, Filter, Trash2, Plus, ChevronDown, X, Download,
+  Sparkles, Filter, Trash2, Plus, ChevronDown, X,
   CalendarDays, Trophy
 } from 'lucide-react';
 import { MessagesTab } from './MessagesTab.js';
@@ -443,17 +443,12 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
   // Local tab filters
   const [inboxFilter, setInboxFilter] = useState<'All' | 'Pending' | 'Accepted' | 'Referred' | 'Info' | 'Declined'>('Pending');
-  const [previewingResume, setPreviewingResume] = useState<{ seekerId: number; resumeName: string; studentName: string } | null>(null);
-  const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const [isLoadingFile, setIsLoadingFile] = useState(false);
 
-  const handleViewResume = async (seekerId: number, resumeName: string, studentName: string) => {
-    setIsLoadingFile(true);
-    setPreviewingResume({ seekerId, resumeName, studentName });
-    
-    if (fileUrl) {
-      URL.revokeObjectURL(fileUrl);
-      setFileUrl(null);
+  const handleViewResume = async (seekerId: number, resumeName: string) => {
+    // Open a blank tab synchronously to prevent popup blockers
+    const newTab = window.open('', '_blank');
+    if (newTab) {
+      newTab.document.write('<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;background:#08080b;color:#a0aec0;"><div style="border:4px solid rgba(168,85,247,0.2);border-top:4px solid #a855f7;border-radius:50%;width:36px;height:36px;animation:spin 1s linear infinite;"></div><p style="margin-top:16px;font-size:14px;font-weight:600;">Loading Resume Preview...</p><style>@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style></div>');
     }
 
     try {
@@ -465,23 +460,40 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
       });
       if (res.ok) {
         const blob = await res.blob();
-        const objectUrl = URL.createObjectURL(blob);
-        setFileUrl(objectUrl);
+        
+        // Force PDF type so browser opens it as a PDF
+        let type = blob.type;
+        if (resumeName.toLowerCase().endsWith('.pdf')) {
+          type = 'application/pdf';
+        } else if (resumeName.toLowerCase().endsWith('.docx') || resumeName.toLowerCase().endsWith('.doc')) {
+          type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        }
+        
+        const fileBlob = new Blob([blob], { type });
+        const objectUrl = URL.createObjectURL(fileBlob);
+        
+        if (newTab) {
+          if (resumeName.toLowerCase().endsWith('.pdf')) {
+            newTab.location.href = objectUrl;
+          } else {
+            // For non-PDF (word files), download it
+            newTab.close();
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = resumeName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        }
       } else {
-        console.error("Failed to load resume file from backend.");
+        if (newTab) newTab.close();
+        alert("Failed to load resume file from backend.");
       }
     } catch (err) {
+      if (newTab) newTab.close();
       console.error("Error fetching resume:", err);
-    } finally {
-      setIsLoadingFile(false);
-    }
-  };
-
-  const handleClosePreview = () => {
-    setPreviewingResume(null);
-    if (fileUrl) {
-      URL.revokeObjectURL(fileUrl);
-      setFileUrl(null);
+      alert("Error loading resume file.");
     }
   };
   const [collegeTierFilter, setCollegeTierFilter] = useState<'All' | 'Top-tier' | 'State' | 'Private'>('All');
@@ -1188,7 +1200,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                                 {req.resumeUploaded && req.resumeName ? (
                                   <button 
                                     type="button" 
-                                    onClick={() => handleViewResume(req.seekerId, req.resumeName, req.studentName)} 
+                                    onClick={() => handleViewResume(req.seekerId, req.resumeName)} 
                                     className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-purple-400 hover:text-purple-355 transition"
                                   >
                                     <FileText className="w-3.5 h-3.5 text-rose-500" />
@@ -2721,94 +2733,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
         </div>
       </main>
 
-      {/* ── Premium Resume Viewer Overlay Drawer ── */}
-      {previewingResume && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="relative w-[95vw] max-w-6xl h-[90vh] rounded-[2rem] border border-white/10 bg-[#08080b] p-6 shadow-2xl flex flex-col justify-between animate-fade-in-up">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/5 shrink-0">
-              <div>
-                <h3 className="font-sora text-white text-base font-extrabold flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-rose-500" />
-                  {previewingResume.studentName}'s Resume
-                </h3>
-                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
-                  File: {previewingResume.resumeName}
-                </p>
-              </div>
-              <button 
-                onClick={handleClosePreview}
-                className="w-8 h-8 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
 
-            {/* Viewer Area */}
-            <div className="flex-1 my-5 rounded-xl border border-white/5 bg-slate-950/40 relative overflow-hidden min-h-[400px]">
-              {isLoadingFile ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                  <div className="w-8 h-8 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin" />
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Loading PDF from server...</span>
-                </div>
-              ) : fileUrl ? (
-                previewingResume.resumeName.toLowerCase().endsWith('.pdf') ? (
-                  <iframe 
-                    src={fileUrl} 
-                    className="w-full h-full border-none"
-                    title="Resume PDF Preview"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                    <FileText className="w-12 h-12 text-slate-500 mx-auto mb-3" />
-                    <p className="text-xs text-slate-400 font-semibold mb-3">
-                      Word Documents (.docx/.doc) cannot be previewed directly in the browser.
-                    </p>
-                    <a
-                      href={fileUrl}
-                      download={previewingResume.resumeName}
-                      className="px-4 py-2 rounded-xl bg-purple-650 hover:bg-purple-600 text-white font-bold text-xs uppercase tracking-wider inline-flex items-center gap-1.5"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download to View
-                    </a>
-                  </div>
-                )
-              ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                  <XCircle className="w-12 h-12 text-rose-500/40 mx-auto mb-3" />
-                  <p className="text-xs text-slate-400">Failed to load resume file. It might have been deleted or moved.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Footer actions */}
-            <div className="flex items-center justify-between pt-3 border-t border-white/5 shrink-0">
-              <span className="text-[9px] text-slate-550 leading-relaxed max-w-sm italic">
-                * NextInCampus secures all document channels. Keep document details confidential.
-              </span>
-              <div className="flex gap-3">
-                {fileUrl && (
-                  <a
-                    href={fileUrl}
-                    download={previewingResume.resumeName}
-                    className="px-4 py-2 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-300 transition flex items-center gap-1.5"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download File
-                  </a>
-                )}
-                <button
-                  onClick={handleClosePreview}
-                  className="px-4 py-2 rounded-xl bg-purple-650 hover:bg-purple-600 text-white font-bold text-xs uppercase tracking-wider transition"
-                >
-                  Close Viewer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       {/* SCREEN: STUDENT PUBLIC/SEMI-PUBLIC PROFILE DRAWER */}
       {selectedStudentReq && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-end animate-fade-in cursor-pointer" onClick={() => setSelectedStudentReq(null)}>
@@ -2952,8 +2877,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                       <button
                         type="button"
                         onClick={() => {
-                          handleViewResume(selectedStudentReq.seekerId, selectedStudentReq.resumeName, selectedStudentReq.studentName);
-                          setSelectedStudentReq(null);
+                          handleViewResume(selectedStudentReq.seekerId, selectedStudentReq.resumeName);
                         }}
                         className="px-2.5 py-1 rounded-lg bg-purple-650 hover:bg-purple-600 text-white text-[8px] font-bold uppercase tracking-wider transition"
                       >

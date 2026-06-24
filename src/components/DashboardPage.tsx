@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper, Sparkles,
-  Bell, X, CheckCircle
+  Bell, X, CheckCircle, Zap, Clock
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { DashboardTab } from './dashboard/DashboardTab';
@@ -95,8 +95,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const [githubUrl, setGithubUrl] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
-  const [referralCreditsRemaining, setReferralCreditsRemaining] = useState(4);
-  const [monthlyReferralLimit, setMonthlyReferralLimit] = useState(4);
+  const [referralCreditsRemaining, setReferralCreditsRemaining] = useState(10);
+  const [monthlyReferralLimit, setMonthlyReferralLimit] = useState(10);
 
   // Discover state (Screen 2)
   const [searchQuery, setSearchQuery] = useState('');
@@ -191,8 +191,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           setResumeUploaded(data.resumeUploaded);
           setResumeName(data.resumeName || '');
           setResumesHistory(data.resumesHistory || []);
-          setReferralCreditsRemaining(data.referralCreditsRemaining !== undefined ? data.referralCreditsRemaining : 4);
-          setMonthlyReferralLimit(data.monthlyReferralLimit !== undefined ? data.monthlyReferralLimit : 4);
+          setReferralCreditsRemaining(data.referralCreditsRemaining !== undefined ? data.referralCreditsRemaining : 10);
+          setMonthlyReferralLimit(data.monthlyReferralLimit !== undefined ? data.monthlyReferralLimit : 10);
         } else {
           setReferralsSentCount(data.referralsSentCount);
         }
@@ -442,6 +442,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   // Background polling to auto-refresh data periodically (robust fallback/sync)
   useEffect(() => {
     const interval = setInterval(() => {
+      fetchProfile();
       fetchRequests();
       fetchConversations();
       fetchNotifications();
@@ -452,7 +453,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     }, 10000); // sync every 10 seconds
 
     return () => clearInterval(interval);
-  }, [fetchRequests, fetchConversations, fetchNotifications, fetchUnreadCount, activeChatId, fetchChatHistory]);
+  }, [fetchProfile, fetchRequests, fetchConversations, fetchNotifications, fetchUnreadCount, activeChatId, fetchChatHistory]);
 
   // Trigger history fetching when activeChatId changes
   useEffect(() => {
@@ -981,31 +982,43 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           </div>
 
           {role === 'seeker' && (
-            <div className="px-4 py-3 mx-3 my-2 bg-purple-950/10 border border-purple-500/10 rounded-xl space-y-2 font-inter text-left shadow-[0_4px_15px_rgba(168,85,247,0.03)]">
-              <div className="flex items-center justify-between">
-                <span className="block text-[8.5px] font-bold text-slate-500 uppercase tracking-wider font-space-grotesk">Referral Credits</span>
-                <span className="text-[9.5px] font-bold text-purple-400 font-mono">
-                  {referralCreditsRemaining}/{monthlyReferralLimit} Available
+            <div className="px-4 py-3.5 mx-3 my-3 bg-gradient-to-b from-purple-950/10 to-slate-950/50 border border-purple-500/20 rounded-2xl space-y-2.5 font-inter text-left shadow-[0_4px_20px_rgba(168,85,247,0.05)] relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
+              {/* Radial glow */}
+              <div className="absolute -right-10 -top-10 w-24 h-24 rounded-full bg-purple-500/5 blur-2xl group-hover:bg-purple-500/10 transition-all duration-500" />
+              
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+                  <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider font-sora">Referral Credits</span>
+                </div>
+                <span className="text-[10px] font-black text-purple-400 font-mono bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+                  {referralCreditsRemaining}/{monthlyReferralLimit}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 py-1">
+              
+              <div className="flex flex-wrap items-center gap-1.5 py-1 relative z-10">
                 {Array.from({ length: monthlyReferralLimit }).map((_, idx) => {
                   const isActive = idx < referralCreditsRemaining;
                   return (
                     <div 
                       key={idx} 
-                      className={`w-3.5 h-3.5 rounded transition-all duration-300 ${
+                      className={`w-3 h-3 rounded-md transition-all duration-300 transform hover:scale-110 ${
                         isActive 
-                          ? 'bg-gradient-to-br from-purple-500 to-indigo-650 shadow-[0_0_8px_rgba(168,85,247,0.45)]' 
+                          ? 'bg-gradient-to-br from-purple-400 to-indigo-650 shadow-[0_0_8px_rgba(168,85,247,0.6)]' 
                           : 'bg-white/5 border border-white/10'
                       }`} 
+                      title={isActive ? "Active Credit" : "Spent Credit"}
                     />
                   );
                 })}
               </div>
-              <span className="block text-[7.5px] text-slate-550 font-semibold leading-relaxed">
-                Your credits will reset on {getNextResetDate()}
-              </span>
+
+              <div className="flex items-center gap-1.5 pt-0.5 relative z-10">
+                <Clock className="w-2.5 h-2.5 text-slate-500" />
+                <span className="block text-[8px] text-slate-500 font-semibold leading-none">
+                  Reset: {getNextResetDate()}
+                </span>
+              </div>
             </div>
           )}
 

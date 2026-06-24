@@ -97,15 +97,6 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
     }
   }, [isRequestModalOpen]);
 
-  const isAlreadyRequested = React.useMemo(() => {
-    if (!requestsList || !alumniForRequest) return false;
-    const fifteenDaysAgo = Date.now() - 15 * 24 * 60 * 60 * 1000;
-    return requestsList.some(r => 
-      r.alumniId === alumniForRequest.id && 
-      new Date(r.createdAt).getTime() > fifteenDaysAgo
-    );
-  }, [requestsList, alumniForRequest]);
-
   return (
     <>
     <div className="space-y-6 animate-fade-in-up text-left relative">
@@ -841,14 +832,7 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                           )}
                         </div>
 
-                        {isAlreadyRequested ? (
-                          <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-[9.5px] text-rose-450 leading-normal flex gap-1.5 mb-1.5 shadow-[0_4px_12px_rgba(239,68,68,0.02)]">
-                            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                            <div>
-                              <strong>Request Cooldown.</strong> You requested a referral from this mentor less than 15 days ago. To prevent spam, you must wait 15 days before requesting them again.
-                            </div>
-                          </div>
-                        ) : referralCreditsRemaining <= 0 ? (
+                        {referralCreditsRemaining <= 0 ? (
                           <div className="p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[9.5px] text-amber-300 leading-normal flex gap-1.5 mb-1.5">
                             <AlertCircle className="w-4 h-4 text-amber-450 shrink-0 mt-0.5" />
                             <div>
@@ -902,7 +886,7 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowConfirmStep(true)}
-                        disabled={pitchMessage.trim().length === 0 || isAlreadyRequested}
+                        disabled={pitchMessage.trim().length === 0}
                         className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-sora font-bold text-[11px] uppercase tracking-wider transition shadow-md disabled:opacity-40 disabled:pointer-events-none"
                       >
                         Send Request

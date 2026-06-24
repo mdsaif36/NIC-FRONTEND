@@ -86,8 +86,7 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
   setActiveTab,
   setActiveChatId,
   referralCreditsRemaining,
-  monthlyReferralLimit,
-  requestsList
+  monthlyReferralLimit
 }) => {
   const [showConfirmStep, setShowConfirmStep] = React.useState(false);
 

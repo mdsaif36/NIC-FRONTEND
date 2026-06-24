@@ -439,6 +439,21 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     fetchUnreadCount();
   }, [fetchProfile, fetchAlumni, fetchRequests, fetchConversations, fetchNotifications, fetchUnreadCount]);
 
+  // Background polling to auto-refresh data periodically (robust fallback/sync)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchRequests();
+      fetchConversations();
+      fetchNotifications();
+      fetchUnreadCount();
+      if (activeChatId !== null) {
+        fetchChatHistory(activeChatId);
+      }
+    }, 10000); // sync every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [fetchRequests, fetchConversations, fetchNotifications, fetchUnreadCount, activeChatId, fetchChatHistory]);
+
   // Trigger history fetching when activeChatId changes
   useEffect(() => {
     if (activeChatId !== null) {

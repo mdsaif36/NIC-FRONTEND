@@ -34,11 +34,13 @@ interface AuthPageProps {
   onForgotPassword: () => void;
 }
 
+let googleInitializedGlobal = false;
+let activeGoogleCallback: ((response: any) => void) | null = null;
+
 export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initialRole = 'seeker', onSuccess, onBack, onForgotPassword }) => {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [role, setRole] = useState<'seeker' | 'alumni'>(initialRole);
   const [showPassword, setShowPassword] = useState(false);
-  const googleInitialized = React.useRef(false);
 
   // API_BASE_URL is imported from centralized config
 
@@ -192,34 +194,40 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
   const handleGoogleLogin = () => {
     const googleClientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID;
     if (googleClientId && (window as any).google?.accounts?.id) {
-      if (!googleInitialized.current) {
+      activeGoogleCallback = async (response: any) => {
+        setError(null);
+        setIsSubmitting(true);
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token: response.credential, role })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            onSuccess(data.token, data.user);
+          } else {
+            setError(data.message || 'Google authentication failed.');
+          }
+        } catch (err) {
+          setError('Connection to backend failed.');
+        } finally {
+          setIsSubmitting(false);
+        }
+      };
+
+      if (!googleInitializedGlobal) {
         (window as any).google.accounts.id.initialize({
           client_id: googleClientId,
-          callback: async (response: any) => {
-            setError(null);
-            setIsSubmitting(true);
-            try {
-              const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ token: response.credential, role })
-              });
-              const data = await res.json();
-              if (res.ok) {
-                onSuccess(data.token, data.user);
-              } else {
-                setError(data.message || 'Google authentication failed.');
-              }
-            } catch (err) {
-              setError('Connection to backend failed.');
-            } finally {
-              setIsSubmitting(false);
+          callback: (response: any) => {
+            if (activeGoogleCallback) {
+              activeGoogleCallback(response);
             }
           }
         });
-        googleInitialized.current = true;
+        googleInitializedGlobal = true;
       }
       (window as any).google.accounts.id.prompt();
     } else {

@@ -28,14 +28,15 @@ const testimonials: Testimonial[] = [
 
 interface AuthPageProps {
   initialMode?: 'login' | 'signup';
+  initialRole?: 'seeker' | 'alumni';
   onSuccess: (token: string, user: { id: number, role: 'seeker' | 'alumni', name: string, email?: string, company?: string, college?: string }) => void;
   onBack: () => void;
   onForgotPassword: () => void;
 }
 
-export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuccess, onBack, onForgotPassword }) => {
+export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initialRole = 'seeker', onSuccess, onBack, onForgotPassword }) => {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
-  const [role, setRole] = useState<'seeker' | 'alumni'>('seeker');
+  const [role, setRole] = useState<'seeker' | 'alumni'>(initialRole);
   const [showPassword, setShowPassword] = useState(false);
 
   // API_BASE_URL is imported from centralized config
@@ -47,6 +48,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', onSuc
     setPassword('');
     setError(null);
   }, [initialMode]);
+
+  React.useEffect(() => {
+    setRole(initialRole);
+  }, [initialRole]);
 
   React.useEffect(() => {
     setEmail('');

@@ -14,7 +14,7 @@ const avatars: AvatarProps[] = [
 ];
 
 interface CTABannerProps {
-  onNavigate: (page: 'landing' | 'auth', mode?: 'login' | 'signup') => void;
+  onNavigate: (page: 'landing' | 'auth', mode?: 'login' | 'signup', role?: 'seeker' | 'alumni') => void;
 }
 
 export const CTABanner: React.FC<CTABannerProps> = ({ onNavigate }) => {

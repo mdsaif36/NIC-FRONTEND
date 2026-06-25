@@ -6,7 +6,7 @@ const NAV_LINKS = [
 
 interface NavbarProps {
   currentPage: 'landing' | 'auth' | 'dashboard';
-  onNavigate: (page: 'landing' | 'auth', mode?: 'login' | 'signup') => void;
+  onNavigate: (page: 'landing' | 'auth', mode?: 'login' | 'signup', role?: 'seeker' | 'alumni') => void;
   onLogout: () => void;
 }
 

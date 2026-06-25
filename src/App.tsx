@@ -16,6 +16,7 @@ import { ResetPassword } from './components/ResetPassword';
 function App() {
   const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard' | 'forgot-password' | 'reset-password'>('landing');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [authRole, setAuthRole] = useState<'seeker' | 'alumni'>('seeker');
   const [session, setSession] = useState<{
     id: number;
     role: 'seeker' | 'alumni';
@@ -109,8 +110,13 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'instant' as any });
   }, [currentPage]);
 
-  const handleNavigate = (page: 'landing' | 'auth' | 'forgot-password' | 'reset-password', mode: 'login' | 'signup' = 'login') => {
+  const handleNavigate = (
+    page: 'landing' | 'auth' | 'forgot-password' | 'reset-password',
+    mode: 'login' | 'signup' = 'login',
+    role?: 'seeker' | 'alumni'
+  ) => {
     setAuthMode(mode);
+    setAuthRole(role || 'seeker');
     setCurrentPage(page);
 
     // Update browser URL history
@@ -242,6 +248,7 @@ function App() {
         {currentPage === 'auth' && (
           <AuthPage 
             initialMode={authMode}
+            initialRole={authRole}
             onSuccess={handleAuthSuccess}
             onBack={() => handleNavigate('landing')}
             onForgotPassword={() => handleNavigate('forgot-password')}

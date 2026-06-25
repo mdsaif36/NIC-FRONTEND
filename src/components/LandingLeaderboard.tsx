@@ -72,7 +72,7 @@ const TOP_MENTORS: TopMentor[] = [
 
 
 interface Props {
-  onNavigate?: (page: 'landing' | 'auth', mode?: 'login' | 'signup') => void;
+  onNavigate?: (page: 'landing' | 'auth', mode?: 'login' | 'signup', role?: 'seeker' | 'alumni') => void;
 }
 
 export const LandingLeaderboard: React.FC<Props> = ({ onNavigate }) => {
@@ -247,7 +247,7 @@ export const LandingLeaderboard: React.FC<Props> = ({ onNavigate }) => {
           <div className="flex gap-3 shrink-0">
             <button
               type="button"
-              onClick={() => onNavigate?.('auth', 'signup')}
+              onClick={() => onNavigate?.('auth', 'signup', 'alumni')}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-sora font-extrabold text-xs uppercase tracking-wider hover:opacity-90 transition shadow-lg hover:shadow-amber-500/20"
             >
               Join as Alumni

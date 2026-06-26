@@ -143,7 +143,13 @@ function App() {
   };
 
   const handleLogout = () => {
+    // Clear all saved user data from the browser
     localStorage.removeItem('token');
+    localStorage.removeItem('savedEmail');
+    localStorage.removeItem('auth_role');
+    localStorage.removeItem('seekerActiveTab');
+    localStorage.removeItem('alumniActiveTab');
+    
     setSession(null);
     setCurrentPage('landing');
     window.history.pushState({}, '', '/');

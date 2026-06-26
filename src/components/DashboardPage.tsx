@@ -56,7 +56,7 @@ interface DashboardPageProps {
 
 type ActiveTab = 'dashboard' | 'network' | 'my_referrals' | 'messages' | 'saved' | 'profile' | 'accounting' | 'referral_board' | 'career_intelligence';
 
-export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, college = 'IIT Bombay', company = 'Google', onLogout }) => {
+export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, college = '', company = '', onLogout }) => {
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
     const savedTab = localStorage.getItem('seekerActiveTab');
     return (savedTab as ActiveTab) || 'dashboard';
@@ -134,8 +134,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
   const [newMessageText, setNewMessageText] = useState('');
   const [isSchedulerOpen, setIsSchedulerOpen] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState('2026-06-05');
-  const [scheduledTime, setScheduledTime] = useState('16:00');
+  const [scheduledDate, setScheduledDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [scheduledTime, setScheduledTime] = useState('');
 
   // Alumni dashboard lists
   const [requests, setRequests] = useState<any[]>([]);

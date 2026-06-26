@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Newspaper, FileText, Sparkles } from 'lucide-react';
 
 const STEPS = [
   {
@@ -6,7 +7,7 @@ const STEPS = [
     number: "01",
     phase: "ALUMNI POSTS",
     title: "Post Referral Slot",
-    description: "Alumni specify roles, company, target skills, deadline, and the number of slots available for referral.",
+    description: "Verified alumni post active slots, specifying the role, company, location, required skills, and the number of referrals they can give.",
     accent: "text-emerald-400",
     bg: "bg-emerald-500/10 border-emerald-500/20",
     glow: "shadow-[0_0_50px_rgba(16,185,129,0.15)]"
@@ -15,8 +16,8 @@ const STEPS = [
     id: 2,
     number: "02",
     phase: "STUDENT DISCOVERS",
-    title: "Discover Opportunities",
-    description: "Students view a real-time board showing active opportunities matching their profile and targets.",
+    title: "Discover Live Slots",
+    description: "Seekers browse the referral board. Dynamic matching algorithms automatically calculate match scores based on resume skills and profile preferences.",
     accent: "text-purple-400",
     bg: "bg-purple-500/10 border-purple-500/20",
     glow: "shadow-[0_0_50px_rgba(168,85,247,0.15)]"
@@ -26,7 +27,7 @@ const STEPS = [
     number: "03",
     phase: "STUDENT REQUESTS",
     title: "Submit Pitch & Resume",
-    description: "Students attach their verified resume and write a concise pitch explaining why they are a strong fit.",
+    description: "Seekers attach their resume and write a tailored pitch note. Submitting a request consumes 1 referral credit from their monthly allowance.",
     accent: "text-blue-400",
     bg: "bg-blue-500/10 border-blue-500/20",
     glow: "shadow-[0_0_50px_rgba(59,130,246,0.15)]"
@@ -36,7 +37,7 @@ const STEPS = [
     number: "04",
     phase: "ALUMNI REVIEWS",
     title: "Review Candidate Profile",
-    description: "Alumni inspect candidate details, verifying resume, CGPA, match scores, and profile tags in one view.",
+    description: "Alumni inspect applicants in their Inbox, checking the match percentage, CGPA, college tier, projects, resume file, and pitch note.",
     accent: "text-amber-400",
     bg: "bg-amber-500/10 border-amber-500/20",
     glow: "shadow-[0_0_50px_rgba(245,158,11,0.15)]"
@@ -45,8 +46,8 @@ const STEPS = [
     id: 5,
     number: "05",
     phase: "SUCCESS!",
-    title: "Referral Confirmed",
-    description: "Once approved, the referral is submitted to the corporate portal, and a direct chat workspace unlocks.",
+    title: "Referral Confirmed & Chat",
+    description: "Alumni approve the request and submit the referral. Direct chat unlocks automatically to coordinate interviews and share next steps.",
     accent: "text-cyan-400",
     bg: "bg-cyan-500/10 border-cyan-500/20",
     glow: "shadow-[0_0_50px_rgba(6,182,212,0.15)]"
@@ -179,7 +180,7 @@ export default function ProductGallery() {
 
                 <div className="space-y-2 sm:space-y-3 text-[10px] sm:text-xs">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded bg-blue-600 flex items-center justify-center text-white font-black text-[10px] sm:text-xs shrink-0 select-none">G</div>
+                    <div className="w-7 h-7 rounded bg-emerald-600 flex items-center justify-center text-white font-black text-[10px] sm:text-xs shrink-0 select-none">G</div>
                     <div className="flex-1">
                       <label className="block text-[7px] sm:text-[8px] font-bold text-slate-500 uppercase tracking-wider">Company</label>
                       <span className="text-white font-semibold text-[11px] sm:text-xs">Google</span>
@@ -227,28 +228,83 @@ export default function ProductGallery() {
                 </div>
                 
                 {/* Active Post Card in feed */}
-                <div className="p-3 sm:p-4 rounded-xl border border-purple-500/30 bg-black/40 backdrop-blur-md shadow-[0_15px_30px_-5px_rgba(168,85,247,0.1)] flex items-start justify-between gap-3 animate-pulse">
+                <div className="w-full text-left p-4 sm:p-5 rounded-xl bg-[#08080d]/90 border border-purple-500/30 shadow-[0_15px_30px_-5px_rgba(168,85,247,0.15)] flex flex-col justify-between overflow-hidden relative animate-pulse select-none gap-3">
+                  {/* Top row: News type badge & deadline */}
                   <div>
-                    <span className="px-1 py-0.5 rounded bg-white/5 text-[7px] font-bold text-slate-400 uppercase">Full-Time</span>
-                    <h5 className="font-bold text-[11px] sm:text-xs text-white mt-1">Software Engineer II</h5>
-                    <p className="text-[8.5px] sm:text-[9.5px] text-slate-450 mt-0.5 truncate">Google · Bangalore, India</p>
-                    <div className="flex items-center gap-1 mt-2.5">
-                      <span className="px-1.5 py-0.5 rounded bg-purple-500/15 border border-purple-500/20 text-purple-400 text-[7px] font-bold">React</span>
-                      <span className="px-1.5 py-0.5 rounded bg-white/5 text-[7px] font-bold text-slate-450">TypeScript</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[7px] sm:text-[8px] font-bold uppercase tracking-wider">
+                        <Newspaper className="w-2.5 h-2.5 shrink-0" />
+                        Engineering News
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[7px] sm:text-[8px] font-bold text-slate-400">
+                        7d left
+                      </span>
+                    </div>
+
+                    {/* Company logo, role & details */}
+                    <div className="flex items-start gap-2.5 mb-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-500 border border-white/10 flex items-center justify-center shrink-0 font-black text-[10px] sm:text-xs text-white">
+                        GO
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-[11px] sm:text-xs font-bold text-white truncate leading-snug">
+                          Software Engineer II
+                        </h3>
+                        <div className="flex items-center gap-1.5 mt-0.5 text-[8.5px] sm:text-[9.5px] text-slate-440 flex-wrap leading-none">
+                          <span>Google</span>
+                          <span>·</span>
+                          <span>Bangalore, India</span>
+                          <span>·</span>
+                          <span className="px-1 py-px rounded border border-white/5 bg-white/5 text-[7px] font-bold text-slate-350">Full-time</span>
+                          <span>·</span>
+                          <span className="text-slate-440 font-bold">Slots: 0/3</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Description preview */}
+                    <p className="text-[9px] sm:text-[10px] text-slate-450 leading-relaxed text-left line-clamp-2 mb-2.5">
+                      Looking for a SWE II with experience in React and TypeScript to join our Core UI team. You will build and scale high-performance web applications...
+                    </p>
+
+                    {/* Skills tags */}
+                    <div className="flex flex-wrap gap-1">
+                      <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-white/5 text-[7.5px] font-mono text-slate-400">React</span>
+                      <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-white/5 text-[7.5px] font-mono text-slate-400">TypeScript</span>
+                      <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-white/5 text-[7.5px] font-mono text-slate-400">Node.js</span>
                     </div>
                   </div>
-                  <span className="shrink-0 px-1.5 py-0.5 rounded-full border border-emerald-500/20 text-emerald-400 bg-emerald-500/5 text-[7.5px] sm:text-[8.5px] font-bold">
-                    98%
-                  </span>
+
+                  {/* Footer: Poster info & Apply Link */}
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5 shrink-0">
+                    <div className="flex items-center gap-1.5 text-left">
+                      <div className="w-5.5 h-5.5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[7px] font-black text-white shrink-0">
+                        RM
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-[8.5px] text-slate-300 font-semibold leading-tight">Riya Mehta</span>
+                        <span className="block text-[7.5px] text-slate-500 truncate max-w-[120px]">SWE II · Google</span>
+                      </div>
+                    </div>
+
+                    <span className="text-[8.5px] font-bold text-purple-400 flex items-center gap-0.5">
+                      Apply Now →
+                    </span>
+                  </div>
+
+                  {/* 98% Match overlay badge */}
+                  <div className="absolute top-11 right-3 px-1.5 py-0.5 rounded-full border border-emerald-500/20 text-emerald-400 bg-emerald-500/5 text-[7.5px] font-bold">
+                    98% Match
+                  </div>
                 </div>
 
                 {/* Secondary card in feed to show list context */}
-                <div className="p-2.5 sm:p-3.5 rounded-xl border border-white/5 bg-black/20 opacity-40 flex items-start justify-between gap-3">
+                <div className="p-2 sm:p-2.5 rounded-xl border border-white/5 bg-black/20 opacity-30 flex items-start justify-between gap-3 text-left">
                   <div>
-                    <h5 className="font-bold text-[10px] sm:text-[11px] text-white">Product Manager</h5>
-                    <p className="text-[8px] sm:text-[8.5px] text-slate-450">Microsoft · Hyderabad</p>
+                    <h5 className="font-bold text-[9px] sm:text-[10px] text-white">Product Manager</h5>
+                    <p className="text-[7.5px] sm:text-[8px] text-slate-450">Microsoft · Hyderabad · Full-time</p>
                   </div>
-                  <span className="shrink-0 px-1.5 py-0.5 rounded-full border border-white/5 text-slate-400 text-[7px]">85%</span>
+                  <span className="shrink-0 px-1.5 py-0.5 rounded-full border border-white/5 text-slate-450 text-[7px]">85% Match</span>
                 </div>
                 
                 <span className="block text-[7.5px] sm:text-[8px] text-slate-500 text-center uppercase tracking-wide">Live board update active</span>
@@ -285,7 +341,7 @@ export default function ProductGallery() {
                 </div>
 
                 <div className="flex items-center justify-between pt-1 border-t border-white/5">
-                  <span className="text-[7.5px] sm:text-[8px] text-slate-550">Review ready</span>
+                  <span className="text-[7.5px] sm:text-[8px] text-indigo-400 font-bold">Consumes 1 Credit</span>
                   <button className="px-3 sm:px-4 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/35 text-blue-300 text-[8.5px] sm:text-[10px] font-bold uppercase tracking-wider">
                     Submit Request
                   </button>
@@ -295,54 +351,65 @@ export default function ProductGallery() {
 
             {/* Step 4 Canvas: Alumni Reviews */}
             {activeStep === 4 && (
-              <div className="w-full max-w-[280px] xs:max-w-[320px] sm:max-w-[370px] rounded-xl border border-amber-500/20 bg-white/[0.02] backdrop-blur-md p-4 sm:p-5 space-y-3 sm:space-y-3.5 animate-scale-in">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded bg-amber-500/20 border border-amber-500/30 flex items-center justify-center font-bold text-[10px] sm:text-xs text-amber-300 shrink-0">
+              <div className="w-full max-w-[280px] xs:max-w-[320px] sm:max-w-[370px] rounded-xl border border-amber-500/20 bg-white/[0.02] backdrop-blur-md p-4 sm:p-5 space-y-3 animate-scale-in">
+                {/* AI Warning / Sparkles Badge */}
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[8px] sm:text-[9px] font-bold w-full justify-center">
+                  <Sparkles className="w-3 h-3 text-purple-400 shrink-0" />
+                  <span>Quality Match: High matching score (98%)</span>
+                </div>
+
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 text-left">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 flex items-center justify-center font-bold text-xs uppercase text-slate-350 shrink-0">
                       AS
                     </div>
-                    <div>
-                      <h5 className="font-bold text-[11px] sm:text-xs text-white">Amit Sharma</h5>
-                      <span className="block text-[7.5px] sm:text-[8.5px] text-slate-450 truncate">IIT Bombay · CSE · 2026 Grad</span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h5 className="font-bold text-[11px] sm:text-xs text-white">Amit Sharma</h5>
+                        <span className="text-slate-400 text-[8.5px] font-normal">(IIT Bombay)</span>
+                      </div>
+                      <span className="block text-[8px] text-slate-500 mt-0.5">Class of 2026 · CSE</span>
                     </div>
                   </div>
-                  <span className="px-1.5 py-0.5 rounded-full border border-emerald-500/20 text-emerald-400 bg-emerald-500/5 text-[7.5px] sm:text-[8.5px] font-bold shrink-0">
-                    98%
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-[8.5px] sm:text-[9.5px]">
-                  <div className="p-1.5 sm:p-2 rounded bg-black/40 border border-white/5">
-                    <span className="block text-[7px] text-slate-500 uppercase font-bold">CGPA</span>
-                    <span className="text-white font-semibold">9.2 / 10</span>
-                  </div>
-                  <div className="p-1.5 sm:p-2 rounded bg-black/40 border border-white/5">
-                    <span className="block text-[7px] text-slate-500 uppercase font-bold">Skills Match</span>
-                    <span className="text-white font-semibold truncate block">React, TypeScript</span>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className="px-1.5 py-0.5 rounded-full border border-emerald-500/20 text-emerald-400 bg-emerald-500/5 text-[7px] sm:text-[8px] font-bold">
+                      98% Match
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded-full border border-blue-500/20 text-blue-400 bg-blue-500/5 text-[7px] sm:text-[8px] font-bold">
+                      Top-tier
+                    </span>
                   </div>
                 </div>
 
-                {/* Profile Links & Assets (Adaptive Flex) */}
-                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 text-[8px] sm:text-[9px]">
-                  <button className="p-1.5 sm:p-2 rounded bg-black/40 border border-white/5 flex items-center justify-center gap-1.5 text-slate-300 min-w-0 flex-1">
-                    <span className="text-rose-400 font-black text-[7px] sm:text-[8.5px] shrink-0">PDF</span>
-                    <span className="truncate text-left flex-grow">resume_amit.pdf</span>
-                  </button>
-                  <div className="flex gap-1.5 shrink-0 justify-center">
-                    <span className="px-1.5 py-1 rounded bg-white/5 text-[7.5px] sm:text-[8px] font-semibold text-slate-450">GitHub</span>
-                    <span className="px-1.5 py-1 rounded bg-white/5 text-[7.5px] sm:text-[8px] font-semibold text-slate-450">LinkedIn</span>
+                <div className="grid grid-cols-2 gap-2 text-[8.5px] sm:text-[9px] text-left">
+                  <div className="p-2 rounded bg-black/45 border border-white/5">
+                    <span className="block text-[7px] text-slate-500 uppercase font-bold mb-0.5">Target Role</span>
+                    <span className="text-white font-semibold block truncate">SWE II at Google</span>
+                    <span className="text-[7.5px] text-slate-450 block truncate">Bangalore, India</span>
+                  </div>
+                  <div className="p-2 rounded bg-[#08080d] border border-white/5">
+                    <span className="block text-[7px] text-slate-500 uppercase font-bold mb-0.5">Academic / Resume</span>
+                    <span className="text-white font-semibold block">CGPA: 9.2/10</span>
+                    <button className="flex items-center gap-1 text-purple-400 hover:text-purple-300 transition text-[7.5px] mt-0.5 font-bold">
+                      <FileText className="w-2.5 h-2.5 text-rose-400" />
+                      View resume.pdf
+                    </button>
                   </div>
                 </div>
 
-                <div className="p-2 rounded bg-black/50 border border-white/5 text-[8.5px] sm:text-[9.5px] text-slate-450 leading-relaxed italic line-clamp-2 sm:line-clamp-none">
-                  "Hi Riya, I'm a student at IIT Bombay. I built a scalable real-time chat app using React..."
+                {/* Pitch outreach note */}
+                <div className="space-y-1 text-left">
+                  <label className="block text-[7px] sm:text-[8px] font-bold text-slate-500 uppercase tracking-wider">Outreach Pitch Note</label>
+                  <div className="p-2 rounded bg-[#08080d] border border-white/5 text-[8.5px] sm:text-[9px] text-slate-440 leading-relaxed italic line-clamp-2">
+                    "Hi Riya, I'm a final year student at IIT Bombay. I built a scalable real-time chat app using React and WebSockets..."
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between border-t border-white/5 pt-2 sm:pt-2.5">
-                  <span className="text-[7.5px] sm:text-[8.5px] text-amber-400 font-bold uppercase tracking-wider">Verification Review</span>
+                <div className="flex items-center justify-between border-t border-white/5 pt-2">
+                  <span className="text-[7.5px] sm:text-[8.5px] text-amber-400 font-bold uppercase tracking-wider font-space-grotesk">Candidate Inbox</span>
                   <div className="flex gap-1.5">
-                    <button className="px-2 py-1 rounded bg-white/5 border border-white/10 text-slate-350 text-[8.5px] sm:text-[9px] font-bold">Decline</button>
-                    <button className="px-2.5 py-1 rounded bg-amber-500/20 border border-amber-500/35 text-amber-300 text-[8.5px] sm:text-[9px] font-bold uppercase tracking-wider">Approve</button>
+                    <button className="px-2 py-1 rounded bg-white/5 border border-white/10 text-slate-355 text-[8px] sm:text-[9px] font-bold">Request Info</button>
+                    <button className="px-2.5 py-1 rounded bg-amber-500/20 border border-amber-500/35 text-amber-300 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider font-space-grotesk">Approve</button>
                   </div>
                 </div>
               </div>
@@ -350,10 +417,10 @@ export default function ProductGallery() {
 
             {/* Step 5 Canvas: Success */}
             {activeStep === 5 && (
-              <div className="w-full max-w-[260px] xs:max-w-[300px] sm:max-w-[340px] rounded-xl border border-cyan-500/20 bg-white/[0.02] backdrop-blur-md p-5 sm:p-6 text-center space-y-3.5 sm:space-y-4 animate-scale-in relative">
+              <div className="w-full max-w-[260px] xs:max-w-[300px] sm:max-w-[340px] rounded-xl border border-cyan-500/20 bg-white/[0.02] backdrop-blur-md p-4 sm:p-5 space-y-3.5 sm:space-y-4 animate-scale-in relative">
                 
                 {/* Glowing Success Badge */}
-                <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(6,182,212,0.2)]">
                   <svg className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                   </svg>
@@ -362,7 +429,7 @@ export default function ProductGallery() {
                 <div className="space-y-1">
                   <h4 className="font-space-grotesk text-xs sm:text-sm font-extrabold text-white">Referral Confirmed!</h4>
                   <p className="text-[9.5px] sm:text-[10px] text-slate-400 leading-relaxed px-1 sm:px-2">
-                    Amit's profile was successfully referred to Google's internal applicant portal. A direct chat room is now open.
+                    Request status updated to <span className="text-cyan-400 font-bold">Referred</span>. A direct messaging channel has been opened to coordinate.
                   </p>
                 </div>
 

@@ -123,7 +123,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   // Form states
-  const [email, setEmail] = useState(() => localStorage.getItem('savedEmail') || '');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [college, setCollege] = useState('');
@@ -286,9 +286,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
             password,
             role,
             name: name || email.split('@')[0],
-            college: college || 'IIT Delhi',
-            company: role === 'alumni' ? (company || 'Google') : undefined,
-            jobTitle: role === 'alumni' ? (jobTitle || 'SWE') : undefined
+            college: college || '',
+            company: role === 'alumni' ? company : undefined,
+            jobTitle: role === 'alumni' ? jobTitle : undefined
           })
         });
         const data = await res.json();

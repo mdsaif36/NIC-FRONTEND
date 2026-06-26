@@ -567,6 +567,75 @@ export const HowItWorks: React.FC = () => {
         </div>
 
         {/* ======================================================== */}
+        {/* Credit System Section                                   */}
+        {/* ======================================================== */}
+        <div className="mb-28 p-8 md:p-12 rounded-[2.5rem] border border-white/[0.04] bg-slate-950/20 backdrop-blur-xl relative overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.6)] group/credit transition-all duration-700 hover:border-white/[0.08] hover:bg-slate-950/30">
+          {/* Ambient Glows */}
+          <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/5 rounded-full blur-[120px] pointer-events-none transition-all duration-700 group-hover/credit:bg-purple-500/10" />
+          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-pink-500/5 rounded-full blur-[120px] pointer-events-none transition-all duration-700 group-hover/credit:bg-pink-500/10" />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
+            {/* Left: Text Content */}
+            <div className="lg:col-span-7 text-left space-y-6">
+              <span className="inline-block text-xs font-bold uppercase tracking-[0.25em] text-purple-400 font-space-grotesk">
+                Credit System
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold font-space-grotesk text-white tracking-tight leading-tight">
+                A High-Intent Economy.<br />Built for Quality.
+              </h2>
+              <div className="space-y-4 text-slate-300 text-sm md:text-base leading-relaxed font-inter">
+                <p>
+                  Traditional networking platforms are broken. Alumni inboxes are flooded with generic messages, leaving talented students waiting in the dark. NextInCampus fixes this by operating strictly on a high-intent economy.
+                </p>
+                <p className="border-l-2 border-purple-500/50 pl-4 py-1 text-slate-450 italic">
+                  To respect our mentors' time and guarantee visibility for our candidates, every verified student is allocated 5 Premium Referral Credits per month.
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Beautiful Visual Credit Card/Display */}
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="w-full max-w-[340px] rounded-3xl border border-white/10 bg-black/40 backdrop-blur-2xl p-6 relative overflow-hidden shadow-2xl group/card transition-all duration-500 hover:border-purple-500/30 hover:scale-[1.02]">
+                {/* Card Glow */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover/card:bg-purple-500/20 transition-all duration-500" />
+                
+                {/* Header: Brand and Badge */}
+                <div className="flex justify-between items-center mb-8">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-[9px] font-black text-white">N</div>
+                    <span className="font-space-grotesk font-black text-[10px] tracking-wider text-slate-400">NEXTINCAMPUS</span>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full border border-purple-500/35 bg-purple-500/10 text-purple-300 text-[8px] font-bold uppercase tracking-wider font-space-grotesk">
+                    Active Seeker
+                  </span>
+                </div>
+
+                {/* Body: Monthly Credits Display */}
+                <div className="space-y-1 mb-8 text-left">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">Monthly Allocation</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-black font-space-grotesk text-white">5</span>
+                    <span className="text-slate-400 text-sm font-medium font-inter">/ 5 Credits</span>
+                  </div>
+                  <span className="text-[10px] text-slate-450 block pt-1">Resets dynamically on the 1st of every month</span>
+                </div>
+
+                {/* Footer: Credit Pills list */}
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div 
+                      key={i} 
+                      className="flex-1 h-2.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 shadow-[0_0_10px_rgba(168,85,247,0.3)] animate-pulse" 
+                      style={{ animationDelay: `${i * 150}ms`, animationDuration: '2s' }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ======================================================== */}
         {/* 4. COMPLETE FLOW GRID (MATRIX INDEX TAGS)                */}
         {/* ======================================================== */}
         {/* Giant container card with light frosted glass style wrapping both headings and tags */}

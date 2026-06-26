@@ -4,7 +4,7 @@ import './App.css';
 
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
-import { HowItWorks } from './components/HowItWorks';
+import { HowItWorks, CampusEcosystem } from './components/HowItWorks';
 import ProductGallery from './components/ProductGallery';
 
 import { AuthPage } from './components/AuthPage';
@@ -205,6 +205,9 @@ function App() {
 
             {/* Section 2.5 — Product Gallery (3D Screenshots Coverflow) */}
             <ProductGallery />
+
+            {/* Section 2.7 — Campus Ecosystem */}
+            <CampusEcosystem />
 
             {/* Section 3 — Alumni Leaderboard / Hall of Fame */}
             <LandingLeaderboard onNavigate={handleNavigate} />

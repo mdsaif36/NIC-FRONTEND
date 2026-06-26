@@ -581,14 +581,20 @@ export const HowItWorks: React.FC = () => {
                 Credit System
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold font-space-grotesk text-white tracking-tight leading-tight">
-                A High-Intent Economy.<br />Built for Quality.
+                Stop Spamming. Start Connecting.
               </h2>
+              <span className="block text-xs font-bold uppercase tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 font-space-grotesk -mt-3">
+                5 Credits. Zero Spam. 100% Intent.
+              </span>
               <div className="space-y-4 text-slate-300 text-sm md:text-base leading-relaxed font-inter">
-                <p>
-                  Traditional networking platforms are broken. Alumni inboxes are flooded with generic messages, leaving talented students waiting in the dark. NextInCampus fixes this by operating strictly on a high-intent economy.
+                <p className="font-bold text-white text-base">
+                  Ever sent 100 applications and heard nothing back? That is the old way.
                 </p>
-                <p className="border-l-2 border-purple-500/50 pl-4 py-1 text-slate-450 italic">
-                  To respect our mentors' time and guarantee visibility for our candidates, every verified student is allocated 5 Premium Referral Credits per month.
+                <p>
+                  NextInCampus gives you exactly 5 Premium Referral Credits every month. This isn't a limit—it is your VIP pass to the front of the line. By keeping our network entirely spam-free, we guarantee that when your request lands in an alumni’s inbox, it actually gets read, respected, and answered.
+                </p>
+                <p className="border-l-2 border-purple-500/50 pl-4 py-1 text-slate-400 italic">
+                  Trade the "apply-to-all" button for real conversations that get you hired.
                 </p>
               </div>
             </div>
@@ -635,60 +641,64 @@ export const HowItWorks: React.FC = () => {
           </div>
         </div>
 
-        {/* ======================================================== */}
-        {/* 4. COMPLETE FLOW GRID (MATRIX INDEX TAGS)                */}
-        {/* ======================================================== */}
-        {/* Giant container card with light frosted glass style wrapping both headings and tags */}
-        <div className="text-center pt-12 pb-14 px-8 md:px-12 rounded-[2.5rem] border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl relative overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] group/matrix transition-all duration-750 hover:border-white/15 hover:bg-white/[0.05]">
-          {/* Light glowing background inside container */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-cyan-500/5 to-purple-500/5 rounded-full blur-[120px] pointer-events-none transition-all duration-700 group-hover/matrix:scale-110" />
-
-          <span className="inline-block text-xs font-bold uppercase tracking-[0.25em] text-cyan-400 mb-4 font-space-grotesk relative z-10">
-            Campus Ecosystem
-          </span>
-          <h2 className="text-3xl font-extrabold font-space-grotesk text-white tracking-tight leading-tight mb-8 relative z-10">
-            Complete Flow — Joining NIC
-          </h2>
-
-          <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-4xl mx-auto relative z-10">
-            {[
-              { text: 'Verify student email', icon: Mail, color: 'text-cyan-300 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/40' },
-              { text: 'Set target company + role', icon: Search, color: 'text-purple-300 border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 hover:border-purple-400/40' },
-              { text: 'Filter alumni database', icon: Compass, color: 'text-indigo-300 border-indigo-500/20 bg-indigo-500/5 hover:bg-indigo-500/10 hover:border-indigo-400/40' },
-              { text: 'Read alumni profile + pitch', icon: BookOpen, color: 'text-pink-300 border-pink-500/20 bg-pink-500/5 hover:bg-pink-500/10 hover:border-pink-400/40' },
-              { text: 'Open referral modal', icon: Plus, color: 'text-blue-300 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-400/40' },
-              { text: 'Send request + resume', icon: Send, color: 'text-emerald-300 border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-400/40' },
-              { text: 'Alumni profile check pass', icon: UserCheck, color: 'text-amber-300 border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-400/40' },
-              { text: 'Track status (sent -> seen -> decision)', icon: Clock, color: 'text-rose-300 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-400/40' },
-              { text: 'Accepted + chat unlocks', icon: Lock, color: 'text-sky-300 border-sky-500/20 bg-sky-500/5 hover:bg-sky-500/10 hover:border-sky-400/40' },
-              { text: 'Talk / Schedule call', icon: Sparkles, color: 'text-violet-300 border-violet-500/20 bg-violet-500/5 hover:bg-violet-500/10 hover:border-violet-400/40' },
-              { text: 'Referral submitted', icon: CheckCircle2, color: 'text-green-300 border-green-500/20 bg-green-500/5 hover:bg-green-500/10 hover:border-green-400/40' },
-              { text: 'Interview', icon: Activity, color: 'text-yellow-300 border-yellow-500/20 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-400/40' },
-              { text: 'Hired 🎉', icon: Sparkles, highlights: true },
-              { text: 'Become alumni on NIC', icon: UserCheck, color: 'text-teal-300 border-teal-500/20 bg-teal-500/5 hover:bg-teal-500/10 hover:border-teal-400/40' }
-            ].map((tag, idx) => {
-              const TagIcon = tag.icon;
-              return (
-                <div 
-                  key={tag.text}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 group hover:-translate-y-0.5 select-none ${
-                    tag.highlights
-                      ? 'bg-gradient-to-r from-purple-500 to-indigo-650 text-white border-purple-500/40 shadow-[0_4px_14px_rgba(168,85,247,0.3)] scale-[1.03] hover:scale-[1.05]'
-                      : `${tag.color} text-slate-200`
-                  }`}
-                >
-                  <TagIcon className={`w-3.5 h-3.5 ${tag.highlights ? 'text-white' : 'transition-colors'}`} />
-                  <span className="text-[10px] font-bold uppercase tracking-wider font-space-grotesk">{tag.text}</span>
-                  {idx < 13 && (
-                    <ChevronRight className="w-3 h-3 text-slate-500 hidden group-hover:block transition-all ml-1 animate-pulse" />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
       </div>
     </section>
+  );
+};
+
+// Standalone CampusEcosystem component to be rendered after ProductGallery in App.tsx
+export const CampusEcosystem: React.FC = () => {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-20 relative z-10 bg-[#030303]">
+      {/* Giant container card with light frosted glass style wrapping both headings and tags */}
+      <div className="text-center pt-12 pb-14 px-8 md:px-12 rounded-[2.5rem] border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl relative overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] group/matrix transition-all duration-750 hover:border-white/15 hover:bg-white/[0.05]">
+        {/* Light glowing background inside container */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-cyan-500/5 to-purple-500/5 rounded-full blur-[120px] pointer-events-none transition-all duration-700 group-hover/matrix:scale-110" />
+
+        <span className="inline-block text-xs font-bold uppercase tracking-[0.25em] text-cyan-400 mb-4 font-space-grotesk relative z-10">
+          Campus Ecosystem
+        </span>
+        <h2 className="text-3xl font-extrabold font-space-grotesk text-white tracking-tight leading-tight mb-8 relative z-10">
+          Complete Flow — Joining NIC
+        </h2>
+
+        <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-4xl mx-auto relative z-10">
+          {[
+            { text: 'Verify student email', icon: Mail, color: 'text-cyan-300 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/40' },
+            { text: 'Set target company + role', icon: Search, color: 'text-purple-300 border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 hover:border-purple-400/40' },
+            { text: 'Filter alumni database', icon: Compass, color: 'text-indigo-300 border-indigo-500/20 bg-indigo-500/5 hover:bg-indigo-500/10 hover:border-indigo-400/40' },
+            { text: 'Read alumni profile + pitch', icon: BookOpen, color: 'text-pink-300 border-pink-500/20 bg-pink-500/5 hover:bg-pink-500/10 hover:border-pink-400/40' },
+            { text: 'Open referral modal', icon: Plus, color: 'text-blue-300 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-400/40' },
+            { text: 'Send request + resume', icon: Send, color: 'text-emerald-300 border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-400/40' },
+            { text: 'Alumni profile check pass', icon: UserCheck, color: 'text-amber-300 border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-400/40' },
+            { text: 'Track status (sent -> seen -> decision)', icon: Clock, color: 'text-rose-300 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-400/40' },
+            { text: 'Accepted + chat unlocks', icon: Lock, color: 'text-sky-300 border-sky-500/20 bg-sky-500/5 hover:bg-sky-500/10 hover:border-sky-400/40' },
+            { text: 'Talk / Schedule call', icon: Sparkles, color: 'text-violet-300 border-violet-500/20 bg-violet-500/5 hover:bg-violet-500/10 hover:border-violet-400/40' },
+            { text: 'Referral submitted', icon: CheckCircle2, color: 'text-green-300 border-green-500/20 bg-green-500/5 hover:bg-green-500/10 hover:border-green-400/40' },
+            { text: 'Interview', icon: Activity, color: 'text-yellow-300 border-yellow-500/20 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-400/40' },
+            { text: 'Hired 🎉', icon: Sparkles, highlights: true },
+            { text: 'Become alumni on NIC', icon: UserCheck, color: 'text-teal-300 border-teal-500/20 bg-teal-500/5 hover:bg-teal-500/10 hover:border-teal-400/40' }
+          ].map((tag, idx) => {
+            const TagIcon = tag.icon;
+            return (
+              <div 
+                key={tag.text}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 group hover:-translate-y-0.5 select-none ${
+                  tag.highlights
+                    ? 'bg-gradient-to-r from-purple-500 to-indigo-650 text-white border-purple-500/40 shadow-[0_4px_14px_rgba(168,85,247,0.3)] scale-[1.03] hover:scale-[1.05]'
+                    : `${tag.color} text-slate-200`
+                }`}
+              >
+                <TagIcon className={`w-3.5 h-3.5 ${tag.highlights ? 'text-white' : 'transition-colors'}`} />
+                <span className="text-[10px] font-bold uppercase tracking-wider font-space-grotesk">{tag.text}</span>
+                {idx < 13 && (
+                  <ChevronRight className="w-3 h-3 text-slate-500 hidden group-hover:block transition-all ml-1 animate-pulse" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 };

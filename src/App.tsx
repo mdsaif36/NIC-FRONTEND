@@ -198,7 +198,7 @@ function App() {
             <HowItWorks />
 
             {/* Section 2.5 — Product Gallery (3D Screenshots Coverflow) */}
-            <ProductGallery onNavigate={handleNavigate} />
+            <ProductGallery />
 
             {/* Section 3 — Alumni Leaderboard / Hall of Fame */}
             <LandingLeaderboard onNavigate={handleNavigate} />

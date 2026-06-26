@@ -5,6 +5,7 @@ import './App.css';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { HowItWorks } from './components/HowItWorks';
+import ProductGallery from './components/ProductGallery';
 
 import { AuthPage } from './components/AuthPage';
 import { DashboardPage } from './components/DashboardPage';
@@ -195,6 +196,9 @@ function App() {
 
             {/* Section 2 — How It Works */}
             <HowItWorks />
+
+            {/* Section 2.5 — Product Gallery (3D Screenshots Coverflow) */}
+            <ProductGallery onNavigate={handleNavigate} />
 
             {/* Section 3 — Alumni Leaderboard / Hall of Fame */}
             <LandingLeaderboard onNavigate={handleNavigate} />

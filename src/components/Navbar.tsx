@@ -63,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
         >
           <img 
             src="/logo.png?v=1" 
-            className="w-auto h-8 md:h-9 filter drop-shadow-[0_0_5px_rgba(56,189,248,0.25)] select-none pointer-events-none" 
+            className="w-auto h-7 md:h-8 filter drop-shadow-[0_0_5px_rgba(56,189,248,0.25)] select-none pointer-events-none" 
             alt="NextInCampus Logo" 
           />
         </a>

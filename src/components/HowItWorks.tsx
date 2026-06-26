@@ -607,9 +607,12 @@ export const HowItWorks: React.FC = () => {
                 
                 {/* Header: Brand and Badge */}
                 <div className="flex justify-between items-center mb-8">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-[9px] font-black text-white">N</div>
-                    <span className="font-space-grotesk font-black text-[10px] tracking-wider text-slate-400">NEXTINCAMPUS</span>
+                  <div className="flex items-center">
+                    <img 
+                      src="/logo.png?v=1" 
+                      className="h-5 w-auto select-none pointer-events-none" 
+                      alt="NextInCampus Logo" 
+                    />
                   </div>
                   <span className="px-2.5 py-0.5 rounded-full border border-purple-500/35 bg-purple-500/10 text-purple-300 text-[8px] font-bold uppercase tracking-wider font-space-grotesk">
                     Active Seeker

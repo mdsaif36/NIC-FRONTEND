@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Newspaper, FileText, Sparkles } from 'lucide-react';
 
 const STEPS = [
@@ -57,9 +57,29 @@ const STEPS = [
 export default function ProductGallery() {
   const [activeStep, setActiveStep] = useState(1);
   const [progress, setProgress] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
-  // Auto-play interval for cycling through steps
+  // Intersection Observer to detect when the section is in view
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.15 }
+    );
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
+  // Auto-play interval for cycling through steps (starts when visible)
+  useEffect(() => {
+    if (!isVisible) return;
+
     setProgress(0);
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -72,10 +92,10 @@ export default function ProductGallery() {
     }, 50);
 
     return () => clearInterval(interval);
-  }, [activeStep]);
+  }, [activeStep, isVisible]);
 
   return (
-    <section className="relative min-h-[500px] bg-[#030303] text-white flex items-center justify-center overflow-hidden font-sans py-12 sm:py-20 px-4 sm:px-8">
+    <section ref={sectionRef} className="relative min-h-[500px] bg-[#030303] text-white flex items-center justify-center overflow-hidden font-sans py-12 sm:py-20 px-4 sm:px-8">
       {/* Background Grid Pattern & Glowing Orbs */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808004_1px,transparent_1px),linear-gradient(to_bottom,#80808004_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[140px] pointer-events-none"></div>

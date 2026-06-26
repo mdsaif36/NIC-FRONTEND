@@ -1,162 +1,363 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const CARDS_DATA = [
+const STEPS = [
   {
-    step: "01",
-    title: "Verify Student Profile",
-    description: "Authenticate using your official college email domain. Our secure verification system locks in your student identity to maintain a highly trusted, invite-only campus network.",
-    color: "from-emerald-500/10 to-teal-500/10 border-emerald-500/20 hover:border-emerald-400/40",
-    glow: "bg-emerald-500/20",
-    textGlow: "text-emerald-400"
+    id: 1,
+    number: "01",
+    phase: "ALUMNI POSTS",
+    title: "Post Referral Slot",
+    description: "Alumni fill out a simple form specifying target roles, company, skills, deadline, and total available referral slots.",
+    accent: "text-emerald-400",
+    bg: "bg-emerald-500/10 border-emerald-500/20",
+    glow: "shadow-[0_0_50px_rgba(16,185,129,0.15)]"
   },
   {
-    step: "02",
-    title: "Define Career Targets",
-    description: "Input your target roles, select your dream companies, and upload your resume. Our system parses your profile details and constructs a dynamic match score matrix.",
-    color: "from-indigo-500/10 to-purple-500/10 border-indigo-500/20 hover:border-indigo-400/40",
-    glow: "bg-indigo-500/20",
-    textGlow: "text-indigo-400"
+    id: 2,
+    number: "02",
+    phase: "STUDENT DISCOVERS",
+    title: "Discover Opportunities",
+    description: "Students view a real-time feed of open opportunities matching their career targets and experience criteria.",
+    accent: "text-purple-400",
+    bg: "bg-purple-500/10 border-purple-500/20",
+    glow: "shadow-[0_0_50px_rgba(168,85,247,0.15)]"
   },
   {
-    step: "03",
-    title: "Explore Active Slots",
-    description: "Browse the real-time referral board. Filter by company, domain, or job location to discover open slots posted by verified alumni active at top tech companies.",
-    color: "from-amber-500/10 to-orange-500/10 border-amber-500/20 hover:border-amber-400/40",
-    glow: "bg-amber-500/20",
-    textGlow: "text-amber-400"
+    id: 3,
+    number: "03",
+    phase: "STUDENT REQUESTS",
+    title: "Submit Pitch & Resume",
+    description: "Students attach their verified resume and write a concise, personalized pitch explaining why they are a top fit.",
+    accent: "text-blue-400",
+    bg: "bg-blue-500/10 border-blue-500/20",
+    glow: "shadow-[0_0_50px_rgba(59,130,246,0.15)]"
   },
   {
-    step: "04",
-    title: "Submit Outreach Pitch",
-    description: "Craft a compelling, short pitch explaining why you are a strong fit for the role. Submit it directly to the alumni mentor along with your resume in one click.",
-    color: "from-pink-500/10 to-rose-500/10 border-pink-500/20 hover:border-rose-400/40",
-    glow: "bg-pink-500/20",
-    textGlow: "text-rose-400"
+    id: 4,
+    number: "04",
+    phase: "ALUMNI REVIEWS",
+    title: "Review Candidate Profile",
+    description: "Alumni inspect applicant details in their Inbox, checking the candidate's bio, skills, CGPA, and resume file.",
+    accent: "text-amber-400",
+    bg: "bg-amber-500/10 border-amber-500/20",
+    glow: "shadow-[0_0_50px_rgba(245,158,11,0.15)]"
   },
   {
-    step: "05",
-    title: "Unlock Chat & Get Referred",
-    description: "Once the alumni accepts your request, direct chat unlocks automatically. Coordinate review feedback, get referred directly, and land interviews 10x faster.",
-    color: "from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:border-cyan-400/40",
-    glow: "bg-blue-500/20",
-    textGlow: "text-cyan-400"
+    id: 5,
+    number: "05",
+    phase: "SUCCESS!",
+    title: "Referral Confirmed",
+    description: "Alumni approve the pitch. The referral is formally submitted to the company's internal portal, and a chat unlocks.",
+    accent: "text-cyan-400",
+    bg: "bg-cyan-500/10 border-cyan-500/20",
+    glow: "shadow-[0_0_50px_rgba(6,182,212,0.15)]"
   }
 ];
 
 export default function ProductGallery() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeStep, setActiveStep] = useState(1);
+  const [progress, setProgress] = useState(0);
 
-  // Complex math to calculate 3D positioning for the "Round" coverflow effect
-  const getCardStyles = (index: number) => {
-    // Determine distance from the current center card
-    const offset = (index - currentIndex + CARDS_DATA.length) % CARDS_DATA.length;
-    let diff = offset;
-    
-    // Normalize difference to handle the infinite loop wrap-around
-    if (diff > CARDS_DATA.length / 2) diff -= CARDS_DATA.length;
+  // Auto-play interval for cycling through steps
+  useEffect(() => {
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          setActiveStep((current) => (current % STEPS.length) + 1);
+          return 0;
+        }
+        return prev + 1.25; // Speed of the progress filler bar
+      });
+    }, 50);
 
-    const absDiff = Math.abs(diff);
-
-    // If it's more than 2 spaces away, hide it completely
-    if (absDiff > 2) {
-      return { 
-        opacity: 0, 
-        transform: 'translateX(0) scale(0.4) translateZ(-300px)', 
-        zIndex: 0, 
-        pointerEvents: 'none' as const,
-        filter: 'blur(10px) brightness(20%)'
-      };
-    }
-
-    // Calculate dynamic styles based on how far from center the card is
-    const translateX = diff * 50; // Horizontal spacing
-    const scale = 1 - absDiff * 0.16; // Scale down background cards
-    const zIndex = 20 - absDiff; // Stack layering
-    const opacity = 1 - absDiff * 0.45; // Fade out background cards
-    const rotateY = diff * -15; // 3D Y-rotation
-    const translateZ = absDiff * -150; //Receding depth transform
-
-    return {
-      transform: `translateX(${translateX}%) scale(${scale}) perspective(1500px) rotateY(${rotateY}deg) translateZ(${translateZ}px)`,
-      zIndex,
-      opacity,
-      filter: index === currentIndex ? 'none' : 'blur(4px) brightness(30%)',
-      transition: 'all 0.9s cubic-bezier(0.16, 1, 0.3, 1)'
-    };
-  };
+    return () => clearInterval(interval);
+  }, [activeStep]);
 
   return (
-    // ========================================= 
-    // STANDALONE 3D CAROUSEL COMPONENT
-    // ========================================= 
-    <div className="relative w-full h-[280px] sm:h-[380px] md:h-[480px] lg:h-[550px] bg-[#030303] flex items-center justify-center perspective-[1500px] overflow-hidden border-t border-b border-white/5 py-8">
-      
-      {/* Intense Core Glow Behind Carousel */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 blur-[120px] rounded-full scale-75 pointer-events-none"></div>
-
-      {/* Grid background mask for a premium feel */}
+    <section className="relative min-h-[600px] bg-[#030303] text-white flex items-center justify-center overflow-hidden font-sans py-20 px-6 sm:px-8 border-t border-b border-white/5">
+      {/* Background Grid Pattern & Glows */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808006_1px,transparent_1px),linear-gradient(to_bottom,#80808006_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
+      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[140px] pointer-events-none"></div>
+      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[140px] pointer-events-none"></div>
 
-      {/* Flexible width container supporting dynamic card aspects based on their index */}
-      <div className="relative w-[90%] max-w-[800px] h-[80%] flex items-center justify-center">
+      <div className="max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center gap-12 relative z-10">
         
-        {CARDS_DATA.map((card, index) => (
-          <div 
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`absolute h-full aspect-[4/5] rounded-2xl overflow-hidden cursor-pointer border bg-black/40 backdrop-blur-2xl select-none transition-all duration-300 ${card.color}`}
-            style={{
-              ...getCardStyles(index),
-              boxShadow: index === currentIndex 
-                ? '0 30px 60px -15px rgba(0,0,0,0.95), 0 0 50px rgba(99, 102, 241, 0.2)' 
-                : '0 15px 30px -10px rgba(0,0,0,0.85)'
-            }}
-          >
-            {/* Ambient colorful glow bubble inside each card */}
-            <div className={`absolute -top-12 -left-12 w-44 h-44 rounded-full ${card.glow} blur-[40px] pointer-events-none opacity-40`} />
+        {/* ========================================= */}
+        {/* LEFT COLUMN: INTERACTIVE TIMELINE STAGE  */}
+        {/* ========================================= */}
+        <div className="w-full lg:w-[42%] space-y-6">
+          <div className="space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400 font-space-grotesk">Interactive Explainer</span>
+            <h2 className="text-3xl font-extrabold font-space-grotesk tracking-tight text-white leading-tight">
+              How the Referral Flow Works
+            </h2>
+          </div>
 
-            {/* Geometric layout grid overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none opacity-30" />
+          <div className="space-y-3">
+            {STEPS.map((step) => {
+              const isActive = activeStep === step.id;
+              return (
+                <div
+                  key={step.id}
+                  onClick={() => {
+                    setActiveStep(step.id);
+                    setProgress(0);
+                  }}
+                  className={`p-4 rounded-xl border transition-all duration-500 cursor-pointer flex items-start gap-4 select-none ${
+                    isActive 
+                      ? `bg-white/[0.03] border-white/10 ${step.glow}`
+                      : 'bg-transparent border-transparent hover:bg-white/[0.01]'
+                  }`}
+                >
+                  {/* Step Number with Progress Ring Indicator */}
+                  <div className="relative shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 border border-white/10 font-bold text-xs">
+                    {isActive && (
+                      <div 
+                        className="absolute inset-0 rounded-lg border-2 border-indigo-500/80 transition-all duration-300"
+                        style={{ clipPath: `inset(0 ${100 - progress}% 0 0)` }}
+                      />
+                    )}
+                    <span className={isActive ? step.accent : 'text-slate-500'}>
+                      {step.number}
+                    </span>
+                  </div>
 
-            {/* Inactive overlay filter */}
-            <div className={`absolute inset-0 bg-[#030305]/40 transition-opacity duration-900 z-10 ${index === currentIndex ? 'opacity-0' : 'opacity-80'}`} />
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[8.5px] font-black tracking-widest ${isActive ? step.accent : 'text-slate-500'}`}>
+                        {step.phase}
+                      </span>
+                    </div>
+                    <h4 className={`text-sm font-bold font-space-grotesk transition-colors ${isActive ? 'text-white' : 'text-slate-450'}`}>
+                      {step.title}
+                    </h4>
+                    {isActive && (
+                      <p className="text-[11.5px] text-slate-450 leading-relaxed font-medium animate-fade-in">
+                        {step.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-            {/* Card Content Details */}
-            <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-between z-20">
-              
-              {/* Header Badge */}
-              <div className="flex items-center justify-between">
-                <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-white/5 border border-white/10 ${card.textGlow}`}>
-                  Step {card.step}
-                </span>
-                <span className="relative flex h-2 w-2">
-                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${card.textGlow.replace('text', 'bg')}`}></span>
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${card.textGlow.replace('text', 'bg')}`}></span>
-                </span>
-              </div>
-
-              {/* Title & Description */}
-              <div className="space-y-3">
-                <h3 className="font-space-grotesk text-base sm:text-lg font-bold text-white tracking-tight leading-snug">
-                  {card.title}
-                </h3>
-                <p className="text-[11px] text-slate-300 leading-relaxed font-medium opacity-90">
-                  {card.description}
-                </p>
-              </div>
-
-              {/* Footer */}
-              <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-space-grotesk">NextInCampus Journey</span>
-                <span className={`text-xs font-bold ${card.textGlow}`}>→</span>
-              </div>
-
+        {/* ========================================= */}
+        {/* RIGHT COLUMN: ANIMATED LIVE MOCK SCREEN  */}
+        {/* ========================================= */}
+        <div className="w-full lg:w-[58%] h-[380px] sm:h-[450px] rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between shadow-[0_30px_70px_-15px_rgba(0,0,0,0.8)]">
+          
+          {/* Mock Window Top Bar */}
+          <div className="h-10 border-b border-white/5 bg-white/[0.02] flex items-center justify-between px-5 shrink-0 select-none">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-rose-500/40" />
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500/40" />
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/40" />
             </div>
+            <div className="px-3 py-1 rounded bg-white/5 border border-white/5 text-[9px] font-mono text-slate-500 tracking-wider">
+              {activeStep === 1 || activeStep === 4 || activeStep === 5 ? "alumni.nextincampus.in/dashboard" : "seeker.nextincampus.in/board"}
+            </div>
+            <div className="w-8 h-1 bg-white/5 rounded" />
+          </div>
+
+          {/* Dynamic Mock Canvas Content Area */}
+          <div className="flex-grow p-6 flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-white/[0.01] to-transparent">
+            
+            {/* Step 1 Canvas: Alumni Creates Post */}
+            {activeStep === 1 && (
+              <div className="w-full max-w-[340px] rounded-xl border border-emerald-500/20 bg-emerald-950/5 p-5 space-y-4 animate-scale-in relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
+                
+                <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+                  <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Referral Creation</span>
+                  <span className="text-[8.5px] text-slate-550">Drafting</span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <label className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1">Company</label>
+                    <div className="p-2 rounded bg-white/5 border border-white/5 text-white font-medium">Google</div>
+                  </div>
+                  <div>
+                    <label className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1">Target Role</label>
+                    <div className="p-2 rounded bg-white/5 border border-white/5 text-white font-medium">Software Engineer II</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1">Location</label>
+                      <div className="p-2 rounded bg-white/5 border border-white/5 text-slate-350">Bangalore</div>
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-1">Available Slots</label>
+                      <div className="p-2 rounded bg-white/5 border border-white/5 text-slate-350">3 Slots</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between">
+                  <span className="text-[8px] text-slate-500 font-semibold">Ready to post</span>
+                  {/* Glowing Pulse Button */}
+                  <button className="px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/35 text-emerald-300 text-[10px] font-bold uppercase tracking-wider animate-pulse">
+                    Submit Post
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2 Canvas: Student Discovers */}
+            {activeStep === 2 && (
+              <div className="w-full max-w-[360px] rounded-xl border border-purple-500/20 bg-purple-950/5 p-5 space-y-4 animate-scale-in">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-black text-purple-400 uppercase tracking-wider">Seeker Dashboard</span>
+                  <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[8px] font-bold uppercase">12 slots open</span>
+                </div>
+                
+                {/* Active Post Card appearing in feed */}
+                <div className="p-4 rounded-xl border border-purple-500/30 bg-[#08080f] shadow-[0_15px_30px_-5px_rgba(168,85,247,0.1)] flex items-start justify-between gap-4 animate-pulse">
+                  <div>
+                    <span className="px-1.5 py-0.5 rounded bg-white/5 text-[7.5px] font-bold text-slate-400 uppercase">Full-Time</span>
+                    <h5 className="font-bold text-xs text-white mt-1">Software Engineer II</h5>
+                    <p className="text-[9.5px] text-slate-400">Google · Bangalore</p>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span className="px-1.5 py-0.5 rounded bg-purple-500/15 border border-purple-500/20 text-purple-400 text-[7px] font-bold">React</span>
+                      <span className="px-1.5 py-0.5 rounded bg-white/5 text-[7px] font-bold text-slate-450">Node.js</span>
+                    </div>
+                  </div>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full border border-emerald-500/20 text-emerald-400 bg-emerald-500/5 text-[8.5px] font-bold">
+                    98% Match
+                  </span>
+                </div>
+                
+                <span className="block text-[8px] text-slate-500 text-center uppercase tracking-wide">Live board update active</span>
+              </div>
+            )}
+
+            {/* Step 3 Canvas: Student Requests */}
+            {activeStep === 3 && (
+              <div className="w-full max-w-[340px] rounded-xl border border-blue-500/20 bg-blue-950/5 p-5 space-y-4 animate-scale-in">
+                <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+                  <div>
+                    <h5 className="font-bold text-xs text-white">Google - Software Engineer II</h5>
+                    <p className="text-[8.5px] text-slate-500">Requesting from Alumni Riya Mehta</p>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded bg-white/5 text-[8px] text-slate-400 font-bold uppercase">ASAP</span>
+                </div>
+
+                {/* Animated Typing Out Note */}
+                <div className="space-y-1">
+                  <label className="block text-[8px] font-bold text-slate-500 uppercase tracking-wider">Outreach Pitch Note</label>
+                  <div className="p-3 rounded-lg bg-black/40 border border-white/5 text-[10px] text-slate-300 font-medium italic min-h-[55px] relative">
+                    "Hey! I have strong React skills and two internships. I'd love to contribute..."
+                    <span className="absolute bottom-2 right-2 w-1.5 h-3 bg-blue-500 animate-ping" />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-[8px] text-slate-550">Resume attached</span>
+                  <button className="px-4 py-2 rounded-lg bg-blue-500/20 border border-blue-500/35 text-blue-300 text-[10px] font-bold uppercase tracking-wider">
+                    Submit Request
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4 Canvas: Alumni Reviews */}
+            {activeStep === 4 && (
+              <div className="w-full max-w-[350px] rounded-xl border border-amber-500/20 bg-amber-950/5 p-5 space-y-3.5 animate-scale-in">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded bg-amber-500/20 border border-amber-500/30 flex items-center justify-center font-bold text-xs text-amber-300">
+                      AS
+                    </div>
+                    <div>
+                      <h5 className="font-bold text-xs text-white">Amit Sharma</h5>
+                      <span className="block text-[8.5px] text-slate-450">B.Tech CSE, IIT Bombay</span>
+                    </div>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded-full border border-emerald-500/20 text-emerald-400 bg-emerald-500/5 text-[8.5px] font-bold">
+                    98% Match
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[9.5px]">
+                  <div className="p-2 rounded bg-black/20 border border-white/5">
+                    <span className="block text-[7.5px] text-slate-500 uppercase font-bold mb-0.5">CGPA</span>
+                    <span className="text-white font-semibold">9.2 / 10</span>
+                  </div>
+                  <div className="p-2 rounded bg-black/20 border border-white/5">
+                    <span className="block text-[7.5px] text-slate-500 uppercase font-bold mb-0.5">Skills</span>
+                    <span className="text-white font-semibold">React, Node, SQL</span>
+                  </div>
+                </div>
+
+                <div className="p-2 rounded bg-[#08080f] border border-white/5 text-[9.5px] text-slate-400 leading-relaxed italic">
+                  "Hey! I have strong React skills and two internships. I'd love to contribute..."
+                </div>
+
+                <div className="flex items-center justify-between border-t border-white/5 pt-2.5">
+                  <span className="text-[8.5px] text-amber-400 font-bold uppercase tracking-wider">Review Mode</span>
+                  <div className="flex gap-2">
+                    <button className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-slate-350 text-[9px] font-bold">Reject</button>
+                    <button className="px-3 py-1 rounded bg-amber-500/20 border border-amber-500/35 text-amber-300 text-[9px] font-bold">Approve</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 5 Canvas: Success */}
+            {activeStep === 5 && (
+              <div className="w-full max-w-[320px] rounded-xl border border-cyan-500/20 bg-cyan-950/5 p-6 text-center space-y-4 animate-scale-in relative">
+                
+                {/* Glowing Success Badge */}
+                <div className="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                  <svg className="w-7 h-7 text-cyan-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h4 className="font-space-grotesk text-sm font-extrabold text-white">Referral Submitted!</h4>
+                  <p className="text-[10px] text-slate-400 leading-relaxed px-2">
+                    Amit's profile was successfully referred to Google's internal referral candidate pool.
+                  </p>
+                </div>
+
+                {/* Animated status pipeline indicator */}
+                <div className="flex items-center justify-center gap-1.5 pt-2 border-t border-white/5 text-[8.5px]">
+                  <span className="text-slate-500 font-medium">Applied</span>
+                  <span className="text-slate-650">→</span>
+                  <span className="text-slate-500 font-medium">Approved</span>
+                  <span className="text-slate-650">→</span>
+                  <span className="text-cyan-400 font-extrabold uppercase">Referred 🎉</span>
+                </div>
+              </div>
+            )}
 
           </div>
-        ))}
-      </div>
 
-    </div>
+          {/* Interactive Step Navigation Indicator Bar */}
+          <div className="h-12 border-t border-white/5 bg-white/[0.01] flex items-center justify-between px-6 shrink-0 select-none">
+            <span className="text-[8.5px] font-bold text-slate-500 uppercase tracking-widest font-space-grotesk">Process Simulation</span>
+            <div className="flex gap-2">
+              {STEPS.map((step) => (
+                <button
+                  key={step.id}
+                  onClick={() => {
+                    setActiveStep(step.id);
+                    setProgress(0);
+                  }}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    activeStep === step.id ? 'w-5 bg-indigo-500' : 'bg-white/10 hover:bg-white/20'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
   );
 }

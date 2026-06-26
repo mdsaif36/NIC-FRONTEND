@@ -90,28 +90,17 @@ export const Footer: React.FC = () => {
           <div className="flex flex-col justify-between gap-6">
             <div>
               <div className="mb-5 flex items-center gap-2 group">
-                <svg viewBox="0 0 160 100" className="w-8 h-8 select-none" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="logo-grad-ni-footer" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#38BDF8" />
-                      <stop offset="100%" stopColor="#8B5CF6" />
-                    </linearGradient>
-                    <linearGradient id="logo-grad-c-footer" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#38BDF8" />
-                      <stop offset="100%" stopColor="#4F46E5" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#logo-grad-ni-footer)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#logo-grad-ni-footer)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="68" cy="20" r="6" fill="#38BDF8" />
-                  <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#logo-grad-c-footer)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <img 
+                  src="/favicon.png?v=6" 
+                  className="w-8 h-8 select-none pointer-events-none" 
+                  alt="NextInCampus Logo" 
+                />
                 <div className="flex flex-col">
                   <span className="font-sora text-sm font-bold text-white tracking-tight leading-none">
                     NiC
                   </span>
                   <span className="text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] tracking-wider uppercase font-extrabold mt-0.5">
-                    NexInCampus
+                    NextInCampus
                   </span>
                 </div>
               </div>

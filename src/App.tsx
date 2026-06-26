@@ -212,7 +212,7 @@ function App() {
             {/* Section 4 — About NexInCampus */}
             <About />
             {/* Giant Brand Watermark with Sliced Tagline Cutout */}
-            <div className="w-full overflow-hidden select-none pointer-events-none mt-12 mb-20 flex items-center justify-center relative h-32 md:h-44 bg-transparent" aria-hidden="true">
+            <div className="w-full overflow-hidden select-none pointer-events-none mt-12 mb-20 flex items-center justify-center relative h-20 xs:h-24 sm:h-32 md:h-44 bg-transparent" aria-hidden="true">
               <style dangerouslySetInnerHTML={{ __html: `
                 @keyframes watermarkShimmer {
                   0% { background-position: 0% 50%; }
@@ -229,9 +229,9 @@ function App() {
                 className="animate-watermark-shimmer absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap select-none pointer-events-none z-0"
                 style={{
                   fontFamily: "'Sora', sans-serif",
-                  fontSize: 'clamp(2.6rem, 9vw, 8rem)',
+                  fontSize: 'clamp(1.8rem, 9.5vw, 8.5rem)',
                   fontWeight: 900,
-                  letterSpacing: '-0.03em',
+                  letterSpacing: '0.06em',
                   lineHeight: 1,
                   background: 'linear-gradient(90deg, rgba(56,189,248,0.24) 0%, rgba(139,92,246,0.18) 25%, rgba(244,63,94,0.24) 50%, rgba(139,92,246,0.18) 75%, rgba(56,189,248,0.24) 100%)',
                   WebkitBackgroundClip: 'text',
@@ -240,13 +240,13 @@ function App() {
                   display: 'block',
                 }}
               >
-                NexInCampus
+                NextInCampus
               </span>
 
               {/* The Horizontal Cut/Slicing Bar masking the background text */}
-              <div className="absolute w-full left-0 top-1/2 -translate-y-1/2 h-[20px] sm:h-[32px] md:h-[40px] bg-[#020205] flex items-center justify-center z-10 border-y border-white/5">
-                {/* Tagline centered inside the cut */}
-                <span className="text-center px-4 font-space-grotesk text-[7.5px] sm:text-[10px] md:text-[11px] font-extrabold tracking-[0.18em] sm:tracking-[0.3em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400 drop-shadow-[0_2px_8px_rgba(56,189,248,0.15)]">
+              <div className="absolute w-full left-0 top-1/2 -translate-y-1/2 h-[14px] xs:h-[18px] sm:h-[32px] md:h-[40px] bg-[#020205] flex items-center justify-center z-10 border-y border-white/5">
+                {/* Tagline centered inside the cut with responsive tracking & text sizes to prevent overflow */}
+                <span className="text-center px-4 font-space-grotesk text-[5.5px] xs:text-[7.5px] sm:text-[10px] md:text-[11px] font-extrabold tracking-[0.06em] xs:tracking-[0.16em] sm:tracking-[0.3em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400 drop-shadow-[0_2px_8px_rgba(56,189,248,0.15)]">
                   where your college network becomes your career
                 </span>
               </div>

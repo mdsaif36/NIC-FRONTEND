@@ -49,17 +49,15 @@ export default function Sidebar({
   return (
     <aside className="hidden md:flex flex-col bg-gray-900 border-r border-gray-800 transition-all duration-300 w-20 lg:w-64 shrink-0 relative z-30">
       {/* Brand Logo Area */}
-      <div className="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-gray-800 shrink-0 gap-2">
-        <img 
-          src="/favicon.png?v=6" 
-          className="w-7 h-7 select-none pointer-events-none" 
-          alt="NiC Logo" 
-        />
+      <div className="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-gray-800 shrink-0">
+        <span className="font-space-grotesk font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] text-xl tracking-tight leading-none block lg:hidden">
+          N'
+        </span>
         <div className="hidden lg:flex flex-col select-none">
           <span className="font-space-grotesk font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] text-base tracking-tight leading-none block">
             NextInCampus
           </span>
-          <span className={`text-[9px] font-bold uppercase tracking-widest mt-1.5 block ${isSeeker ? 'text-purple-400/80' : 'text-emerald-400/80'}`}>
+          <span className={`text-[9px] font-bold uppercase tracking-widest mt-2 block ${isSeeker ? 'text-purple-400/80' : 'text-emerald-400/80'}`}>
             {isSeeker ? 'Seeker Portal' : 'Alumni Portal'}
           </span>
         </div>

@@ -352,11 +352,22 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
           {/* Logo & Welcome Header combined to save critical vertical space */}
           <div className="mb-3 lg:mb-5 shrink-0">
             <div className="flex items-center gap-2 mb-2 select-none">
-              <img 
-                src="/favicon.png?v=6" 
-                className="w-8 h-8 lg:w-10 lg:h-10 select-none pointer-events-none" 
-                alt="NextInCampus Logo" 
-              />
+              <svg viewBox="0 0 160 100" className="w-8 h-8 lg:w-10 lg:h-10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="logo-grad-ni-auth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#FF8F7B" />
+                    <stop offset="100%" stopColor="#FF5E7E" />
+                  </linearGradient>
+                  <linearGradient id="logo-grad-c-auth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#38BDF8" />
+                    <stop offset="100%" stopColor="#1E40FF" />
+                  </linearGradient>
+                </defs>
+                <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#logo-grad-ni-auth)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#logo-grad-ni-auth)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="68" cy="20" r="6" fill="#FF8F7B" />
+                <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#logo-grad-c-auth)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
               <span className="font-space-grotesk font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] text-base lg:text-lg tracking-tight select-none flex items-center cursor-pointer">
                 NextInCampus
               </span>

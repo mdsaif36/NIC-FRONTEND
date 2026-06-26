@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="15 10 145 68" fill="none">
+  <defs>
+    <linearGradient id="logo-grad-ni-fav" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#38BDF8" />
+      <stop offset="100%" stopColor="#8B5CF6" />
+    </linearGradient>
+    <linearGradient id="logo-grad-c-fav" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#38BDF8" />
+      <stop offset="100%" stopColor="#EF4444" />
+    </linearGradient>
+  </defs>
+  <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#logo-grad-ni-fav)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+  <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#logo-grad-ni-fav)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+  <circle cx="68" cy="20" r="6.5" fill="#38BDF8" />
+  <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#logo-grad-c-fav)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+</svg>

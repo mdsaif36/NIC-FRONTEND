@@ -254,6 +254,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             alumniName: r.alumni.name,
             company: r.alumni.company,
             role: r.targetRole,
+            location: r.location || 'Remote',
             date: new Date(r.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ago',
             createdAt: r.createdAt,
             status: r.status,
@@ -275,6 +276,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             class: `${r.seeker.branch} ${r.seeker.year || '3rd Year'}, ${r.seeker.college}`,
             company: company,
             role: r.targetRole,
+            location: r.location || 'Remote',
             score: '94% Match',
             message: r.pitchMessage,
             status: r.status,
@@ -610,7 +612,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           alumniId: alumniForRequest.id,
           targetRole,
           timeline,
-          pitchMessage
+          pitchMessage,
+          location: 'Remote'
         })
       });
       if (res.ok) {

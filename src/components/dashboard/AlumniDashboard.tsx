@@ -916,7 +916,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                             </button>
                             <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[8px] font-bold">{req.score}</span>
                           </div>
-                          <span className="text-[10px] text-slate-500">{req.class} · {req.role} at {req.company}</span>
+                          <span className="text-[10px] text-slate-500">{req.class} · {req.role} at {req.company} {req.location && `· ${req.location}`}</span>
                         </div>
                         <button
                           type="button"
@@ -1148,7 +1148,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                             <div className="grid sm:grid-cols-2 gap-3">
                               <div className="p-3 rounded-xl bg-black/30 border border-white/5">
                                 <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Target Role</span>
-                                <span className="text-xs text-slate-200 font-semibold">{req.role} at {req.company}</span>
+                                <span className="text-xs text-slate-200 font-semibold">{req.role} at {req.company} {req.location && `· ${req.location}`}</span>
                               </div>
                               <div className="p-3 rounded-xl bg-black/30 border border-white/5">
                                 <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Resume</span>
@@ -2721,7 +2721,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                     </span>
                   </div>
                   <p className="text-[10px] text-slate-350 mt-0.5 font-semibold">
-                    {selectedStudentReq.seeker?.targetRole || selectedStudentReq.role || 'Software Engineer Intern'}
+                    {selectedStudentReq.seeker?.targetRole || selectedStudentReq.role || 'Software Engineer Intern'} {selectedStudentReq.location && `· ${selectedStudentReq.location}`}
                   </p>
                   <p className="text-[9px] text-slate-500 mt-0.5">
                     {selectedStudentReq.class}

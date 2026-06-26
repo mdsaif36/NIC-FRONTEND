@@ -127,7 +127,7 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-bold text-white text-xs">{req.alumniName}</span>
-                            <span className="text-[10px] text-slate-400 font-medium">{req.role} at {req.company}</span>
+                            <span className="text-[10px] text-slate-400 font-medium">{req.role} at {req.company} {req.location && `· ${req.location}`}</span>
                           </div>
                           <span className="block text-[9px] text-slate-500 mt-1 font-semibold">{req.date}</span>
                         </div>
@@ -219,7 +219,7 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                           <h3 className="font-sora text-white text-xs font-bold flex items-center gap-1.5">
                             {expandedRequest.alumniName}
                           </h3>
-                          <p className="text-[10px] text-slate-400 mt-0.5 font-semibold">{expandedRequest.role} at {expandedRequest.company}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 font-semibold">{expandedRequest.role} at {expandedRequest.company} {expandedRequest.location && `· ${expandedRequest.location}`}</p>
                           <span className="block text-[8px] text-slate-550 mt-0.5">{expandedRequest.date}</span>
                         </div>
                       </div>

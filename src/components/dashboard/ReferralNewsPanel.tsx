@@ -217,7 +217,8 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
           alumniId: selectedPost.alumni.id,
           targetRole: `${selectedPost.company} - ${selectedPost.role}`,
           timeline: selectedPost.deadline || 'ASAP',
-          pitchMessage: pitchMessage
+          pitchMessage: pitchMessage,
+          location: selectedPost.location
         })
       });
 

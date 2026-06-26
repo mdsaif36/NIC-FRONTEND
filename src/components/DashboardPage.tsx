@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
-  Home, Search, Send, MessageSquare, Bookmark, User, LogOut, ShieldCheck, Newspaper, Sparkles,
+  Home, Search, Send, MessageSquare, Bookmark, User, ShieldCheck, Newspaper, Sparkles,
   Bell, X, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { io } from 'socket.io-client';
@@ -14,6 +14,10 @@ import { AlumniDashboard } from './dashboard/AlumniDashboard';
 import { ReferralNewsPanel } from './dashboard/ReferralNewsPanel';
 import { CareerIntelligenceTab } from './dashboard/CareerIntelligenceTab';
 import { API_BASE_URL } from '../config';
+import AppLayout from './Layout';
+import Sidebar from './Sidebar';
+import BottomNav from './BottomNav';
+
 
 const getNextResetDate = () => {
   const now = new Date();
@@ -926,169 +930,60 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
     setIsRequestModalOpen(true);
   };
 
-  // -- RENDER SEEKER PORTAL --
   if (role === 'seeker') {
+    const seekerSidebarItems = [
+      { id: 'dashboard',      label: 'Dashboard',      icon: Home,          badge: null },
+      { id: 'referral_board', label: 'Referral Board', icon: Newspaper,     badge: null },
+      { id: 'network',        label: 'Network',        icon: Search,        badge: null },
+      { id: 'my_referrals',   label: 'My Referrals',  icon: Send,          badge: null },
+      { id: 'career_intelligence', label: 'AI Coach',  icon: Sparkles,      badge: null },
+      { id: 'messages',       label: 'Messages',       icon: MessageSquare, badge: null },
+      { id: 'saved',          label: 'Saved',          icon: Bookmark,      badge: savedAlumniIds.length > 0 ? savedAlumniIds.length : null },
+      { id: 'accounting',     label: 'Accounting',     icon: ShieldCheck,   badge: null },
+    ];
+
+    const seekerBottomNavItems = [
+      { id: 'dashboard',      label: 'Home',       icon: Home },
+      { id: 'referral_board', label: 'Board',      icon: Newspaper },
+      { id: 'network',        label: 'Search',     icon: Search },
+      { id: 'my_referrals',   label: 'Referrals',  icon: Send },
+      { id: 'career_intelligence', label: 'AI Coach',  icon: Sparkles },
+      { id: 'messages',       label: 'Chat',       icon: MessageSquare },
+      { id: 'saved',          label: 'Saved',      icon: Bookmark },
+      { id: 'accounting',     label: 'Security',   icon: ShieldCheck },
+      { id: 'profile',        label: 'Profile',    icon: User },
+    ];
+
+    const referralCredits = {
+      remaining: referralCreditsRemaining,
+      limit: monthlyReferralLimit,
+      nextResetDate: getNextResetDate(),
+    };
+
     return (
-      <section className="min-h-screen w-full bg-[#050508] text-slate-100 flex relative overflow-hidden font-inter select-none z-10">
-
-        {/* Desktop Sidebar 240px */}
-        <aside className="hidden md:flex w-[240px] bg-[#08080d]/95 border-r border-white/[0.055] flex-col shrink-0 relative z-30 backdrop-blur-xl">
-          <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-purple-950/25 to-transparent pointer-events-none" />
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-950/10 to-transparent pointer-events-none" />
-          <div className="px-5 pt-6 pb-5 border-b border-white/[0.055] shrink-0 relative z-10">
-            <div className="flex flex-col select-none">
-              <span className="font-space-grotesk font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] text-base tracking-tight leading-none block">
-                NextInCampus
-              </span>
-              <span className="text-[9px] font-bold text-purple-400/80 uppercase tracking-widest mt-2 block">
-                Seeker Portal
-              </span>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto no-scrollbar px-3 py-5 relative z-10">
-            <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Navigation</span>
-            <nav className="space-y-0.5">
-              {([
-                { id: 'dashboard',      label: 'Dashboard',      icon: Home,          badge: null },
-                { id: 'referral_board', label: 'Referral Board', icon: Newspaper,     badge: null },
-                { id: 'network',        label: 'Network',        icon: Search,        badge: null },
-                { id: 'my_referrals',   label: 'My Referrals',  icon: Send,          badge: null },
-                { id: 'career_intelligence', label: 'AI Coach',  icon: Sparkles,      badge: null },
-                { id: 'messages',       label: 'Messages',       icon: MessageSquare, badge: null },
-                { id: 'saved',          label: 'Saved',          icon: Bookmark,      badge: savedAlumniIds.length > 0 ? savedAlumniIds.length : null },
-                { id: 'accounting',     label: 'Accounting',     icon: ShieldCheck,   badge: null },
-              ] as { id: string; label: string; icon: React.ElementType; badge: number | null }[]).map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id as ActiveTab)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 group relative ${
-                      isActive ? 'bg-purple-500/10 text-white' : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
-                    }`}
-                  >
-                    {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gradient-to-b from-purple-400 to-blue-500 rounded-r-full" />}
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${
-                      isActive
-                        ? 'bg-gradient-to-br from-purple-500/25 to-blue-500/15 text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]'
-                        : 'text-slate-600 group-hover:text-slate-300 group-hover:bg-white/[0.04]'
-                    }`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <span className={`flex-1 text-xs font-semibold ${isActive ? 'text-white font-bold' : ''}`}>{tab.label}</span>
-                    {tab.badge !== null && tab.badge > 0 && (
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold min-w-[20px] text-center ${
-                        isActive ? 'bg-purple-400/20 text-purple-300' : 'bg-white/5 text-slate-400'
-                      }`}>
-                        {tab.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          {role === 'seeker' && (
-            <div className="px-4 py-3.5 mx-3 my-3 bg-[#08080c] border border-white/5 rounded-xl space-y-3 font-inter text-left shadow-md relative">
-              <div className="flex items-center justify-between">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sora">Referral Credits</span>
-                <span className="text-[10px] font-bold text-purple-400 font-mono bg-purple-550/10 px-2 py-0.5 rounded-md">
-                  {referralCreditsRemaining} / {monthlyReferralLimit}
-                </span>
-              </div>
-              
-              {/* Simple Dots showing all credits at once */}
-              <div className="flex items-center justify-between gap-1 py-1 px-0.5">
-                {Array.from({ length: monthlyReferralLimit }).map((_, idx) => {
-                  const isActive = idx < referralCreditsRemaining;
-                  return (
-                    <div 
-                      key={idx} 
-                      className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                        isActive 
-                          ? 'bg-purple-500' 
-                          : 'bg-white/10'
-                      }`} 
-                      title={isActive ? "Active Credit" : "Spent Credit"}
-                    />
-                  );
-                })}
-              </div>
-
-              <div className="text-[8.5px] text-slate-500 font-medium">
-                Cycle resets on {getNextResetDate()}
-              </div>
-            </div>
-          )}
-
-          <div className="px-3 pb-5 border-t border-white/[0.055] pt-4 relative z-10 space-y-0.5">
-            <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Account</span>
-            <button
-              type="button"
-              onClick={() => setActiveTab('profile')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 group relative ${
-                activeTab === 'profile' ? 'bg-purple-500/10 text-white' : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
-              }`}
-            >
-              {activeTab === 'profile' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gradient-to-b from-purple-400 to-blue-500 rounded-r-full" />}
-              <div className="relative w-8 h-8 shrink-0">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-[9px] font-black shadow-md">
-                  {profileName ? profileName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'S'}
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-bold text-white truncate leading-tight">{profileName}</span>
-                <span className="block text-[9px] text-slate-500 font-medium">Candidate Profile</span>
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={onLogout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-600 hover:text-rose-400 hover:bg-rose-500/5 transition-all duration-200 group"
-            >
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-rose-500/10 transition-all">
-                <LogOut className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold">Sign Out</span>
-            </button>
-          </div>
-        </aside>
-
-        {/* Mobile nav */}
-        <aside className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#07070a]/95 border-t border-white/5 flex items-center justify-around z-40 px-3 shadow-2xl backdrop-blur-md">
-          {([
-            { id: 'dashboard',      icon: Home },
-            { id: 'referral_board', icon: Newspaper },
-            { id: 'network',        icon: Search },
-            { id: 'my_referrals',   icon: Send },
-            { id: 'career_intelligence', icon: Sparkles },
-            { id: 'messages',       icon: MessageSquare },
-            { id: 'saved',          icon: Bookmark },
-            { id: 'accounting',     icon: ShieldCheck },
-            { id: 'profile',        icon: User },
-          ] as { id: string; icon: React.ElementType }[]).map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as ActiveTab)}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                  isActive ? 'bg-purple-500/15 text-purple-400 border border-purple-500/20' : 'text-slate-500'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-              </button>
-            );
-          })}
-        </aside>
-
-        {/* Main content */}
-        <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-24 md:pb-0 flex flex-col relative z-20 w-full">
+      <AppLayout
+        sidebar={
+          <Sidebar
+            items={seekerSidebarItems}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab as any}
+            role="seeker"
+            profileName={profileName}
+            profileCollegeOrCompany={profileCollege}
+            onLogout={onLogout}
+            referralCredits={referralCredits}
+          />
+        }
+        bottomNav={
+          <BottomNav
+            items={seekerBottomNavItems}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab as any}
+            role="seeker"
+          />
+        }
+      >
+        <div className="flex flex-col relative z-20 w-full min-h-full">
           <header className="border-b border-white/[0.055] bg-[#050508]/85 backdrop-blur-xl shrink-0 sticky top-0 z-20 w-full">
             <div className="px-6 md:px-8 py-4 flex items-center justify-between text-left w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
               <div>
@@ -1325,10 +1220,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 savedAlumniIds={savedAlumniIds}
                 requestsList={requestsList}
                 getProfileCompletion={getProfileCompletion}
+                onLogout={onLogout}
               />
             )}
           </div>
-        </main>
+        </div>
 
         {/* ── Notification Drawer (Right Side Slide-out) ── */}
         {isNotificationDrawerOpen && (
@@ -1546,7 +1442,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             </div>
           </div>
         )}
-      </section>
+      </AppLayout>
     );
   }
 

@@ -11,6 +11,10 @@ import { MessagesTab } from './MessagesTab.js';
 import { SlotManagementTab } from './SlotManagementTab.js';
 import { LeaderboardTab } from './LeaderboardTab.js';
 import { API_BASE_URL } from '../../config';
+import AppLayout from '../Layout';
+import Sidebar from '../Sidebar';
+import BottomNav from '../BottomNav';
+
 
 const getCleanFilename = (name: string): string => {
   if (!name) return '';
@@ -729,119 +733,47 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     { id: 'admin_panel',     label: 'Admin Panel',     icon: ShieldCheck },
   ];
 
+  const alumniSidebarItems = sidebarItems.map(item => ({
+    id: item.id,
+    label: item.label,
+    icon: item.icon,
+    badge: item.badge
+  }));
+
+  const alumniBottomNavItems = [
+    ...sidebarItems.map(item => ({
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      badge: item.badge
+    })),
+    { id: 'profile', label: 'Profile', icon: Users }
+  ];
+
   return (
-    <section className="min-h-screen w-full bg-[#07070a] text-slate-100 flex relative overflow-hidden font-inter select-none">
+    <AppLayout
+      sidebar={
+        <Sidebar
+          items={alumniSidebarItems}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab as any}
+          role="alumni"
+          profileName={name}
+          profileCollegeOrCompany={company}
+          onLogout={onLogout}
+        />
+      }
+      bottomNav={
+        <BottomNav
+          items={alumniBottomNavItems}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab as any}
+          role="alumni"
+        />
+      }
+    >
+      <div className="flex flex-col relative z-20 w-full min-h-full">
 
-      {/* ── Sidebar ── */}
-      <aside className="hidden md:flex w-[240px] bg-[#08080d]/95 border-r border-white/[0.055] flex-col shrink-0 relative z-30 backdrop-blur-xl">
-        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-emerald-950/10 to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-emerald-950/5 to-transparent pointer-events-none" />
-        
-        {/* Brand Header */}
-        <div className="px-5 pt-6 pb-5 border-b border-white/[0.055] shrink-0 relative z-10">
-          <div className="flex flex-col select-none">
-            <span className="font-space-grotesk font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] text-base tracking-tight leading-none block">
-              NextInCampus
-            </span>
-            <span className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-widest mt-2 block">
-              Alumni Portal
-            </span>
-          </div>
-        </div>
-
-        {/* Navigation list */}
-        <div className="flex-1 overflow-y-auto no-scrollbar px-3 py-5 relative z-10">
-          <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Navigation</span>
-          <nav className="space-y-0.5">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 ${
-                    isActive
-                      ? 'bg-gradient-to-r from-emerald-600/10 to-teal-500/10 border border-white/[0.055] text-white shadow-[0_0_12px_rgba(16,185,129,0.05)]'
-                      : 'text-slate-500 hover:text-white border border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
-                    <span>{item.label}</span>
-                  </div>
-                  {item.badge !== undefined && item.badge > 0 && (
-                    <span className="w-4 h-4 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center">
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Bottom profile + logout */}
-        <div className="px-3 pb-5 border-t border-white/[0.055] pt-4 relative z-10 space-y-0.5">
-          <span className="block text-[8px] font-bold text-slate-700 uppercase tracking-widest px-3 mb-2.5">Account</span>
-          <button
-            type="button"
-            onClick={() => setActiveTab('profile')}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 group relative ${
-              activeTab === 'profile' ? 'bg-emerald-500/10 text-white' : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
-            }`}
-          >
-            {activeTab === 'profile' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-r-full" />}
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-[10px] font-black uppercase shadow-md">
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <span className="block text-xs font-bold text-white truncate leading-tight">{name}</span>
-              <span className="block text-[9px] text-emerald-400/70 font-medium">Alumni Mentor</span>
-            </div>
-          </button>
-          
-          <button
-            type="button"
-            onClick={onLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-600 hover:text-rose-400 hover:bg-rose-500/5 transition-all duration-200 group"
-          >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-rose-500/10 transition-all">
-              <LogOut className="w-4 h-4" />
-            </div>
-            <span className="text-xs font-semibold">Sign Out</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Mobile Bottom Bar ── */}
-      <aside className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#07070a]/95 border-t border-white/5 flex items-center justify-around z-40 px-3 backdrop-blur-md">
-        {sidebarItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveTab(item.id)}
-              className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                isActive ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'text-slate-500'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              {item.badge !== undefined && item.badge > 0 && (
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-white text-[7px] font-bold flex items-center justify-center">
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </aside>
-
-      {/* ── Main Content ── */}
-      <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-24 md:pb-8 flex flex-col relative z-20 w-full">
 
         {/* Top header bar */}
         <header className="border-b border-white/5 bg-black/40 backdrop-blur-sm shrink-0 w-full">
@@ -2754,7 +2686,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
           )}
 
         </div>
-      </main>
+      </div>
 
 
       {/* SCREEN: STUDENT PUBLIC/SEMI-PUBLIC PROFILE DRAWER */}
@@ -3219,6 +3151,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
           </button>
         </div>
       )}
-    </section>
+    </AppLayout>
   );
 };

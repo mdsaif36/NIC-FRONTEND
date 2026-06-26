@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 
+
 const getCleanFilename = (name: string): string => {
   if (!name) return '';
   if (name.startsWith('http://') || name.startsWith('https://')) {
@@ -142,6 +143,7 @@ interface ProfileTabProps {
   setSkills: (skills: string[]) => void;
   setTargetCompanies: (companies: string[]) => void;
   fetchProfile?: () => Promise<void>;
+  onLogout?: () => void;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
@@ -191,7 +193,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   setTargetRole,
   setSkills,
   setTargetCompanies,
-  fetchProfile
+  fetchProfile,
+  onLogout
 }) => {
 
   const [dragActive, setDragActive] = React.useState(false);
@@ -1720,6 +1723,19 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                     className="px-8 py-3 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition active:scale-95"
                   >
                     Save Changes
+                  </button>
+                </div>
+              )}
+
+              {/* Mobile-Only Logout Button */}
+              {onLogout && (
+                <div className="block md:hidden mt-8 border-t border-white/5 pt-6">
+                  <button 
+                    type="button"
+                    onClick={onLogout}
+                    className="w-full flex items-center justify-center gap-2 py-4 px-4 rounded-xl text-red-500 font-bold bg-red-500/10 hover:bg-red-500/15 active:bg-red-500/20 transition-all cursor-pointer font-sora"
+                  >
+                    Sign Out
                   </button>
                 </div>
               )}

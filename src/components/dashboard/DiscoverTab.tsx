@@ -2,6 +2,8 @@ import React from 'react';
 import {
   AlertCircle, Bookmark, FileText, Search, ShieldCheck, Sparkles, X, MessageSquare
 } from 'lucide-react';
+import ReferralModal from '../ReferralModal';
+
 
 const getNextResetDate = () => {
   const now = new Date();
@@ -680,42 +682,26 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
 
               </div>
             {/* SCREEN 3: REFERRAL MODAL (SINGLE PAGE FORM) */}
-            {isRequestModalOpen && alumniForRequest && (
-              <div 
-                className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in cursor-pointer"
-                onClick={() => {
-                  setIsRequestModalOpen(false);
-                  setShowConfirmStep(false);
-                }}
-              >
-                <div 
-                  className="w-full max-w-md bg-[#07070a] border border-white/10 p-5 rounded-2xl shadow-2xl relative text-left flex flex-col max-h-[90vh] overflow-hidden animate-modal-scale-in cursor-default"
-                  onClick={e => e.stopPropagation()}
-                >
-                  
-                  {/* Close Button */}
-                  <button 
-                    onClick={() => {
-                      setIsRequestModalOpen(false);
-                      setShowConfirmStep(false);
-                    }}
-                    className="absolute top-4 right-4 p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/5 transition"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-
-                  {/* Modal Header */}
-                  <div className="flex items-center gap-3 pb-3 border-b border-white/5 mb-3 shrink-0">
-                    <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${alumniForRequest.color} flex items-center justify-center font-bold text-white text-[10px] uppercase`}>
-                      {alumniForRequest.initials || alumniForRequest.initial || 'A'}
-                    </div>
-                    <div>
-                      <h3 className="font-sora text-xs font-bold text-white">
-                        Request Referral
-                      </h3>
-                      <p className="text-[9px] text-slate-400">To {alumniForRequest.name} · {alumniForRequest.role} at {alumniForRequest.company}</p>
-                    </div>
+            <ReferralModal
+              isOpen={isRequestModalOpen && alumniForRequest !== null}
+              onClose={() => {
+                setIsRequestModalOpen(false);
+                setShowConfirmStep(false);
+              }}
+              title="Request Referral"
+            >
+              {alumniForRequest && (
+                <div className="flex items-center gap-3 pb-3 border-b border-white/5 mb-3 shrink-0">
+                  <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${alumniForRequest.color} flex items-center justify-center font-bold text-white text-[10px] uppercase`}>
+                    {alumniForRequest.initials || alumniForRequest.initial || 'A'}
                   </div>
+                  <div>
+                    <p className="text-[11px] text-white font-bold">{alumniForRequest.name}</p>
+                    <p className="text-[9px] text-slate-400">{alumniForRequest.role} at {alumniForRequest.company}</p>
+                  </div>
+                </div>
+              )}
+
 
                   {/* Scrollable Form Content */}
                   <div className="flex-1 overflow-y-auto no-scrollbar space-y-3 pr-0.5">
@@ -898,9 +884,7 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                     </div>
                   </div>
 
-                </div>
-              </div>
-            )}
+            </ReferralModal>
     </>
   );
 };

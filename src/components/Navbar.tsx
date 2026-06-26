@@ -61,22 +61,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogou
           }}
           className="flex items-center select-none shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
         >
-          <svg viewBox="0 0 160 100" className="w-auto h-9 md:h-10 filter drop-shadow-[0_0_5px_rgba(56,189,248,0.25)]" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="logo-grad-ni-nav" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#38BDF8" />
-                <stop offset="100%" stopColor="#8B5CF6" />
-              </linearGradient>
-              <linearGradient id="logo-grad-c-nav" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#38BDF8" />
-                <stop offset="100%" stopColor="#EF4444" />
-              </linearGradient>
-            </defs>
-            <path d="M 25 65 L 25 36 C 25 22, 45 22, 45 30 L 60 50" stroke="url(#logo-grad-ni-nav)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M 38 48 L 53 68 C 58 74, 68 74, 68 64 L 68 36" stroke="url(#logo-grad-ni-nav)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="68" cy="20" r="6.5" fill="#38BDF8" />
-            <path d="M 130 35 A 21.2 21.2 0 1 0 130 65" stroke="url(#logo-grad-c-nav)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <img 
+            src="/favicon.png?v=6" 
+            className="w-auto h-8 md:h-9 filter drop-shadow-[0_0_5px_rgba(56,189,248,0.25)] select-none pointer-events-none" 
+            alt="NextInCampus Logo" 
+          />
         </a>
 
         {/* Separator Line */}

@@ -7,7 +7,7 @@ interface MessagesTabProps {
   activeChatId: number | null;
   alumniNetwork: any[];
   chatMessages: { [key: number]: { sender: 'seeker' | 'alumni', text: string, time: string }[] };
-  handleScheduleCall: () => void;
+  handleScheduleCall: (topic?: string, duration?: string) => void;
   handleSendMessage: () => void;
   isSchedulerOpen: boolean;
   newMessageText: string;
@@ -43,6 +43,8 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
   requestsList
 }) => {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const [topic, setTopic] = React.useState('Referral Discussion');
+  const [duration, setDuration] = React.useState('30 mins');
   const chatPartner = conversations.find(c => c.id === activeChatId) || alumniNetwork.find(a => a.id === activeChatId);
   
   // A chat is unlocked if the user is alumni, or the seeker request is accepted/referred/hired/info, or they have message history
@@ -270,17 +272,45 @@ export const MessagesTab: React.FC<MessagesTabProps> = ({
                           className="w-full px-4 py-2 bg-black border border-white/15 rounded-xl text-white text-xs focus:outline-none"
                         />
                       </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-550 uppercase tracking-wider mb-1 font-space-grotesk">Meeting Topic</label>
+                        <select
+                          value={topic}
+                          onChange={(e) => setTopic(e.target.value)}
+                          className="w-full px-4 py-2 bg-[#08080b] border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500/40 font-inter"
+                        >
+                          <option value="Referral Discussion" className="bg-[#0a0a0f] text-white">Referral Discussion</option>
+                          <option value="Mock Interview" className="bg-[#0a0a0f] text-white">Mock Interview</option>
+                          <option value="Resume Review" className="bg-[#0a0a0f] text-white">Resume Review</option>
+                          <option value="General Coffee Chat" className="bg-[#0a0a0f] text-white">General Coffee Chat</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-550 uppercase tracking-wider mb-1 font-space-grotesk">Duration</label>
+                        <select
+                          value={duration}
+                          onChange={(e) => setDuration(e.target.value)}
+                          className="w-full px-4 py-2 bg-[#08080b] border border-white/15 rounded-xl text-white text-xs focus:outline-none font-inter"
+                        >
+                          <option value="15 mins" className="bg-[#0a0a0f] text-white">15 mins</option>
+                          <option value="30 mins" className="bg-[#0a0a0f] text-white">30 mins</option>
+                          <option value="45 mins" className="bg-[#0a0a0f] text-white">45 mins</option>
+                          <option value="60 mins" className="bg-[#0a0a0f] text-white">60 mins</option>
+                        </select>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-white/5">
                       <button
+                        type="button"
                         onClick={() => setIsSchedulerOpen(false)}
                         className="w-full py-2.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-[9px] font-bold text-slate-200 uppercase tracking-wider"
                       >
                         Cancel
                       </button>
                       <button
-                        onClick={handleScheduleCall}
+                        type="button"
+                        onClick={() => handleScheduleCall(topic, duration)}
                         className="w-full py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-650 text-white font-sora font-bold text-[9px] uppercase tracking-wider"
                       >
                         Confirm Slot

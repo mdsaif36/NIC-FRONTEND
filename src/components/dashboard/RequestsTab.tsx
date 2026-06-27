@@ -254,6 +254,38 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                             "Your technical qualifications are good, but Google typically expects 2+ complex developer projects on the resume. Please build more React/Go projects and request again!"
                           </div>
                         )}
+
+                        {expandedRequest.status === 'info' && (
+                          <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/10 text-[11.5px] leading-relaxed text-purple-300">
+                            <span className="block text-[8px] font-bold text-purple-400 uppercase tracking-wider mb-1.5 font-space-grotesk">Action Required: More Details Requested</span>
+                            <p className="text-slate-350 mb-2.5">
+                              Your mentor needs additional details or updates (e.g., latest projects, resume changes) before making a referral decision.
+                            </p>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveTab('messages');
+                                  setActiveChatId(expandedRequest.alumniId);
+                                  setExpandedRequest(null);
+                                }}
+                                className="px-3.5 py-1.5 rounded-lg bg-purple-650 hover:bg-purple-600 text-white text-[9.5px] font-bold uppercase transition"
+                              >
+                                Answer in Chat
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveTab('profile');
+                                  setExpandedRequest(null);
+                                }}
+                                className="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-[9.5px] font-bold uppercase transition"
+                              >
+                                Update Resume / Profile
+                              </button>
+                            </div>
+                          </div>
+                        )}
                         
                         {/* Hired congrats details */}
                         {expandedRequest.status === 'hired' && (

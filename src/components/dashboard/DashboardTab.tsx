@@ -7,7 +7,6 @@ import { API_BASE_URL } from '../../config';
 interface DashboardTabProps {
   alumniNetwork: any[];
   openRequestModal: (alumni: any) => void;
-  profileCollege: string;
   requestsList: any[];
   savedAlumniIds: number[];
   setActiveTab: (tab: 'dashboard' | 'discover' | 'requests' | 'messages' | 'saved' | 'profile' | 'referral_board') => void;
@@ -16,13 +15,82 @@ interface DashboardTabProps {
 export const DashboardTab: React.FC<DashboardTabProps> = ({
   alumniNetwork,
   openRequestModal,
-  profileCollege,
   requestsList,
   savedAlumniIds,
   setActiveTab,
 }) => {
   const pendingRequests = requestsList.filter((r: any) => r.status === 'pending').length;
   const respondedRequests = requestsList.filter((r: any) => r.status !== 'pending').length;
+
+  const liveActivities = React.useMemo(() => {
+    if (!requestsList || requestsList.length === 0) {
+      return [
+        {
+          txt: "Welcome to Nexus Connect! Submit your first referral request to see live activity logs.",
+          time: "Just now",
+          icon: Sparkles,
+          color: "text-purple-400 bg-purple-500/10 border-purple-500/20"
+        }
+      ];
+    }
+
+    const formatTimeAgo = (dateStr: string) => {
+      try {
+        const diffMs = Date.now() - new Date(dateStr).getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        if (diffMins < 1) return "Just now";
+        if (diffMins < 60) return `${diffMins} mins ago`;
+        const diffHrs = Math.floor(diffMins / 60);
+        if (diffHrs < 24) return `${diffHrs} hours ago`;
+        const diffDays = Math.floor(diffHrs / 24);
+        return `${diffDays} days ago`;
+      } catch (e) {
+        return "Recent";
+      }
+    };
+
+    return requestsList.map((req: any) => {
+      let txt = "";
+      let icon = AlertCircle;
+      let color = "text-slate-400 bg-slate-500/10 border-slate-500/20";
+
+      const mentorName = req.alumniName || req.alumni?.name || "A mentor";
+      const company = req.company || req.alumni?.company || "";
+
+      if (req.status === 'pending') {
+        txt = `Your referral request to ${mentorName} at ${company} is pending review.`;
+        icon = Send;
+        color = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+      } else if (req.status === 'accepted') {
+        txt = `${mentorName} from ${company} accepted your referral request.`;
+        icon = CheckCircle;
+        color = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+      } else if (req.status === 'declined') {
+        txt = `${mentorName} at ${company} declined your request. Keep trying other mentors!`;
+        icon = AlertCircle;
+        color = "text-rose-450 bg-rose-500/10 border-rose-500/20";
+      } else if (req.status === 'info') {
+        txt = `${mentorName} from ${company} requested more information on your referral request.`;
+        icon = UserCheck;
+        color = "text-purple-400 bg-purple-500/10 border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]";
+      } else if (req.status === 'referred') {
+        txt = `🎉 Congratulations! You were referred by ${mentorName} at ${company}.`;
+        icon = CheckCircle;
+        color = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]";
+      } else {
+        txt = `Referral request status to ${mentorName} updated to ${req.status}.`;
+        icon = AlertCircle;
+        color = "text-blue-400 bg-blue-500/10 border-blue-500/20";
+      }
+
+      return {
+        txt,
+        time: formatTimeAgo(req.createdAt || req.updatedAt || new Date().toISOString()),
+        icon,
+        color
+      };
+    }).slice(0, 4);
+  }, [requestsList]);
 
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [feedLoading, setFeedLoading] = useState(true);
@@ -322,12 +390,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         <div className="p-6 rounded-2xl border border-white/[0.055] bg-[#09090d] relative overflow-hidden text-left">
           <h3 className="font-sora text-sm font-extrabold text-white mb-5">Recent Activity</h3>
           <div className="space-y-4">
-            {[
-              { txt: 'Priya S. accepted your referral request for Microsoft PM', time: '2 hours ago', icon: CheckCircle, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
-              { txt: 'Rahul M. from Google viewed your profile', time: 'Yesterday', icon: Search, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
-              { txt: `3 new alumni from ${profileCollege} joined NiC`, time: '2 days ago', icon: UserCheck, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
-              { txt: 'Keep your target companies updated to get matching referrals', time: '3 days ago', icon: AlertCircle, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-            ].map((item, i) => {
+            {liveActivities.map((item, i) => {
               const Icon = item.icon;
               return (
                 <div key={i} className="flex items-start gap-3">

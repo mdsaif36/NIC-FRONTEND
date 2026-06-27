@@ -300,7 +300,7 @@ function App() {
               }}
               onLogout={handleLogout}
             />
-            {session.isProfileComplete === false && !isOnboardingSkipped && (
+            {!session.isProfileComplete && !isOnboardingSkipped && (
               <OnboardingPage 
                 session={session}
                 onComplete={(updatedUser) => {

@@ -123,6 +123,16 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
   const [selectedPost, setSelectedPost] = useState<ReferralPost | null>(null);
   const [modalStage, setModalStage] = useState<'view' | 'apply'>('view');
   const [pitchMessage, setPitchMessage] = useState('');
+
+  const handleOpenAlumniProfile = (alumniId: number) => {
+    const fullAlumni = _alumniNetwork.find((a: any) => a.id === alumniId);
+    if (fullAlumni && _setSelectedAlumni) {
+      _setSelectedAlumni(fullAlumni);
+      if (_setActiveTab) {
+        _setActiveTab('discover');
+      }
+    }
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
   const [localResumeName, setLocalResumeName] = useState(resumeName || '');
@@ -696,12 +706,18 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
 
                 {/* Footer: Poster info & Go to Profile Link */}
                 <div className="flex items-center justify-between pt-3 border-t border-white/5 mt-4 shrink-0">
-                  <div className="flex items-center gap-2">
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenAlumniProfile(post.alumni.id);
+                    }}
+                    className="flex items-center gap-2 hover:bg-white/5 p-1 rounded-lg cursor-pointer transition"
+                  >
                     <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${avatarGrad} flex items-center justify-center text-[8px] font-black text-white shrink-0`}>
                       {getInitials(post.alumni.name)}
                     </div>
                     <div className="min-w-0">
-                      <span className="block text-[10px] text-slate-400 font-semibold">{post.alumni.name}</span>
+                      <span className="block text-[10px] text-slate-400 hover:text-purple-400 font-semibold transition">{post.alumni.name}</span>
                       <span className="block text-[9px] text-slate-500 truncate max-w-[140px]">{post.alumni.jobTitle} · {post.alumni.company}</span>
                     </div>
                   </div>
@@ -821,12 +837,18 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
                   {/* Poster details */}
                   <div className="space-y-1.5">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Posted By</label>
-                    <div className="flex items-center gap-2.5 p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-700 flex items-center justify-center text-[10px] font-black text-white shrink-0">
+                    <div 
+                      onClick={() => {
+                        setSelectedPost(null);
+                        handleOpenAlumniProfile(selectedPost.alumni.id);
+                      }}
+                      className="flex items-center gap-2.5 p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 hover:bg-purple-500/10 hover:border-purple-500/20 cursor-pointer transition"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-550 to-indigo-650 flex items-center justify-center text-[10px] font-black text-white shrink-0">
                         {selectedPost.alumni.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="block text-[11px] text-slate-300 font-semibold">{selectedPost.alumni.name}</span>
+                        <span className="block text-[11px] text-slate-300 hover:text-purple-400 font-semibold transition">{selectedPost.alumni.name}</span>
                         <span className="block text-[10px] text-slate-500 truncate">{selectedPost.alumni.jobTitle} · {selectedPost.alumni.company}</span>
                       </div>
                     </div>

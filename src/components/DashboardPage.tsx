@@ -671,7 +671,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
   };
 
   // Seeker schedules call
-  const handleScheduleCall = async () => {
+  const handleScheduleCall = async (topic?: string, duration?: string) => {
     if (activeChatId === null) return;
     const token = localStorage.getItem('token');
     try {
@@ -684,7 +684,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
         body: JSON.stringify({
           receiverId: activeChatId,
           date: scheduledDate,
-          time: scheduledTime
+          time: scheduledTime,
+          topic,
+          duration
         })
       });
       if (res.ok) {
@@ -1047,7 +1049,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                   </div>
                 )}
                 <DashboardTab
-                  profileCollege={profileCollege}
                   requestsList={requestsList}
                   savedAlumniIds={savedAlumniIds}
                   alumniNetwork={alumniNetwork}
@@ -1498,6 +1499,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
       onTabChange={setAlumniActiveTab}
       isProfileComplete={isProfileComplete}
       onOpenOnboarding={onOpenOnboarding}
+      unreadCount={unreadCount}
+      onOpenNotifications={() => {
+        setIsNotificationDrawerOpen(true);
+        fetchNotifications();
+      }}
     />
   );
 };

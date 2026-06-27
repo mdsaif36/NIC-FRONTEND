@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   BarChart2, CheckCircle, Clock, FileText, Check,
   Home, LogOut, MessageSquare, ShieldCheck, TrendingUp,
@@ -61,6 +61,8 @@ interface AlumniDashboardProps {
   onTabChange?: (tab: string) => void;
   isProfileComplete?: boolean;
   onOpenOnboarding?: () => void;
+  unreadCount?: number;
+  onOpenNotifications?: () => void;
 }
 
 type AlumniTab = 'overview' | 'inbox' | 'my_referrals' | 'messages' | 'analytics' | 'accounting' | 'profile' | 'admin_panel' | 'leaderboard' | 'post_referral';
@@ -92,7 +94,9 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   fetchProfile,
   onTabChange,
   isProfileComplete = true,
-  onOpenOnboarding
+  onOpenOnboarding,
+  unreadCount = 0,
+  onOpenNotifications
 }) => {
   const getGreeting = () => {
     try {
@@ -133,6 +137,54 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   const [selectedScreenshot, setSelectedScreenshot] = useState<File | null>(null);
   const [isUploadingScreenshot, setIsUploadingScreenshot] = useState(false);
   const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState<string | null>(null);
+
+  const collegeDistribution = useMemo(() => {
+    if (!requests || requests.length === 0) {
+      return [
+        { collName: "No Requests Yet", count: 0, pct: 0, color: "from-slate-500 to-slate-400" }
+      ];
+    }
+    
+    const counts: Record<string, number> = {};
+    requests.forEach((req: any) => {
+      const coll = getCandidateCollege(req) || 'Other';
+      counts[coll] = (counts[coll] || 0) + 1;
+    });
+
+    const total = requests.length;
+    const sortedColleges = Object.keys(counts)
+      .map(name => ({
+        collName: name,
+        count: counts[name],
+        pct: Math.round((counts[name] / total) * 100)
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const topColleges = sortedColleges.slice(0, 3);
+    const otherCount = sortedColleges.slice(3).reduce((sum, item) => sum + item.count, 0);
+
+    const colors = [
+      "from-blue-500 to-cyan-500",
+      "from-purple-500 to-pink-500",
+      "from-emerald-500 to-teal-500"
+    ];
+
+    const result = topColleges.map((item, index) => ({
+      ...item,
+      color: colors[index] || "from-blue-500 to-cyan-500"
+    }));
+
+    if (otherCount > 0) {
+      result.push({
+        collName: "Other Colleges",
+        count: otherCount,
+        pct: Math.round((otherCount / total) * 100),
+        color: "from-slate-500 to-slate-400"
+      });
+    }
+
+    return result;
+  }, [requests]);
   const [messageNotification, setMessageNotification] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   // Profile Edit & Privacy State Hooks
@@ -795,14 +847,18 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
               </h2>
               <p className="text-[10px] text-slate-500 mt-0.5 font-medium truncate max-w-[150px] xs:max-w-[200px] sm:max-w-[320px] md:max-w-none">{company} · Verified Alumni Mentor</p>
             </div>
-            <div className="flex items-center gap-2 xs:gap-3 shrink-0">
+            <div className="flex items-center gap-3">
               <div className="relative">
-                <button type="button" className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition">
+                <button 
+                  type="button" 
+                  onClick={onOpenNotifications}
+                  className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition cursor-pointer"
+                >
                   <Bell className="w-4 h-4" />
                 </button>
-                {pendingCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center">
-                    {pendingCount}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-purple-500 text-white text-[8px] font-bold flex items-center justify-center animate-pulse">
+                    {unreadCount}
                   </span>
                 )}
               </div>
@@ -1688,12 +1744,7 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md">
                   <h3 className="font-sora text-sm font-extrabold text-white mb-6">Incoming Requests by College</h3>
                   <div className="space-y-4">
-                    {[
-                      { collName: "IIT Bombay", count: 18, pct: 60, color: "from-blue-500 to-cyan-500" },
-                      { collName: "BITS Pilani", count: 6, pct: 20, color: "from-purple-500 to-pink-500" },
-                      { collName: "Delhi Technological University", count: 4, pct: 13, color: "from-emerald-500 to-teal-500" },
-                      { collName: "Other Tier-2/3 Colleges", count: 2, pct: 7, color: "from-slate-500 to-slate-400" }
-                    ].map((item, i) => (
+                    {collegeDistribution.map((item, i) => (
                       <div key={i} className="space-y-1">
                         <div className="flex items-center justify-between text-[10px]">
                           <span className="font-semibold text-slate-300 truncate max-w-[150px] inline-block">{item.collName}</span>
@@ -2458,19 +2509,23 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                   {/* Domain */}
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Domain</label>
-                    <select
+                    <input
+                      type="text"
+                      list="domains-list-post"
                       value={newPostData.domain}
                       onChange={e => setNewPostData(prev => ({ ...prev, domain: e.target.value }))}
+                      placeholder="Select or Type Domain"
                       className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500/50 font-inter"
-                    >
-                      <option value="Engineering" className="bg-[#0a0a0f] text-white">Engineering</option>
-                      <option value="Data & AI" className="bg-[#0a0a0f] text-white">Data & AI</option>
-                      <option value="Product" className="bg-[#0a0a0f] text-white">Product</option>
-                      <option value="Design" className="bg-[#0a0a0f] text-white">Design</option>
-                      <option value="Marketing" className="bg-[#0a0a0f] text-white">Marketing</option>
-                      <option value="Finance" className="bg-[#0a0a0f] text-white">Finance</option>
-                      <option value="Operations" className="bg-[#0a0a0f] text-white">Operations</option>
-                    </select>
+                    />
+                    <datalist id="domains-list-post">
+                      <option value="Engineering" />
+                      <option value="Data & AI" />
+                      <option value="Product" />
+                      <option value="Design" />
+                      <option value="Marketing" />
+                      <option value="Finance" />
+                      <option value="Operations" />
+                    </datalist>
                   </div>
 
                   {/* Slots */}
@@ -3001,11 +3056,11 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 <div className="grid grid-cols-3 gap-3">
                   {/* Job Type */}
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Job Type</label>
+                    <label className="block text-[9px] font-bold text-slate-550 uppercase tracking-wider mb-1">Job Type</label>
                     <select
                       value={newPostData.jobType}
                       onChange={e => setNewPostData(prev => ({ ...prev, jobType: e.target.value }))}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 font-inter"
                     >
                       <option value="Full-time" className="bg-[#0a0a0f]">Full-time</option>
                       <option value="Internship" className="bg-[#0a0a0f]">Internship</option>
@@ -3015,20 +3070,24 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
                   {/* Domain */}
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Domain</label>
-                    <select
+                    <label className="block text-[9px] font-bold text-slate-550 uppercase tracking-wider mb-1">Domain</label>
+                    <input
+                      type="text"
+                      list="domains-list-panel"
                       value={newPostData.domain}
                       onChange={e => setNewPostData(prev => ({ ...prev, domain: e.target.value }))}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
-                    >
-                      <option value="Engineering" className="bg-[#0a0a0f]">Engineering</option>
-                      <option value="Data & AI" className="bg-[#0a0a0f]">Data & AI</option>
-                      <option value="Product" className="bg-[#0a0a0f]">Product</option>
-                      <option value="Design" className="bg-[#0a0a0f]">Design</option>
-                      <option value="Marketing" className="bg-[#0a0a0f]">Marketing</option>
-                      <option value="Finance" className="bg-[#0a0a0f]">Finance</option>
-                      <option value="Operations" className="bg-[#0a0a0f]">Operations</option>
-                    </select>
+                      placeholder="Select or Type Domain"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 font-inter"
+                    />
+                    <datalist id="domains-list-panel">
+                      <option value="Engineering" />
+                      <option value="Data & AI" />
+                      <option value="Product" />
+                      <option value="Design" />
+                      <option value="Marketing" />
+                      <option value="Finance" />
+                      <option value="Operations" />
+                    </datalist>
                   </div>
 
                   {/* Slots */}

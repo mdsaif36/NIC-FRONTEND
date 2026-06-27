@@ -1033,8 +1033,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
               <>
                 {!isProfileComplete && (
                   <div className="mb-6 p-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-yellow-400 shrink-0 animate-pulse" />
+                    <div className="flex items-center gap-2 min-w-0">
                       <span className="text-[10px] font-medium text-slate-350 leading-relaxed text-left">
                         Your onboarding profile is incomplete. Complete it now to build trust and unlock career referrals.
                       </span>

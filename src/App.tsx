@@ -146,13 +146,16 @@ function App() {
     // Clear all saved user data from the browser
     localStorage.removeItem('token');
     localStorage.removeItem('savedEmail');
+    localStorage.removeItem('role');
     localStorage.removeItem('auth_role');
     localStorage.removeItem('seekerActiveTab');
     localStorage.removeItem('alumniActiveTab');
+    localStorage.clear(); // Wipes all remaining local storage cached data
     
     setSession(null);
     setCurrentPage('landing');
     window.history.pushState({}, '', '/');
+    window.location.reload(); // Perform a hard reset of React state and memory
   };
 
   if (isInitializing) {

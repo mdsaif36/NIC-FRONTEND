@@ -5,10 +5,9 @@ import {
   UserCheck, Users, XCircle, Send, Bell, 
   ChevronRight, Activity, Award, Zap, Settings, Briefcase,
   Sparkles, Filter, Trash2, Plus, ChevronDown, X,
-  CalendarDays, Trophy
+  Trophy
 } from 'lucide-react';
 import { MessagesTab } from './MessagesTab.js';
-import { SlotManagementTab } from './SlotManagementTab.js';
 import { LeaderboardTab } from './LeaderboardTab.js';
 import { API_BASE_URL } from '../../config';
 import AppLayout from '../Layout';
@@ -62,7 +61,7 @@ interface AlumniDashboardProps {
   onTabChange?: (tab: string) => void;
 }
 
-type AlumniTab = 'overview' | 'inbox' | 'my_referrals' | 'messages' | 'analytics' | 'accounting' | 'profile' | 'admin_panel' | 'slot_management' | 'leaderboard' | 'post_referral';
+type AlumniTab = 'overview' | 'inbox' | 'my_referrals' | 'messages' | 'analytics' | 'accounting' | 'profile' | 'admin_panel' | 'leaderboard' | 'post_referral';
 
 export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
   college,
@@ -725,7 +724,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     { id: 'inbox',           label: 'Inbox',           icon: Users,        badge: pendingCount },
     { id: 'my_referrals',    label: 'My Referrals',    icon: Briefcase },
     { id: 'post_referral',   label: 'Post Referral',   icon: Plus },
-    { id: 'slot_management', label: 'Slot Management', icon: CalendarDays },
     { id: 'leaderboard',     label: 'Leaderboard',     icon: Trophy },
     { id: 'messages',        label: 'Messages',        icon: MessageSquare },
     { id: 'analytics',       label: 'Analytics',       icon: BarChart2 },
@@ -784,7 +782,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 {activeTab === 'inbox'           && 'Candidate Inbox'}
                 {activeTab === 'my_referrals'    && 'My Referrals'}
                 {activeTab === 'post_referral'   && 'Post Referral Slot'}
-                {activeTab === 'slot_management' && 'Slot Management'}
                 {activeTab === 'leaderboard'     && '🏆 Hall of Fame'}
                 {activeTab === 'messages'        && 'Messages'}
                 {activeTab === 'analytics'       && 'Impact Analytics'}
@@ -2557,10 +2554,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 </div>
               </form>
             </div>
-          )}
-
-          {activeTab === 'slot_management' && (
-            <SlotManagementTab />
           )}
 
           {activeTab === 'leaderboard' && (

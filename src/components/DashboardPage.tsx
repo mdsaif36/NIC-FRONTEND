@@ -990,9 +990,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
       >
         <div className="flex flex-col relative z-20 w-full min-h-full">
           <header className="border-b border-white/[0.055] bg-[#050508]/85 backdrop-blur-xl shrink-0 sticky top-0 z-20 w-full">
-            <div className="px-6 md:px-8 py-4 flex items-center justify-between text-left w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
-              <div>
-                <h2 className="font-sora text-white text-sm font-extrabold leading-tight">
+            <div className="px-4 md:px-8 py-4 flex items-center justify-between text-left w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
+              <div className="min-w-0">
+                <h2 className="font-sora text-white text-sm font-extrabold leading-tight truncate max-w-[180px] xs:max-w-[250px] sm:max-w-[400px] md:max-w-none">
                   {activeTab === 'dashboard'      && <>{`${getGreeting()}, ${profileName.split(' ')[0]} 👋`}</>}
                   {activeTab === 'referral_board' && 'Referral Board'}
                   {activeTab === 'network'        && 'Discover Network'}
@@ -1003,7 +1003,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                   {activeTab === 'accounting'     && 'Accounting'}
                   {activeTab === 'profile'        && 'My Profile'}
                 </h2>
-                <p className="text-[10px] text-slate-600 font-medium mt-0.5">{profileCollege} · Seeker Dashboard</p>
+                <p className="text-[10px] text-slate-600 font-medium mt-0.5 truncate max-w-[180px] xs:max-w-[250px] sm:max-w-[400px] md:max-w-none">{profileCollege} · Seeker Dashboard</p>
               </div>
               <div className="flex items-center gap-3">
                 <button

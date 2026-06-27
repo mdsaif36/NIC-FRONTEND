@@ -779,9 +779,9 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
 
         {/* Top header bar */}
         <header className="border-b border-white/5 bg-black/40 backdrop-blur-sm shrink-0 w-full">
-          <div className="px-6 md:px-8 py-5 flex items-center justify-between w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
-            <div>
-              <h2 className="font-sora text-white text-base font-extrabold flex items-center gap-2">
+          <div className="px-4 md:px-8 py-5 flex items-center justify-between w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
+            <div className="min-w-0">
+              <h2 className="font-sora text-white text-base font-extrabold flex items-center gap-2 truncate max-w-[150px] xs:max-w-[200px] sm:max-w-[320px] md:max-w-none">
                 {activeTab === 'overview'        && 'Alumni Overview'}
                 {activeTab === 'inbox'           && 'Candidate Inbox'}
                 {activeTab === 'my_referrals'    && 'My Referrals'}
@@ -793,9 +793,9 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                 {activeTab === 'profile'         && 'My Profile'}
                 {activeTab === 'admin_panel'     && 'Admin Review Console'}
               </h2>
-              <p className="text-[10px] text-slate-500 mt-0.5 font-medium">{company} · Verified Alumni Mentor</p>
+              <p className="text-[10px] text-slate-500 mt-0.5 font-medium truncate max-w-[150px] xs:max-w-[200px] sm:max-w-[320px] md:max-w-none">{company} · Verified Alumni Mentor</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 xs:gap-3 shrink-0">
               <div className="relative">
                 <button type="button" className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition">
                   <Bell className="w-4 h-4" />
@@ -806,9 +806,10 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
                   </span>
                 )}
               </div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[9px] xs:text-[10px] font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <ShieldCheck className="w-3 h-3" />
-                Verified Alumni
+                <span className="hidden sm:inline">Verified Alumni</span>
+                <span className="inline sm:hidden">Verified</span>
               </span>
             </div>
           </div>

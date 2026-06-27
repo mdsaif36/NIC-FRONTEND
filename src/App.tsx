@@ -27,6 +27,7 @@ function App() {
     company?: string;
     isProfileComplete?: boolean;
   } | null>(null);
+  const [isOnboardingSkipped, setIsOnboardingSkipped] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
   // Simple path routing and popstate listener
@@ -292,7 +293,7 @@ function App() {
               company={session.company}
               onLogout={handleLogout}
             />
-            {session.isProfileComplete === false && (
+            {session.isProfileComplete === false && !isOnboardingSkipped && (
               <OnboardingPage 
                 session={session}
                 onComplete={(updatedUser) => {
@@ -302,6 +303,7 @@ function App() {
                     isProfileComplete: true
                   });
                 }}
+                onSkip={() => setIsOnboardingSkipped(true)}
                 onLogout={handleLogout}
               />
             )}

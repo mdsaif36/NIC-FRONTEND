@@ -12,10 +12,11 @@ interface OnboardingPageProps {
     email?: string;
   };
   onComplete: (updatedUser: any) => void;
+  onSkip?: () => void;
   onLogout: () => void;
 }
 
-export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onComplete, onLogout }) => {
+export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onComplete, onSkip, onLogout }) => {
   const isSeeker = session.role === 'seeker';
   const themeAccent = isSeeker ? 'purple' : 'emerald';
 
@@ -346,14 +347,25 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
             </span>
           </div>
           
-          <button 
-            type="button"
-            onClick={onLogout}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 hover:text-white transition-all"
-          >
-            <LogOut size={11} />
-            <span>Sign Out</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {onSkip && (
+              <button 
+                type="button"
+                onClick={onSkip}
+                className="text-[10px] font-bold text-slate-400 hover:text-white transition-all mr-2 animate-pulse"
+              >
+                Skip for now
+              </button>
+            )}
+            <button 
+              type="button"
+              onClick={onLogout}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 hover:text-white transition-all"
+            >
+              <LogOut size={11} />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
 
         {/* Setup Wizard Steps */}

@@ -316,7 +316,6 @@ function App() {
                   setIsOnboardingSkipped(true);
                   localStorage.setItem('onboarding_skipped', 'true');
                 }}
-                onLogout={handleLogout}
               />
             )}
           </>

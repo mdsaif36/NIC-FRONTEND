@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import { API_BASE_URL } from '../config';
-import { LogOut, ArrowRight, ArrowLeft, Check, Sparkles, Plus, X, Briefcase, UploadCloud } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Sparkles, Plus, X, Briefcase, UploadCloud } from 'lucide-react';
 
 interface OnboardingPageProps {
   session: {
@@ -13,10 +13,9 @@ interface OnboardingPageProps {
   };
   onComplete: (updatedUser: any) => void;
   onSkip?: () => void;
-  onLogout: () => void;
 }
 
-export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onComplete, onSkip, onLogout }) => {
+export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onComplete, onSkip }) => {
   if (!session) return null;
   const isSeeker = session.role === 'seeker';
   const themeAccent = isSeeker ? 'purple' : 'emerald';
@@ -356,7 +355,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
         {/* Onboarding Header */}
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-black tracking-widest bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">NEXUS CONNECT</span>
+            <span className="text-xs font-black tracking-widest bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">NEXTINCAMPUS</span>
             <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase ${accentBgMutedClass}`}>
               {isSeeker ? 'Seeker' : 'Alumni'}
             </span>
@@ -372,14 +371,6 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                 Skip for now
               </button>
             )}
-            <button 
-              type="button"
-              onClick={onLogout}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 hover:text-white transition-all"
-            >
-              <LogOut size={11} />
-              <span>Sign Out</span>
-            </button>
           </div>
         </div>
 

@@ -1067,6 +1067,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 fetchProfile={fetchProfile}
                 fetchRequests={fetchRequests}
                 refreshTrigger={referralTrigger}
+                requestsList={requestsList}
               />
             )}
             {activeTab === 'network' && (

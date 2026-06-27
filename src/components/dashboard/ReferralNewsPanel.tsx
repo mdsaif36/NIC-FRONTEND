@@ -47,6 +47,7 @@ interface ReferralNewsPanelProps {
   fetchProfile?: () => Promise<void>;
   fetchRequests?: () => Promise<void>;
   refreshTrigger?: number;
+  requestsList?: any[];
 }
 
 // Helpers
@@ -107,6 +108,7 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
   fetchProfile,
   fetchRequests,
   refreshTrigger,
+  requestsList = [],
 }) => {
   const [posts, setPosts]           = useState<ReferralPost[]>([]);
   const [stats, setStats]           = useState<Stats | null>(null);
@@ -132,6 +134,13 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
         _setActiveTab('discover');
       }
     }
+  };
+
+  const getExistingRequestForPost = (post: ReferralPost) => {
+    return (requestsList || []).find((req: any) => 
+      req.alumniId === post.alumni.id && 
+      (req.targetRole === `${post.company} - ${post.role}` || req.targetRole === post.role)
+    );
   };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
@@ -722,10 +731,31 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
                     </div>
                   </div>
 
-                  <span className="text-[10px] font-bold text-purple-400 group-hover:text-purple-300 flex items-center gap-1 transition-colors">
-                    Apply Now
-                    <span className="transform group-hover:translate-x-0.5 transition-transform">→</span>
-                  </span>
+                  {(() => {
+                    const existingReq = getExistingRequestForPost(post);
+                    if (existingReq) {
+                      const statusMap: Record<string, { text: string; color: string }> = {
+                        pending: { text: 'Applied', color: 'text-amber-400' },
+                        accepted: { text: 'Accepted', color: 'text-emerald-450' },
+                        declined: { text: 'Declined', color: 'text-rose-450 font-bold' },
+                        referred: { text: 'Referred', color: 'text-emerald-405 font-bold animate-pulse' },
+                        info: { text: 'Need Info', color: 'text-purple-400 font-bold' },
+                        hired: { text: 'Hired 🎉', color: 'text-purple-400 font-bold' }
+                      };
+                      const config = statusMap[existingReq.status] || { text: 'Applied', color: 'text-purple-400' };
+                      return (
+                        <span className={`text-[10px] font-extrabold ${config.color} flex items-center gap-1`}>
+                          ● {config.text}
+                        </span>
+                      );
+                    }
+                    return (
+                      <span className="text-[10px] font-bold text-purple-400 group-hover:text-purple-300 flex items-center gap-1 transition-colors">
+                        Apply Now
+                        <span className="transform group-hover:translate-x-0.5 transition-transform">→</span>
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
             );
@@ -942,31 +972,60 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
             <div className="p-5 border-t border-white/5 flex gap-3">
               {modalStage === 'view' ? (
                 <>
-                  {selectedPost.applyCount >= selectedPost.slots ? (
-                    <button
-                      type="button"
-                      disabled
-                      className="flex-1 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-sora font-extrabold text-[11px] uppercase tracking-wider cursor-not-allowed text-center"
-                    >
-                      Slots Full
-                    </button>
-                  ) : daysUntil(selectedPost.deadline) < 0 ? (
-                    <button
-                      type="button"
-                      disabled
-                      className="flex-1 py-2.5 rounded-xl bg-slate-500/10 border border-slate-500/20 text-slate-500 font-sora font-extrabold text-[11px] uppercase tracking-wider cursor-not-allowed text-center"
-                    >
-                      Referral Expired
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setModalStage('apply')}
-                      className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-95 text-white font-sora font-extrabold text-xs uppercase tracking-wider transition shadow-md"
-                    >
-                      Request Referral
-                    </button>
-                  )}
+                  {(() => {
+                    const existingReq = getExistingRequestForPost(selectedPost);
+                    if (existingReq) {
+                      const statusMap: Record<string, { text: string; color: string; bg: string }> = {
+                        pending: { text: 'Applied (Pending Review)', color: 'text-amber-400 border-amber-500/25', bg: 'bg-amber-500/10' },
+                        accepted: { text: 'Application Accepted', color: 'text-emerald-450 border-emerald-500/25', bg: 'bg-emerald-500/10' },
+                        declined: { text: 'Application Declined (Locked)', color: 'text-rose-455 border-rose-500/25', bg: 'bg-rose-500/10 font-bold' },
+                        referred: { text: 'Referred successfully', color: 'text-emerald-400 border-emerald-500/25', bg: 'bg-emerald-500/10 font-bold animate-pulse' },
+                        info: { text: 'More Info Requested', color: 'text-purple-400 border-purple-500/25', bg: 'bg-purple-500/10' },
+                        hired: { text: 'Hired 🎉', color: 'text-purple-400 border-purple-500/25', bg: 'bg-purple-500/10' }
+                      };
+                      const config = statusMap[existingReq.status] || { text: 'Already Applied', color: 'text-purple-400 border-purple-500/20', bg: 'bg-purple-500/10' };
+                      return (
+                        <button
+                          type="button"
+                          disabled
+                          className={`flex-1 py-2.5 rounded-xl border ${config.color} ${config.bg} font-sora font-extrabold text-[11px] uppercase tracking-wider cursor-not-allowed text-center`}
+                        >
+                          {config.text}
+                        </button>
+                      );
+                    }
+                    if (selectedPost.applyCount >= selectedPost.slots) {
+                      return (
+                        <button
+                          type="button"
+                          disabled
+                          className="flex-1 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-sora font-extrabold text-[11px] uppercase tracking-wider cursor-not-allowed text-center"
+                        >
+                          Slots Full
+                        </button>
+                      );
+                    }
+                    if (daysUntil(selectedPost.deadline) < 0) {
+                      return (
+                        <button
+                          type="button"
+                          disabled
+                          className="flex-1 py-2.5 rounded-xl bg-slate-500/10 border border-slate-500/20 text-slate-500 font-sora font-extrabold text-[11px] uppercase tracking-wider cursor-not-allowed text-center"
+                        >
+                          Referral Expired
+                        </button>
+                      );
+                    }
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => setModalStage('apply')}
+                        className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-95 text-white font-sora font-extrabold text-xs uppercase tracking-wider transition shadow-md"
+                      >
+                        Request Referral
+                      </button>
+                    );
+                  })()}
                   <button
                     type="button"
                     onClick={() => { setSelectedPost(null); setPitchMessage(''); setUploadError(null); }}

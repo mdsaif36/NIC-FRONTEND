@@ -105,7 +105,7 @@ export default function Sidebar({
 
         {/* Seeker Referral Credits (Only visible on Seeker portal + Desktop view) */}
         {isSeeker && referralCredits && (
-          <div className="hidden lg:block mt-6 px-4 py-3.5 bg-black/40 border border-white/5 rounded-xl space-y-3 font-inter text-left shadow-md">
+          <div className="hidden lg:block mt-6 px-4 py-3.5 bg-transparent border border-white/5 rounded-xl space-y-3 font-inter text-left">
             <div className="flex items-center justify-between">
               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sora">Referral Credits</span>
               <span className="text-[10px] font-bold text-purple-400 font-mono bg-purple-500/10 px-2 py-0.5 rounded-md">
@@ -113,15 +113,15 @@ export default function Sidebar({
               </span>
             </div>
             
-            <div className="flex items-center justify-between gap-1 py-1 px-0.5">
+            <div className="flex items-center justify-between gap-1.5 py-1 px-0.5">
               {Array.from({ length: referralCredits.limit }).map((_, idx) => {
                 const isActive = idx < referralCredits.remaining;
                 return (
                   <div 
                     key={idx} 
-                    className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                    className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
                       isActive 
-                        ? 'bg-purple-500' 
+                        ? 'bg-gradient-to-r from-purple-500 to-indigo-500 shadow-[0_0_8px_rgba(168,85,247,0.35)]' 
                         : 'bg-white/10'
                     }`} 
                     title={isActive ? "Active Credit" : "Spent Credit"}
@@ -129,7 +129,7 @@ export default function Sidebar({
                 );
               })}
             </div>
-
+ 
             <div className="text-[8.5px] text-slate-500 font-medium">
               Cycle resets on {referralCredits.nextResetDate}
             </div>

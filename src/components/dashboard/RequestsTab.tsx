@@ -15,6 +15,8 @@ interface RequestsTabProps {
   setTrackerFilter: (filter: 'All' | 'Pending' | 'Accepted' | 'Declined' | 'Hired') => void;
   trackerFilter: 'All' | 'Pending' | 'Accepted' | 'Declined' | 'Hired';
   fetchRequests?: () => Promise<void>;
+  alumniNetwork?: any[];
+  setSelectedAlumni?: (alumni: any) => void;
 }
 
 export const RequestsTab: React.FC<RequestsTabProps> = ({
@@ -27,13 +29,23 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
   setSelectedCompanyFilter,
   setTrackerFilter,
   trackerFilter,
-  fetchRequests
+  fetchRequests,
+  alumniNetwork = [],
+  setSelectedAlumni
 }) => {
   const [ratingVal, setRatingVal] = React.useState<number>(0);
   const [hoverRating, setHoverRating] = React.useState<number>(0);
   const [feedbackText, setFeedbackText] = React.useState<string>('');
   const [isSubmittingRating, setIsSubmittingRating] = React.useState<boolean>(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
+
+  const handleOpenAlumniProfile = (alumniId: number) => {
+    const fullAlumni = alumniNetwork.find((a: any) => a.id === alumniId);
+    if (fullAlumni && setSelectedAlumni) {
+      setSelectedAlumni(fullAlumni);
+      setActiveTab('discover');
+    }
+  };
 
   React.useEffect(() => {
     setRatingVal(0);
@@ -120,13 +132,19 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                       onClick={() => setExpandedRequest(req)}
                       className="p-5 rounded-2xl border border-white/5 bg-[#08080b]/90 hover:border-purple-500/20 hover:bg-[#0c0c10] transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer"
                     >
-                      <div className="flex items-start gap-4">
+                      <div 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenAlumniProfile(req.alumniId);
+                        }}
+                        className="flex items-start gap-4 hover:opacity-85 transition duration-200 cursor-pointer"
+                      >
                         <div className="w-9 h-9 rounded-full bg-slate-900 border border-white/10 flex items-center justify-center font-bold text-slate-350 text-[10px] uppercase shrink-0">
                           {req.alumniName.split(' ').map((n: string) => n[0]).join('')}
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-white text-xs">{req.alumniName}</span>
+                            <span className="font-bold text-white text-xs hover:text-purple-400 transition">{req.alumniName}</span>
                             <span className="text-[10px] text-slate-400 font-medium">{req.role} at {req.company} {req.location && `· ${req.location}`}</span>
                           </div>
                           <span className="block text-[9px] text-slate-500 mt-1 font-semibold">{req.date}</span>
@@ -211,16 +229,22 @@ export const RequestsTab: React.FC<RequestsTabProps> = ({
                       </div>
 
                       {/* Request Info Card */}
-                      <div className="flex items-center gap-3 mb-4">
+                      <div 
+                        onClick={() => {
+                          setExpandedRequest(null);
+                          handleOpenAlumniProfile(expandedRequest.alumniId);
+                        }}
+                        className="flex items-center gap-3 mb-4 p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/10 hover:bg-purple-500/10 hover:border-purple-500/20 transition cursor-pointer"
+                      >
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-550 to-indigo-650 flex items-center justify-center font-bold text-white text-xs uppercase shadow-lg">
                           {expandedRequest.alumniName.split(' ').map((n: string) => n[0]).join('')}
                         </div>
                         <div>
-                          <h3 className="font-sora text-white text-xs font-bold flex items-center gap-1.5">
+                          <h3 className="font-sora text-white text-xs font-bold hover:text-purple-400 transition flex items-center gap-1.5">
                             {expandedRequest.alumniName}
                           </h3>
                           <p className="text-[10px] text-slate-400 mt-0.5 font-semibold">{expandedRequest.role} at {expandedRequest.company} {expandedRequest.location && `· ${expandedRequest.location}`}</p>
-                          <span className="block text-[8px] text-slate-550 mt-0.5">{expandedRequest.date}</span>
+                          <span className="block text-[8px] text-slate-555 mt-0.5">{expandedRequest.date}</span>
                         </div>
                       </div>
 

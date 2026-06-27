@@ -1121,6 +1121,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
                 setActiveChatId={setActiveChatId}
                 setSelectedCompanyFilter={setSelectedCompanyFilter}
                 fetchRequests={fetchRequests}
+                alumniNetwork={alumniNetwork}
+                setSelectedAlumni={setSelectedAlumni}
               />
             )}
             {activeTab === 'accounting' && (

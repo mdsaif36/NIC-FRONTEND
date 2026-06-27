@@ -13,9 +13,10 @@ import { About } from './components/About';
 import { LandingLeaderboard } from './components/LandingLeaderboard';
 import { ForgotPassword } from './components/ForgotPassword';
 import { ResetPassword } from './components/ResetPassword';
+import { OnboardingPage } from './components/OnboardingPage';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard' | 'forgot-password' | 'reset-password'>('landing');
+  const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard' | 'forgot-password' | 'reset-password' | 'onboarding'>('landing');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [authRole, setAuthRole] = useState<'seeker' | 'alumni'>('seeker');
   const [session, setSession] = useState<{
@@ -24,6 +25,7 @@ function App() {
     name: string;
     college?: string;
     company?: string;
+    isProfileComplete?: boolean;
   } | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
@@ -75,11 +77,16 @@ function App() {
               role: user.role,
               name: user.name,
               college: user.college,
-              company: user.company
+              company: user.company,
+              isProfileComplete: user.isProfileComplete
             });
             // Only redirect to dashboard if we're not on reset or forgot password routes
             if (path !== '/forgot-password' && path !== '/reset-password') {
-              setCurrentPage('dashboard');
+              if (user.isProfileComplete === false) {
+                setCurrentPage('onboarding');
+              } else {
+                setCurrentPage('dashboard');
+              }
             }
           } else {
             localStorage.removeItem('token');
@@ -132,14 +139,19 @@ function App() {
     }
   };
 
-  const handleAuthSuccess = (token: string, user: { id: number; role: 'seeker' | 'alumni'; name: string; email?: string; company?: string; college?: string }) => {
+  const handleAuthSuccess = (token: string, user: { id: number; role: 'seeker' | 'alumni'; name: string; email?: string; company?: string; college?: string; isProfileComplete?: boolean }) => {
     localStorage.setItem('token', token);
     if (user.email) {
       localStorage.setItem('savedEmail', user.email);
     }
     setSession(user);
-    setCurrentPage('dashboard');
-    window.history.pushState({}, '', '/dashboard');
+    if (user.isProfileComplete === false) {
+      setCurrentPage('onboarding');
+      window.history.pushState({}, '', '/onboarding');
+    } else {
+      setCurrentPage('dashboard');
+      window.history.pushState({}, '', '/dashboard');
+    }
   };
 
   const handleLogout = () => {
@@ -277,6 +289,22 @@ function App() {
 
         {currentPage === 'reset-password' && (
           <ResetPassword onBack={() => handleNavigate('auth', 'login')} />
+        )}
+
+        {currentPage === 'onboarding' && session && (
+          <OnboardingPage 
+            session={session}
+            onComplete={(updatedUser) => {
+              setSession({
+                ...session,
+                ...updatedUser,
+                isProfileComplete: true
+              });
+              setCurrentPage('dashboard');
+              window.history.pushState({}, '', '/dashboard');
+            }}
+            onLogout={handleLogout}
+          />
         )}
 
         {currentPage === 'dashboard' && session && (

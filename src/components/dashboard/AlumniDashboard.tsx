@@ -814,23 +814,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
           </div>
         </header>
 
-        {!isProfileComplete && (
-          <div className="mx-6 md:mx-8 mt-4 p-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-yellow-400 shrink-0 animate-pulse" />
-              <span className="text-[10px] font-medium text-slate-350 leading-relaxed text-left">
-                Your onboarding verification profile is incomplete. Complete it now to activate referral posting.
-              </span>
-            </div>
-            <button
-              onClick={onOpenOnboarding}
-              className="px-3 py-1.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black text-[9px] font-black uppercase tracking-wider transition shrink-0 shadow-lg shadow-yellow-500/10 cursor-pointer"
-            >
-              Complete Profile
-            </button>
-          </div>
-        )}
-
         {/* Tab content */}
         <div className="flex-1 p-6 md:p-8 w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
 
@@ -839,6 +822,22 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
           ══════════════════════════════ */}
           {activeTab === 'overview' && (
             <div className="space-y-8 animate-fade-in-up text-left">
+              {!isProfileComplete && (
+                <div className="mb-6 p-3.5 rounded-2xl border border-yellow-500/20 bg-yellow-500/5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-yellow-400 shrink-0 animate-pulse" />
+                    <span className="text-[10px] font-medium text-slate-350 leading-relaxed text-left">
+                      Your onboarding verification profile is incomplete. Complete it now to activate referral posting.
+                    </span>
+                  </div>
+                  <button
+                    onClick={onOpenOnboarding}
+                    className="px-3 py-1.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black text-[9px] font-black uppercase tracking-wider transition shrink-0 shadow-lg shadow-yellow-500/10 cursor-pointer"
+                  >
+                    Complete Profile
+                  </button>
+                </div>
+              )}
 
               {/* Welcome banner */}
               <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-emerald-950/30 via-[#07070a] to-blue-950/20 p-6 md:p-8">

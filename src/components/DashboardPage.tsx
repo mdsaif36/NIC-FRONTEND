@@ -1025,35 +1025,37 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
               </div>
             </div>
           </header>
-          {!isProfileComplete && (
-            <div className="mx-6 md:mx-8 mt-4 p-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-yellow-400 shrink-0 animate-pulse" />
-                <span className="text-[10px] font-medium text-slate-350 leading-relaxed text-left">
-                  Your onboarding profile is incomplete. Complete it now to build trust and unlock career referrals.
-                </span>
-              </div>
-              <button
-                onClick={onOpenOnboarding}
-                className="px-3 py-1.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black text-[9px] font-black uppercase tracking-wider transition shrink-0 shadow-lg shadow-yellow-500/10 cursor-pointer"
-              >
-                Complete Profile
-              </button>
-            </div>
-          )}
           <div className="flex-1 p-6 md:p-8 w-full max-w-[1440px] xl:max-w-[1600px] 3xl:max-w-[2000px] 4xl:max-w-[2400px] mx-auto">
             {activeTab === 'career_intelligence' && (
               <CareerIntelligenceTab currentUser={currentUser} fetchProfile={fetchProfile} />
             )}
             {activeTab === 'dashboard' && (
-              <DashboardTab
-                profileCollege={profileCollege}
-                requestsList={requestsList}
-                savedAlumniIds={savedAlumniIds}
-                alumniNetwork={alumniNetwork}
-                setActiveTab={setActiveTab as any}
-                openRequestModal={openRequestModal}
-              />
+              <>
+                {!isProfileComplete && (
+                  <div className="mb-6 p-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-yellow-400 shrink-0 animate-pulse" />
+                      <span className="text-[10px] font-medium text-slate-350 leading-relaxed text-left">
+                        Your onboarding profile is incomplete. Complete it now to build trust and unlock career referrals.
+                      </span>
+                    </div>
+                    <button
+                      onClick={onOpenOnboarding}
+                      className="px-3 py-1.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black text-[9px] font-black uppercase tracking-wider transition shrink-0 shadow-lg shadow-yellow-500/10 cursor-pointer"
+                    >
+                      Complete Profile
+                    </button>
+                  </div>
+                )}
+                <DashboardTab
+                  profileCollege={profileCollege}
+                  requestsList={requestsList}
+                  savedAlumniIds={savedAlumniIds}
+                  alumniNetwork={alumniNetwork}
+                  setActiveTab={setActiveTab as any}
+                  openRequestModal={openRequestModal}
+                />
+              </>
             )}
             {activeTab === 'referral_board' && (
               <ReferralNewsPanel

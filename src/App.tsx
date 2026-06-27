@@ -293,19 +293,17 @@ function App() {
               onLogout={handleLogout}
             />
             {session.isProfileComplete === false && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md overflow-y-auto p-4 py-8">
-                <OnboardingPage 
-                  session={session}
-                  onComplete={(updatedUser) => {
-                    setSession({
-                      ...session,
-                      ...updatedUser,
-                      isProfileComplete: true
-                    });
-                  }}
-                  onLogout={handleLogout}
-                />
-              </div>
+              <OnboardingPage 
+                session={session}
+                onComplete={(updatedUser) => {
+                  setSession({
+                    ...session,
+                    ...updatedUser,
+                    isProfileComplete: true
+                  });
+                }}
+                onLogout={handleLogout}
+              />
             )}
           </>
         )}

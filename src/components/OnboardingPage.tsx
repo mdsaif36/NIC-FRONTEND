@@ -23,9 +23,8 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Welcome flow states
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [savedUser, setSavedUser] = useState<any>(null);
+  // Transition zoom exit state
+  const [isExiting, setIsExiting] = useState(false);
 
   // --- Seeker Fields State ---
   const [seekerName, setSeekerName] = useState(session.name || '');
@@ -40,8 +39,8 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const [seekerTargetRoles, setSeekerTargetRoles] = useState<string[]>(['Frontend Developer']);
   const [newRole, setNewRole] = useState('');
   const [seekerBio, setSeekerBio] = useState('');
-  const [portfolioLinks, setPortfolioLinks] = useState<Array<{ name: string; url: string }>>([
-    { name: 'GitHub', url: '' }
+  const [portfolioLinks, setPortfolioLinks] = useState<Array<{ name: string; githubUrl: string; liveUrl: string }>>([
+    { name: 'Project 1', githubUrl: '', liveUrl: '' }
   ]);
 
   // --- Alumni Fields State ---
@@ -58,16 +57,16 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const [alumniExpertise, setAlumniExpertise] = useState<string[]>(['Resume Review', 'System Design']);
   const [newExpertiseInput, setNewExpertiseInput] = useState('');
 
-  // Handle Seeker Portfolio Links
+  // Handle Seeker Portfolio Links (dual link fields)
   const addPortfolioLink = () => {
-    setPortfolioLinks([...portfolioLinks, { name: 'Project / Website', url: '' }]);
+    setPortfolioLinks([...portfolioLinks, { name: `Project ${portfolioLinks.length + 1}`, githubUrl: '', liveUrl: '' }]);
   };
 
   const removePortfolioLink = (index: number) => {
     setPortfolioLinks(portfolioLinks.filter((_, i) => i !== index));
   };
 
-  const updatePortfolioLink = (index: number, key: 'name' | 'url', value: string) => {
+  const updatePortfolioLink = (index: number, key: 'name' | 'githubUrl' | 'liveUrl', value: string) => {
     const updated = [...portfolioLinks];
     updated[index][key] = value;
     setPortfolioLinks(updated);
@@ -124,7 +123,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const isStepValid = useMemo(() => {
     if (isSeeker) {
       if (step === 1) {
-        return !!seekerName.trim() && !!seekerCollege.trim() && !!seekerBranch.trim();
+        return !!seekerName.trim() && !!seekerCollege.trim() && !!seekerBranch.trim() && !!seekerGradYear.trim();
       }
       if (step === 2) {
         return !!seekerResume.trim() && !!seekerLinkedIn.trim();
@@ -145,7 +144,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
     }
     return false;
   }, [
-    step, isSeeker, seekerName, seekerCollege, seekerBranch, seekerResume, seekerLinkedIn, seekerSkills, seekerBio,
+    step, isSeeker, seekerName, seekerCollege, seekerBranch, seekerGradYear, seekerResume, seekerLinkedIn, seekerSkills, seekerBio,
     alumniCompany, alumniRole, alumniWorkEmail, alumniExpertise, alumniBio, alumniLinkedIn
   ]);
 
@@ -175,10 +174,10 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
         payload.bio = seekerBio;
         payload.targetRole = seekerTargetRoles.join(', ');
         
-        // Save portfolio links to projects array
+        // Save dual portfolio links as formatted string list
         payload.projects = portfolioLinks
-          .filter(l => l.url.trim() !== '')
-          .map(l => `${l.name}: ${l.url}`);
+          .filter(l => l.name.trim() !== '')
+          .map(l => `${l.name} (GitHub: ${l.githubUrl || 'N/A'}, Demo: ${l.liveUrl || 'N/A'})`);
       } else {
         payload.company = alumniCompany;
         payload.jobTitle = alumniRole;
@@ -209,12 +208,16 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
       }
 
       const updatedUser = await res.json();
-      setSavedUser(updatedUser);
-      setShowWelcome(true);
+      
+      // Start exit zoom animation before completion
+      setIsExiting(true);
+      setTimeout(() => {
+        onComplete(updatedUser);
+      }, 600);
+
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'A network error occurred. Please try again.');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -224,21 +227,21 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const accentBgClass = themeAccent === 'purple' ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/20' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20';
   const accentBgMutedClass = themeAccent === 'purple' ? 'bg-purple-500/10 border-purple-500/20 text-purple-300' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300';
   const accentGlowClass = themeAccent === 'purple' ? 'shadow-[0_0_20px_rgba(168,85,247,0.15)]' : 'shadow-[0_0_20px_rgba(16,185,129,0.15)]';
-  const iconThemeColor = themeAccent === 'purple' ? 'from-purple-500 to-indigo-500' : 'from-emerald-500 to-teal-500';
 
   return (
-    <div className={`w-full max-w-xl bg-slate-950/90 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-2xl ${accentGlowClass} relative font-sora text-white`}>
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4 py-8 transition-all duration-700 ease-out ${isExiting ? 'bg-black/0 backdrop-blur-none pointer-events-none' : 'bg-black/60 backdrop-blur-md'}`}>
       
-      {/* Onboarding Header */}
-      <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-black tracking-widest bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">NEXUS CONNECT</span>
-          <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase ${accentBgMutedClass}`}>
-            {isSeeker ? 'Seeker' : 'Alumni'}
-          </span>
-        </div>
+      <div className={`w-full max-w-xl bg-slate-950/90 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-2xl ${accentGlowClass} relative font-sora text-white transition-all duration-500 ease-out ${isExiting ? 'scale-110 opacity-0 blur-[2px]' : 'scale-100 opacity-100'}`}>
         
-        {!showWelcome && (
+        {/* Onboarding Header */}
+        <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black tracking-widest bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">NEXUS CONNECT</span>
+            <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase ${accentBgMutedClass}`}>
+              {isSeeker ? 'Seeker' : 'Alumni'}
+            </span>
+          </div>
+          
           <button 
             type="button"
             onClick={onLogout}
@@ -247,38 +250,9 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
             <LogOut size={11} />
             <span>Sign Out</span>
           </button>
-        )}
-      </div>
-
-      {showWelcome ? (
-        /* Celebration Welcome Step */
-        <div className="text-center py-6 space-y-6 animate-fadeIn">
-          <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-tr ${iconThemeColor} flex items-center justify-center animate-bounce shadow-lg`}>
-            <Sparkles className="text-white" size={32} />
-          </div>
-          
-          <div className="space-y-2">
-            <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-              Welcome to NextInCampus!
-            </h1>
-            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-              {isSeeker 
-                ? "Your professional referral profile is ready. You can now explore alumni networks, check out target companies, and apply for referrals." 
-                : "Thank you for completing your verification setup. You are now ready to refer seekers, provide mentorship, and build trust in our community."}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onComplete(savedUser)}
-            className={`w-full py-3 px-4 rounded-xl text-white text-xs font-black uppercase tracking-wider transition-all duration-300 ${accentBgClass} flex items-center justify-center gap-2`}
-          >
-            <span>Enter Dashboard</span>
-            <ArrowRight size={14} />
-          </button>
         </div>
-      ) : (
-        /* Regular Setup Wizard Steps */
+
+        {/* Setup Wizard Steps */}
         <div>
           {/* Progress Tracker */}
           <div className="mb-6">
@@ -349,19 +323,25 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                         className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                       />
                     </div>
+                    
+                    {/* Writable and Choosable Graduation Year with Datalist */}
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Graduation Year</label>
-                      <select 
+                      <input 
+                        type="text"
+                        list="grad-years"
                         value={seekerGradYear}
                         onChange={(e) => setSeekerGradYear(e.target.value)}
+                        placeholder="Select or Type"
                         className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
-                      >
-                        <option value="2025">2025</option>
-                        <option value="2026">2026</option>
-                        <option value="2027">2027</option>
-                        <option value="2028">2028</option>
-                        <option value="2029">2029</option>
-                      </select>
+                      />
+                      <datalist id="grad-years">
+                        <option value="2025" />
+                        <option value="2026" />
+                        <option value="2027" />
+                        <option value="2028" />
+                        <option value="2029" />
+                      </datalist>
                     </div>
                   </div>
                 </>
@@ -468,43 +448,62 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                     </select>
                   </div>
 
-                  <div className="space-y-2">
+                  {/* Portfolio links with dual URLs */}
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Portfolio & Project Links</label>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Portfolio & Projects</label>
                       <button 
                         type="button" 
                         onClick={addPortfolioLink}
                         className={`text-[9px] font-bold uppercase flex items-center gap-1 ${accentColorClass}`}
                       >
-                        <Plus size={11} /> Add link
+                        <Plus size={11} /> Add project
                       </button>
                     </div>
 
                     {portfolioLinks.map((link, idx) => (
-                      <div key={idx} className="flex gap-2 items-center">
-                        <input 
-                          type="text"
-                          value={link.name}
-                          onChange={(e) => updatePortfolioLink(idx, 'name', e.target.value)}
-                          placeholder="e.g. GitHub or Portfolio"
-                          className="w-1/3 bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
-                        />
-                        <input 
-                          type="url"
-                          value={link.url}
-                          onChange={(e) => updatePortfolioLink(idx, 'url', e.target.value)}
-                          placeholder="https://..."
-                          className={`w-2/3 bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} transition-all`}
-                        />
+                      <div key={idx} className="p-3 rounded-lg bg-black/30 border border-white/5 space-y-2 relative">
                         {portfolioLinks.length > 1 && (
                           <button 
                             type="button" 
                             onClick={() => removePortfolioLink(idx)}
-                            className="p-1.5 rounded bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white"
+                            className="absolute top-2.5 right-2.5 p-1 rounded bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white transition-all"
                           >
                             <X size={12} />
                           </button>
                         )}
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold uppercase text-slate-500">Project Title</label>
+                          <input 
+                            type="text"
+                            value={link.name}
+                            onChange={(e) => updatePortfolioLink(idx, 'name', e.target.value)}
+                            placeholder="e.g. NextInCampus Dashboard"
+                            className="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold uppercase text-slate-500">GitHub Repository Link</label>
+                            <input 
+                              type="url"
+                              value={link.githubUrl}
+                              onChange={(e) => updatePortfolioLink(idx, 'githubUrl', e.target.value)}
+                              placeholder="e.g. https://github.com/..."
+                              className="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold uppercase text-slate-500">Live Demo Link</label>
+                            <input 
+                              type="url"
+                              value={link.liveUrl}
+                              onChange={(e) => updatePortfolioLink(idx, 'liveUrl', e.target.value)}
+                              placeholder="e.g. https://my-project.com"
+                              className="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -789,7 +788,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
             )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -27,7 +27,7 @@ function App() {
     company?: string;
     isProfileComplete?: boolean;
   } | null>(null);
-  const [isOnboardingSkipped, setIsOnboardingSkipped] = useState(false);
+  const [isOnboardingSkipped, setIsOnboardingSkipped] = useState(() => localStorage.getItem('onboarding_skipped') === 'true');
   const [isInitializing, setIsInitializing] = useState(true);
 
   // Simple path routing and popstate listener
@@ -141,6 +141,8 @@ function App() {
     if (user.email) {
       localStorage.setItem('savedEmail', user.email);
     }
+    localStorage.removeItem('onboarding_skipped');
+    setIsOnboardingSkipped(false);
     setSession(user);
     setCurrentPage('dashboard');
     window.history.pushState({}, '', '/dashboard');
@@ -291,6 +293,11 @@ function App() {
               name={session.name}
               college={session.college}
               company={session.company}
+              isProfileComplete={session.isProfileComplete}
+              onOpenOnboarding={() => {
+                setIsOnboardingSkipped(false);
+                localStorage.removeItem('onboarding_skipped');
+              }}
               onLogout={handleLogout}
             />
             {session.isProfileComplete === false && !isOnboardingSkipped && (
@@ -302,8 +309,13 @@ function App() {
                     ...updatedUser,
                     isProfileComplete: true
                   });
+                  localStorage.removeItem('onboarding_skipped');
+                  setIsOnboardingSkipped(false);
                 }}
-                onSkip={() => setIsOnboardingSkipped(true)}
+                onSkip={() => {
+                  setIsOnboardingSkipped(true);
+                  localStorage.setItem('onboarding_skipped', 'true');
+                }}
                 onLogout={handleLogout}
               />
             )}

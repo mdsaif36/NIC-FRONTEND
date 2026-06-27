@@ -25,8 +25,8 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Transition zoom exit state
-  const [isExiting, setIsExiting] = useState(false);
+  // Transition zoom exit state and watermark animation state
+  const [showWatermark, setShowWatermark] = useState(false);
 
   // --- Seeker Fields State ---
   const [seekerName, setSeekerName] = useState(session.name || '');
@@ -283,11 +283,11 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
 
       const updatedUser = await res.json();
       
-      // Start exit zoom animation before completion
-      setIsExiting(true);
+      // Start exit watermark animation before completion
+      setShowWatermark(true);
       setTimeout(() => {
         onComplete(updatedUser);
-      }, 600);
+      }, 1500);
 
     } catch (err: any) {
       console.error(err);
@@ -301,43 +301,57 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const accentBgClass = themeAccent === 'purple' ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/20' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20';
   const accentBgMutedClass = themeAccent === 'purple' ? 'bg-purple-500/10 border-purple-500/20 text-purple-300' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300';
   const accentGlowClass = themeAccent === 'purple' ? 'shadow-[0_0_20px_rgba(168,85,247,0.15)]' : 'shadow-[0_0_20px_rgba(16,185,129,0.15)]';
+  const watermarkTextTheme = isSeeker ? 'from-purple-400 via-indigo-500 to-purple-600' : 'from-emerald-400 via-teal-500 to-amber-400';
+  const watermarkShadowGlow = isSeeker ? 'drop-shadow-[0_0_35px_rgba(168,85,247,0.4)]' : 'drop-shadow-[0_0_35px_rgba(16,185,129,0.4)]';
+
+  if (showWatermark) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020205] overlay-animate-in">
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes watermarkFadeInOut {
+            0% { transform: scale(0.85); opacity: 0; filter: blur(6px); }
+            30% { transform: scale(1); opacity: 0.95; filter: blur(0px); }
+            75% { transform: scale(1.02); opacity: 0.95; filter: blur(0px); }
+            100% { transform: scale(1.15); opacity: 0; filter: blur(8px); }
+          }
+          .watermark-animation {
+            animation: watermarkFadeInOut 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+        `}} />
+        <div className="text-center watermark-animation select-none pointer-events-none">
+          <h1 className={`text-5xl md:text-7xl font-black tracking-widest bg-gradient-to-r ${watermarkTextTheme} bg-clip-text text-transparent filter ${watermarkShadowGlow} font-sora`}>
+            NEXTINCAMPUS
+          </h1>
+          <p className="text-[10px] md:text-xs font-bold text-slate-500 tracking-widest uppercase mt-4">
+            Elite Institutional Connection
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4 py-8 ${isExiting ? 'overlay-animate-out pointer-events-none' : 'overlay-animate-in'}`}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4 py-8 overlay-animate-in">
       
-      {/* Inline styles for custom GPU-accelerated entrance and exit zoom animations */}
+      {/* Inline styles for custom entrance animations */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes onboardingZoomIn {
           from { transform: scale(0.95); opacity: 0; filter: blur(4px); }
           to { transform: scale(1); opacity: 1; filter: blur(0px); }
         }
-        @keyframes onboardingZoomOut {
-          from { transform: scale(1); opacity: 1; filter: blur(0px); }
-          to { transform: scale(1.08); opacity: 0; filter: blur(6px); }
-        }
         @keyframes overlayFadeIn {
           from { background-color: rgba(0, 0, 0, 0); backdrop-filter: blur(0px); }
           to { background-color: rgba(2, 2, 5, 0.65); backdrop-filter: blur(16px); }
         }
-        @keyframes overlayFadeOut {
-          from { background-color: rgba(2, 2, 5, 0.65); backdrop-filter: blur(16px); }
-          to { background-color: rgba(0, 0, 0, 0); backdrop-filter: blur(0px); }
-        }
         .onboarding-animate-in {
           animation: onboardingZoomIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .onboarding-animate-out {
-          animation: onboardingZoomOut 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .overlay-animate-in {
           animation: overlayFadeIn 0.45s ease-out forwards;
         }
-        .overlay-animate-out {
-          animation: overlayFadeOut 0.55s ease-out forwards;
-        }
       `}} />
 
-      <div className={`w-full max-w-xl bg-[#07070f]/95 border border-white/10 rounded-2xl p-6 md:p-8 relative font-sora text-white ${accentGlowClass} ${isExiting ? 'onboarding-animate-out' : 'onboarding-animate-in'}`}>
+      <div className={`w-full max-w-xl bg-[#07070f]/95 border border-white/10 rounded-2xl p-6 md:p-8 relative font-sora text-white ${accentGlowClass} onboarding-animate-in`}>
         
         {/* Onboarding Header */}
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5">

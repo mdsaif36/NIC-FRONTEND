@@ -17,6 +17,7 @@ interface OnboardingPageProps {
 }
 
 export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onComplete, onSkip, onLogout }) => {
+  if (!session) return null;
   const isSeeker = session.role === 'seeker';
   const themeAccent = isSeeker ? 'purple' : 'emerald';
 

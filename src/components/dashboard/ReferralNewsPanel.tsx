@@ -139,7 +139,7 @@ export const ReferralNewsPanel: React.FC<ReferralNewsPanelProps> = ({
   const getExistingRequestForPost = (post: ReferralPost) => {
     return (requestsList || []).find((req: any) => 
       req.alumniId === post.alumni.id && 
-      (req.targetRole === `${post.company} - ${post.role}` || req.targetRole === post.role)
+      (req.role === `${post.company} - ${post.role}` || req.role === post.role)
     );
   };
   const [isSubmitting, setIsSubmitting] = useState(false);

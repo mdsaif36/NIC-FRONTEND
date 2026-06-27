@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { API_BASE_URL } from '../config';
-import { LogOut, ArrowRight, ArrowLeft, Check, Sparkles, Plus, X, Briefcase } from 'lucide-react';
+import { LogOut, ArrowRight, ArrowLeft, Check, Sparkles, Plus, X, Briefcase, UploadCloud } from 'lucide-react';
 
 interface OnboardingPageProps {
   session: {
@@ -31,7 +31,14 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const [seekerCollege, setSeekerCollege] = useState(session.college || '');
   const [seekerBranch, setSeekerBranch] = useState('');
   const [seekerGradYear, setSeekerGradYear] = useState('2026');
+  
+  // Seeker Resume
+  const [resumeMode, setResumeMode] = useState<'upload' | 'link'>('upload');
   const [seekerResume, setSeekerResume] = useState('');
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [seekerLinkedIn, setSeekerLinkedIn] = useState('');
   const [seekerDomain, setSeekerDomain] = useState('Software Engineering');
   const [seekerSkills, setSeekerSkills] = useState<string[]>(['React', 'Node.js']);
@@ -70,6 +77,71 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
     const updated = [...portfolioLinks];
     updated[index][key] = value;
     setPortfolioLinks(updated);
+  };
+
+  // Seeker Resume Upload handler
+  const handleResumeFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (ext !== 'pdf') {
+        setError('Please upload a PDF format resume.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError('File size must be under 5MB.');
+        return;
+      }
+
+      setError(null);
+      setIsUploadingFile(true);
+      setUploadedFileName(file.name);
+
+      try {
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        formData.append('resume', file);
+
+        const res = await fetch(`${API_BASE_URL}/api/users/resume/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        if (!res.ok) {
+          throw new Error('Upload failed. Please try again.');
+        }
+
+        const data = await res.json();
+        if (data.resumeName) {
+          setSeekerResume(data.resumeName);
+        }
+
+        // AI Autofill fields!
+        if (data.skills && Array.isArray(data.skills) && data.skills.length > 0) {
+          setSeekerSkills(data.skills);
+        }
+        if (data.bio) {
+          setSeekerBio(data.bio);
+        }
+        if (data.targetRole) {
+          const roles = typeof data.targetRole === 'string' 
+            ? data.targetRole.split(',').map((r: string) => r.trim())
+            : data.targetRole;
+          setSeekerTargetRoles(roles);
+        }
+
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || 'Error uploading file.');
+        setUploadedFileName('');
+        setSeekerResume('');
+      } finally {
+        setIsUploadingFile(false);
+      }
+    }
   };
 
   // Seeker Tags helpers
@@ -229,9 +301,41 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const accentGlowClass = themeAccent === 'purple' ? 'shadow-[0_0_20px_rgba(168,85,247,0.15)]' : 'shadow-[0_0_20px_rgba(16,185,129,0.15)]';
 
   return (
-    <div className={`fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4 py-8 transition-all duration-700 ease-out ${isExiting ? 'bg-black/0 backdrop-blur-none pointer-events-none' : 'bg-black/60 backdrop-blur-md'}`}>
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4 py-8 ${isExiting ? 'overlay-animate-out pointer-events-none' : 'overlay-animate-in'}`}>
       
-      <div className={`w-full max-w-xl bg-slate-950/90 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-2xl ${accentGlowClass} relative font-sora text-white transition-all duration-500 ease-out ${isExiting ? 'scale-110 opacity-0 blur-[2px]' : 'scale-100 opacity-100'}`}>
+      {/* Inline styles for custom GPU-accelerated entrance and exit zoom animations */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes onboardingZoomIn {
+          from { transform: scale(0.95); opacity: 0; filter: blur(4px); }
+          to { transform: scale(1); opacity: 1; filter: blur(0px); }
+        }
+        @keyframes onboardingZoomOut {
+          from { transform: scale(1); opacity: 1; filter: blur(0px); }
+          to { transform: scale(1.08); opacity: 0; filter: blur(6px); }
+        }
+        @keyframes overlayFadeIn {
+          from { background-color: rgba(0, 0, 0, 0); backdrop-filter: blur(0px); }
+          to { background-color: rgba(2, 2, 5, 0.65); backdrop-filter: blur(16px); }
+        }
+        @keyframes overlayFadeOut {
+          from { background-color: rgba(2, 2, 5, 0.65); backdrop-filter: blur(16px); }
+          to { background-color: rgba(0, 0, 0, 0); backdrop-filter: blur(0px); }
+        }
+        .onboarding-animate-in {
+          animation: onboardingZoomIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .onboarding-animate-out {
+          animation: onboardingZoomOut 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .overlay-animate-in {
+          animation: overlayFadeIn 0.45s ease-out forwards;
+        }
+        .overlay-animate-out {
+          animation: overlayFadeOut 0.55s ease-out forwards;
+        }
+      `}} />
+
+      <div className={`w-full max-w-xl bg-[#07070f]/95 border border-white/10 rounded-2xl p-6 md:p-8 relative font-sora text-white ${accentGlowClass} ${isExiting ? 'onboarding-animate-out' : 'onboarding-animate-in'}`}>
         
         {/* Onboarding Header */}
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5">
@@ -408,22 +512,80 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                   <span>{isSeeker ? 'Referral Arsenal' : 'Preferences & Support'}</span>
                 </h2>
                 <p className="text-[10px] text-slate-400 mt-0.5">
-                  {isSeeker ? 'Provide links that verify your skills and project work.' : 'Let seekers know how you can refer or support them.'}
+                  {isSeeker ? 'Provide links or files that verify your skills and project work.' : 'Let seekers know how you can refer or support them.'}
                 </p>
               </div>
 
               {isSeeker ? (
                 <>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Resume Drive Link / Hosted PDF</label>
-                    <input 
-                      type="url"
-                      value={seekerResume}
-                      onChange={(e) => setSeekerResume(e.target.value)}
-                      placeholder="e.g. https://drive.google.com/file/d/..."
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
-                    />
+                  {/* Seeker PDF Resume Uploader */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Seeker Resume (PDF)</label>
+                      <div className="flex bg-white/5 border border-white/10 rounded-lg p-0.5">
+                        <button
+                          type="button"
+                          onClick={() => setResumeMode('upload')}
+                          className={`px-2.5 py-1 text-[9px] font-bold rounded transition-all ${resumeMode === 'upload' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                        >
+                          Upload PDF
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setResumeMode('link')}
+                          className={`px-2.5 py-1 text-[9px] font-bold rounded transition-all ${resumeMode === 'link' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                        >
+                          Paste Link
+                        </button>
+                      </div>
+                    </div>
+
+                    {resumeMode === 'upload' ? (
+                      /* Drag/Click to Upload Area */
+                      <div 
+                        onClick={() => !isUploadingFile && fileInputRef.current?.click()}
+                        className={`p-5 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center transition-all duration-300 min-h-[110px] cursor-pointer select-none bg-slate-950/40 ${isUploadingFile ? 'border-purple-500/50 bg-purple-950/5' : 'border-white/10 hover:border-purple-500/30'}`}
+                      >
+                        <input 
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleResumeFileUpload}
+                          disabled={isUploadingFile}
+                          accept=".pdf"
+                          className="hidden"
+                        />
+                        
+                        {isUploadingFile ? (
+                          <div className="flex flex-col items-center justify-center space-y-2">
+                            <div className="w-6 h-6 rounded-full border-2 border-t-purple-500 border-r-purple-500 border-b-white/10 border-l-white/10 animate-spin" />
+                            <span className="text-[10px] font-bold text-purple-400 animate-pulse">AI extracting skills & pitch...</span>
+                          </div>
+                        ) : seekerResume ? (
+                          <div className="flex flex-col items-center justify-center space-y-1">
+                            <Check className="w-6 h-6 text-emerald-400 bg-emerald-500/10 p-1 rounded-full border border-emerald-500/20" />
+                            <span className="text-[11px] font-bold text-white max-w-[280px] truncate">{uploadedFileName || 'Resume uploaded'}</span>
+                            <span className="text-[9px] text-slate-500 font-medium">Click to upload a different PDF</span>
+                          </div>
+                        ) : (
+                          <>
+                            <UploadCloud className="w-7 h-7 mb-1 text-slate-500" />
+                            <span className="text-[10px] font-bold text-slate-300">Click to browse or drop your resume</span>
+                            <span className="text-[8px] text-slate-500 mt-0.5">PDF format up to 5MB</span>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      /* URL input */
+                      <input 
+                        type="url"
+                        value={seekerResume}
+                        onChange={(e) => setSeekerResume(e.target.value)}
+                        placeholder="e.g. https://drive.google.com/file/d/..."
+                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      />
+                    )}
                   </div>
+
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">LinkedIn Profile URL</label>
                     <input 
@@ -770,8 +932,8 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
               <button 
                 type="button" 
                 onClick={handleSubmit}
-                disabled={!isStepValid || isSubmitting}
-                className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-lg transition-all duration-200 ${isStepValid && !isSubmitting ? (themeAccent === 'purple' ? 'bg-purple-600 text-white hover:bg-purple-500' : 'bg-emerald-600 text-white hover:bg-emerald-500') : 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed'}`}
+                disabled={!isStepValid || isSubmitting || isUploadingFile}
+                className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-lg transition-all duration-200 ${isStepValid && !isSubmitting && !isUploadingFile ? (themeAccent === 'purple' ? 'bg-purple-600 text-white hover:bg-purple-500' : 'bg-emerald-600 text-white hover:bg-emerald-500') : 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed'}`}
               >
                 {isSubmitting ? (
                   <>

@@ -28,7 +28,7 @@ export default function BottomNav({
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 w-full bg-[#050508]/85 backdrop-blur-xl border-t border-white/[0.05] z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.7)] pb-safe">
-      <div className="flex items-center justify-around h-14 px-2 w-full max-w-md mx-auto">
+      <div className="flex items-center justify-around h-[60px] px-3.5 w-full max-w-md mx-auto">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -38,10 +38,10 @@ export default function BottomNav({
               key={item.id}
               type="button"
               onClick={() => setActiveTab(item.id)}
-              className="relative flex flex-col items-center justify-center flex-1 h-full py-1 text-center transition-all duration-200 cursor-pointer active:scale-95"
+              className="relative flex flex-col items-center justify-center flex-1 h-full py-1.5 text-center transition-all duration-200 cursor-pointer active:scale-95"
             >
               <Icon 
-                className={`w-[18px] h-[18px] transition-all duration-300 ${
+                className={`w-[20px] h-[20px] transition-all duration-300 ${
                   isActive 
                     ? `${activeColor} ${activeGlow} scale-110` 
                     : 'text-slate-500 hover:text-slate-350'
@@ -49,7 +49,7 @@ export default function BottomNav({
               />
               
               <span 
-                className={`text-[8.5px] font-bold mt-1 tracking-wider uppercase transition-all duration-200 ${
+                className={`text-[9px] font-bold mt-1.5 tracking-wider uppercase transition-all duration-200 ${
                   isActive 
                     ? `${activeColor} opacity-100 font-black` 
                     : 'text-slate-600 opacity-80 font-medium'

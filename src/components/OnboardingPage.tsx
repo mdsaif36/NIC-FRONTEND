@@ -22,6 +22,10 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Welcome flow states
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [savedUser, setSavedUser] = useState<any>(null);
 
   // --- Seeker Fields State ---
   const [seekerName, setSeekerName] = useState(session.name || '');
@@ -205,7 +209,8 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
       }
 
       const updatedUser = await res.json();
-      onComplete(updatedUser);
+      setSavedUser(updatedUser);
+      setShowWelcome(true);
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'A network error occurred. Please try again.');
@@ -219,43 +224,66 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
   const accentBgClass = themeAccent === 'purple' ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/20' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20';
   const accentBgMutedClass = themeAccent === 'purple' ? 'bg-purple-500/10 border-purple-500/20 text-purple-300' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300';
   const accentGlowClass = themeAccent === 'purple' ? 'shadow-[0_0_20px_rgba(168,85,247,0.15)]' : 'shadow-[0_0_20px_rgba(16,185,129,0.15)]';
+  const iconThemeColor = themeAccent === 'purple' ? 'from-purple-500 to-indigo-500' : 'from-emerald-500 to-teal-500';
 
   return (
-    <div className="min-h-screen bg-[#020205] text-white flex flex-col font-sora">
+    <div className={`w-full max-w-xl bg-slate-950/90 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-2xl ${accentGlowClass} relative font-sora text-white`}>
       
       {/* Onboarding Header */}
-      <header className="border-b border-white/5 bg-[#020205]/40 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-black tracking-widest bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">NEXUS CONNECT</span>
-            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${accentBgMutedClass}`}>
-              {isSeeker ? 'Job Seeker' : 'Alumni'} Onboarding
-            </span>
-          </div>
-          
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-black tracking-widest bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">NEXUS CONNECT</span>
+          <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase ${accentBgMutedClass}`}>
+            {isSeeker ? 'Seeker' : 'Alumni'}
+          </span>
+        </div>
+        
+        {!showWelcome && (
           <button 
+            type="button"
             onClick={onLogout}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-200"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 hover:text-white transition-all"
           >
-            <LogOut size={13} />
+            <LogOut size={11} />
             <span>Sign Out</span>
           </button>
-        </div>
-      </header>
+        )}
+      </div>
 
-      <main className="flex-grow flex items-center justify-center p-4 py-8 relative">
-        
-        {/* Glow Effects */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className={`absolute w-[400px] h-[400px] rounded-full bg-${themeAccent}-500/10 left-[20%] top-[20%] blur-[120px]`} />
-        </div>
-
-        <div className={`w-full max-w-xl bg-slate-950/60 border border-white/5 rounded-2xl p-6 md:p-8 backdrop-blur-xl ${accentGlowClass} relative z-10`}>
+      {showWelcome ? (
+        /* Celebration Welcome Step */
+        <div className="text-center py-6 space-y-6 animate-fadeIn">
+          <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-tr ${iconThemeColor} flex items-center justify-center animate-bounce shadow-lg`}>
+            <Sparkles className="text-white" size={32} />
+          </div>
           
+          <div className="space-y-2">
+            <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              Welcome to NextInCampus!
+            </h1>
+            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              {isSeeker 
+                ? "Your professional referral profile is ready. You can now explore alumni networks, check out target companies, and apply for referrals." 
+                : "Thank you for completing your verification setup. You are now ready to refer seekers, provide mentorship, and build trust in our community."}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onComplete(savedUser)}
+            className={`w-full py-3 px-4 rounded-xl text-white text-xs font-black uppercase tracking-wider transition-all duration-300 ${accentBgClass} flex items-center justify-center gap-2`}
+          >
+            <span>Enter Dashboard</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
+      ) : (
+        /* Regular Setup Wizard Steps */
+        <div>
           {/* Progress Tracker */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">STEP {step} OF 3</span>
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">STEP {step} OF 3</span>
               <span className="text-xs font-bold text-slate-300">
                 {step === 1 && 'Basic Identity'}
                 {step === 2 && (isSeeker ? 'Referral Assets' : 'Match Preferences')}
@@ -264,7 +292,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
             </div>
             
             {/* Step Progress Line */}
-            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden flex gap-1">
+            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden flex gap-1">
               <div className={`h-full rounded-full transition-all duration-300 ${step >= 1 ? (themeAccent === 'purple' ? 'bg-purple-500' : 'bg-emerald-500') : 'bg-white/5'} flex-1`} />
               <div className={`h-full rounded-full transition-all duration-300 ${step >= 2 ? (themeAccent === 'purple' ? 'bg-purple-500' : 'bg-emerald-500') : 'bg-white/5'} flex-1`} />
               <div className={`h-full rounded-full transition-all duration-300 ${step >= 3 ? (themeAccent === 'purple' ? 'bg-purple-500' : 'bg-emerald-500') : 'bg-white/5'} flex-1`} />
@@ -272,7 +300,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
           </div>
 
           {error && (
-            <div className="mb-6 p-3 rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-semibold">
+            <div className="mb-5 p-3 rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-semibold">
               {error}
             </div>
           )}
@@ -281,11 +309,11 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
           {step === 1 && (
             <div className="space-y-4 animate-fadeIn">
               <div className="mb-2">
-                <h2 className="text-lg md:text-xl font-black flex items-center gap-1.5">
-                  <Sparkles className={accentColorClass} size={18} />
+                <h2 className="text-base md:text-lg font-black flex items-center gap-1.5">
+                  <Sparkles className={accentColorClass} size={16} />
                   <span>Tell us about yourself</span>
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">Let's set up your profile identity.</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Let's set up your profile identity.</p>
               </div>
 
               {isSeeker ? (
@@ -297,7 +325,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                       value={seekerName}
                       onChange={(e) => setSeekerName(e.target.value)}
                       placeholder="e.g. John Doe"
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -307,7 +335,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                       value={seekerCollege}
                       onChange={(e) => setSeekerCollege(e.target.value)}
                       placeholder="e.g. KIIT University"
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -318,7 +346,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                         value={seekerBranch}
                         onChange={(e) => setSeekerBranch(e.target.value)}
                         placeholder="e.g. B.Tech in CSE"
-                        className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -326,7 +354,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                       <select 
                         value={seekerGradYear}
                         onChange={(e) => setSeekerGradYear(e.target.value)}
-                        className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                       >
                         <option value="2025">2025</option>
                         <option value="2026">2026</option>
@@ -347,7 +375,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                         value={alumniCompany}
                         onChange={(e) => setAlumniCompany(e.target.value)}
                         placeholder="e.g. Google"
-                        className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -357,7 +385,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                         value={alumniRole}
                         onChange={(e) => setAlumniRole(e.target.value)}
                         placeholder="e.g. Senior SWE"
-                        className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                       />
                     </div>
                   </div>
@@ -366,7 +394,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                     <select 
                       value={alumniExperience}
                       onChange={(e) => setAlumniExperience(e.target.value)}
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     >
                       <option value="0-2 years">0-2 years</option>
                       <option value="3-5 years">3-5 years</option>
@@ -380,9 +408,9 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                       value={alumniWorkEmail}
                       onChange={(e) => setAlumniWorkEmail(e.target.value)}
                       placeholder="e.g. name@company.com"
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     />
-                    <p className="text-[10px] text-slate-400 leading-normal">
+                    <p className="text-[9px] text-slate-500 leading-normal">
                       We verify work emails to maintain a secure and trusted community. Stale or personal emails are rejected.
                     </p>
                   </div>
@@ -395,11 +423,11 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
           {step === 2 && (
             <div className="space-y-4 animate-fadeIn">
               <div className="mb-2">
-                <h2 className="text-lg md:text-xl font-black flex items-center gap-1.5">
-                  <Briefcase className={accentColorClass} size={18} />
+                <h2 className="text-base md:text-lg font-black flex items-center gap-1.5">
+                  <Briefcase className={accentColorClass} size={16} />
                   <span>{isSeeker ? 'Referral Arsenal' : 'Preferences & Support'}</span>
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-[10px] text-slate-400 mt-0.5">
                   {isSeeker ? 'Provide links that verify your skills and project work.' : 'Let seekers know how you can refer or support them.'}
                 </p>
               </div>
@@ -413,7 +441,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                       value={seekerResume}
                       onChange={(e) => setSeekerResume(e.target.value)}
                       placeholder="e.g. https://drive.google.com/file/d/..."
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -423,7 +451,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                       value={seekerLinkedIn}
                       onChange={(e) => setSeekerLinkedIn(e.target.value)}
                       placeholder="e.g. https://linkedin.com/in/username"
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -431,7 +459,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                     <select 
                       value={seekerDomain}
                       onChange={(e) => setSeekerDomain(e.target.value)}
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     >
                       <option value="Software Engineering">Software Engineering</option>
                       <option value="Product Management">Product Management</option>
@@ -446,9 +474,9 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                       <button 
                         type="button" 
                         onClick={addPortfolioLink}
-                        className={`text-[10px] font-bold uppercase flex items-center gap-1 ${accentColorClass}`}
+                        className={`text-[9px] font-bold uppercase flex items-center gap-1 ${accentColorClass}`}
                       >
-                        <Plus size={12} /> Add link
+                        <Plus size={11} /> Add link
                       </button>
                     </div>
 
@@ -458,23 +486,23 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                           type="text"
                           value={link.name}
                           onChange={(e) => updatePortfolioLink(idx, 'name', e.target.value)}
-                          placeholder="e.g. GitHub or Personal Website"
-                          className="w-1/3 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none"
+                          placeholder="e.g. GitHub or Portfolio"
+                          className="w-1/3 bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
                         />
                         <input 
                           type="url"
                           value={link.url}
                           onChange={(e) => updatePortfolioLink(idx, 'url', e.target.value)}
                           placeholder="https://..."
-                          className={`w-2/3 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} transition-all`}
+                          className={`w-2/3 bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} transition-all`}
                         />
                         {portfolioLinks.length > 1 && (
                           <button 
                             type="button" 
                             onClick={() => removePortfolioLink(idx)}
-                            className="p-1 rounded bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white"
+                            className="p-1.5 rounded bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white"
                           >
-                            <X size={14} />
+                            <X size={12} />
                           </button>
                         )}
                       </div>
@@ -493,12 +521,12 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                         onChange={(e) => setNewCompanyInput(e.target.value)}
                         placeholder="e.g. Google, Amazon, Microsoft"
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPreferredCompany())}
-                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 ${accentBorderClass} transition-all`}
+                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${accentBorderClass} transition-all`}
                       />
                       <button 
                         type="button" 
                         onClick={addPreferredCompany}
-                        className={`px-3.5 py-2 rounded-lg text-white font-bold text-xs ${accentBgClass}`}
+                        className={`px-3 py-2 rounded-lg text-white font-bold text-xs ${accentBgClass}`}
                       >
                         Add
                       </button>
@@ -506,15 +534,15 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                     
                     <div className="flex flex-wrap gap-1.5 pt-1.5">
                       {preferredReferrals.length === 0 ? (
-                        <span className="text-[10px] text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded">
+                        <span className="text-[9px] text-slate-500 bg-white/5 border border-white/10 px-2 py-0.5 rounded">
                           Defaults to current company ({alumniCompany || 'None'})
                         </span>
                       ) : (
                         preferredReferrals.map(c => (
-                          <span key={c} className={`text-[10px] font-medium px-2 py-1 rounded-full border flex items-center gap-1 ${accentBgMutedClass}`}>
+                          <span key={c} className={`text-[9px] font-medium px-2 py-0.5 rounded-full border flex items-center gap-1 ${accentBgMutedClass}`}>
                             <span>{c}</span>
                             <button type="button" onClick={() => removePreferredCompany(c)}>
-                              <X size={10} />
+                              <X size={9} />
                             </button>
                           </span>
                         ))
@@ -530,14 +558,14 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                         type="text"
                         value={newExpertiseInput}
                         onChange={(e) => setNewExpertiseInput(e.target.value)}
-                        placeholder="e.g. System Design, Resume Review, Mock Interview"
+                        placeholder="e.g. System Design, Resume Review"
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addExpertise())}
-                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 ${accentBorderClass} transition-all`}
+                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${accentBorderClass} transition-all`}
                       />
                       <button 
                         type="button" 
                         onClick={addExpertise}
-                        className={`px-3.5 py-2 rounded-lg text-white font-bold text-xs ${accentBgClass}`}
+                        className={`px-3 py-2 rounded-lg text-white font-bold text-xs ${accentBgClass}`}
                       >
                         Add
                       </button>
@@ -545,10 +573,10 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                     
                     <div className="flex flex-wrap gap-1.5 pt-1.5">
                       {alumniExpertise.map(e => (
-                        <span key={e} className={`text-[10px] font-medium px-2 py-1 rounded-full border flex items-center gap-1 ${accentBgMutedClass}`}>
+                        <span key={e} className={`text-[9px] font-medium px-2 py-0.5 rounded-full border flex items-center gap-1 ${accentBgMutedClass}`}>
                           <span>{e}</span>
                           <button type="button" onClick={() => removeExpertise(e)}>
-                            <X size={10} />
+                            <X size={9} />
                           </button>
                         </span>
                       ))}
@@ -556,23 +584,23 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                   </div>
 
                   {/* Mentorship availability toggle */}
-                  <div className="p-4 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between mt-2">
+                  <div className="p-3 rounded-lg bg-black/40 border border-white/5 flex items-center justify-between mt-2">
                     <div className="space-y-0.5">
                       <label className="text-xs font-black text-white">Mentorship Availability</label>
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-[9px] text-slate-500">
                         {alumniAvailability 
-                          ? 'Seekers can request video meetings & resume feedback.' 
-                          : 'You will only receive requests for direct job referrals.'}
+                          ? 'Seekers can request meetings.' 
+                          : 'Referrals Only.'}
                       </p>
                     </div>
                     
                     <button 
                       type="button"
                       onClick={() => setAlumniAvailability(!alumniAvailability)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${alumniAvailability ? (themeAccent === 'purple' ? 'bg-purple-600' : 'bg-emerald-600') : 'bg-white/10'}`}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${alumniAvailability ? (themeAccent === 'purple' ? 'bg-purple-600' : 'bg-emerald-600') : 'bg-white/10'}`}
                     >
                       <span 
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${alumniAvailability ? 'translate-x-5' : 'translate-x-0'}`} 
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${alumniAvailability ? 'translate-x-4' : 'translate-x-0'}`} 
                       />
                     </button>
                   </div>
@@ -585,11 +613,11 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
           {step === 3 && (
             <div className="space-y-4 animate-fadeIn">
               <div className="mb-2">
-                <h2 className="text-lg md:text-xl font-black flex items-center gap-1.5">
-                  <Sparkles className={accentColorClass} size={18} />
+                <h2 className="text-base md:text-lg font-black flex items-center gap-1.5">
+                  <Sparkles className={accentColorClass} size={16} />
                   <span>Stand out from the crowd</span>
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-[10px] text-slate-400 mt-0.5">
                   {isSeeker ? 'Showcase your tech stack and introduce yourself.' : 'Share your professional background and contact preferences.'}
                 </p>
               </div>
@@ -604,14 +632,14 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                         type="text"
                         value={newSkill}
                         onChange={(e) => setNewSkill(e.target.value)}
-                        placeholder="e.g. React, Node.js, Python, Figma"
+                        placeholder="e.g. React, Node.js, Python"
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 ${accentBorderClass} transition-all`}
+                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${accentBorderClass} transition-all`}
                       />
                       <button 
                         type="button" 
                         onClick={addSkill}
-                        className={`px-3.5 py-2 rounded-lg text-white font-bold text-xs ${accentBgClass}`}
+                        className={`px-3 py-2 rounded-lg text-white font-bold text-xs ${accentBgClass}`}
                       >
                         Add
                       </button>
@@ -619,10 +647,10 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                     
                     <div className="flex flex-wrap gap-1.5 pt-1.5">
                       {seekerSkills.map(s => (
-                        <span key={s} className={`text-[10px] font-medium px-2 py-1 rounded-full border flex items-center gap-1 ${accentBgMutedClass}`}>
+                        <span key={s} className={`text-[9px] font-medium px-2 py-0.5 rounded-full border flex items-center gap-1 ${accentBgMutedClass}`}>
                           <span>{s}</span>
                           <button type="button" onClick={() => removeSkill(s)}>
-                            <X size={10} />
+                            <X size={9} />
                           </button>
                         </span>
                       ))}
@@ -637,14 +665,14 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                         type="text"
                         value={newRole}
                         onChange={(e) => setNewRole(e.target.value)}
-                        placeholder="e.g. Frontend Developer, Product Manager Intern"
+                        placeholder="e.g. Frontend Developer"
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addRole())}
-                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 ${accentBorderClass} transition-all`}
+                        className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${accentBorderClass} transition-all`}
                       />
                       <button 
                         type="button" 
                         onClick={addRole}
-                        className={`px-3.5 py-2 rounded-lg text-white font-bold text-xs ${accentBgClass}`}
+                        className={`px-3 py-2 rounded-lg text-white font-bold text-xs ${accentBgClass}`}
                       >
                         Add
                       </button>
@@ -652,10 +680,10 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                     
                     <div className="flex flex-wrap gap-1.5 pt-1.5">
                       {seekerTargetRoles.map(r => (
-                        <span key={r} className={`text-[10px] font-medium px-2 py-1 rounded-full border flex items-center gap-1 ${accentBgMutedClass}`}>
+                        <span key={r} className={`text-[9px] font-medium px-2 py-0.5 rounded-full border flex items-center gap-1 ${accentBgMutedClass}`}>
                           <span>{r}</span>
                           <button type="button" onClick={() => removeRole(r)}>
-                            <X size={10} />
+                            <X size={9} />
                           </button>
                         </span>
                       ))}
@@ -668,8 +696,8 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                     <textarea 
                       value={seekerBio}
                       onChange={(e) => setSeekerBio(e.target.value)}
-                      rows={4}
-                      placeholder="e.g. I am a full-stack developer passionate about building scalable AI platforms. Eager to solve challenging design problems and join high-impact engineering teams..."
+                      rows={3}
+                      placeholder="I am a full-stack developer passionate about building scalable AI platforms..."
                       className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     />
                   </div>
@@ -683,7 +711,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                       value={alumniLinkedIn}
                       onChange={(e) => setAlumniLinkedIn(e.target.value)}
                       placeholder="e.g. https://linkedin.com/in/username"
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     />
                   </div>
 
@@ -693,8 +721,8 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                     <textarea 
                       value={alumniBio}
                       onChange={(e) => setAlumniBio(e.target.value)}
-                      rows={4}
-                      placeholder="e.g. KIIT University alumnus. Currently leading cloud scaling services at Google. Eager to mentor high-intent students on systems design, product roadmaps, and resume prep..."
+                      rows={3}
+                      placeholder="KIIT University alumnus. Currently leading cloud scaling services at Google..."
                       className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     />
                   </div>
@@ -707,7 +735,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                       value={alumniHours}
                       onChange={(e) => setAlumniHours(e.target.value)}
                       placeholder="e.g. Weekends, 10:00 AM - 2:00 PM IST"
-                      className={`w-full bg-black/40 border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
+                      className={`w-full bg-black/40 border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 ${themeAccent === 'purple' ? 'focus:ring-purple-500' : 'focus:ring-emerald-500'} ${accentBorderClass} transition-all`}
                     />
                   </div>
                 </>
@@ -716,14 +744,14 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
           )}
 
           {/* Navigation Controls */}
-          <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between">
+          <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
             {step > 1 ? (
               <button 
                 type="button" 
                 onClick={() => setStep(step - 1)}
-                className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-all font-bold uppercase"
+                className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-white transition-all font-bold uppercase"
               >
-                <ArrowLeft size={14} /> Back
+                <ArrowLeft size={12} /> Back
               </button>
             ) : (
               <div />
@@ -734,41 +762,34 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ session, onCompl
                 type="button" 
                 onClick={() => isStepValid && setStep(step + 1)}
                 disabled={!isStepValid}
-                className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all duration-200 ${isStepValid ? (themeAccent === 'purple' ? 'bg-purple-600 text-white hover:bg-purple-500' : 'bg-emerald-600 text-white hover:bg-emerald-500') : 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed'}`}
+                className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-lg transition-all duration-200 ${isStepValid ? (themeAccent === 'purple' ? 'bg-purple-600 text-white hover:bg-purple-500' : 'bg-emerald-600 text-white hover:bg-emerald-500') : 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed'}`}
               >
                 <span>Continue</span>
-                <ArrowRight size={14} />
+                <ArrowRight size={12} />
               </button>
             ) : (
               <button 
                 type="button" 
                 onClick={handleSubmit}
                 disabled={!isStepValid || isSubmitting}
-                className={`flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-5 py-2.5 rounded-lg transition-all duration-200 ${isStepValid && !isSubmitting ? (themeAccent === 'purple' ? 'bg-purple-600 text-white hover:bg-purple-500' : 'bg-emerald-600 text-white hover:bg-emerald-500') : 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed'}`}
+                className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-lg transition-all duration-200 ${isStepValid && !isSubmitting ? (themeAccent === 'purple' ? 'bg-purple-600 text-white hover:bg-purple-500' : 'bg-emerald-600 text-white hover:bg-emerald-500') : 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed'}`}
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>Saving...</span>
                   </>
                 ) : (
                   <>
-                    <Check size={14} />
+                    <Check size={12} />
                     <span>Complete Profile</span>
                   </>
                 )}
               </button>
             )}
           </div>
-
         </div>
-      </main>
-
-      {/* Footer Cutout branding */}
-      <footer className="h-10 border-t border-white/5 flex items-center justify-center text-[10px] text-slate-500 bg-[#020205]/40 select-none">
-        <span>Nexus Connect © 2026. Premium alumni network for elite institutions.</span>
-      </footer>
-
+      )}
     </div>
   );
 };

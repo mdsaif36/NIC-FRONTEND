@@ -29,7 +29,7 @@ const testimonials: Testimonial[] = [
 interface AuthPageProps {
   initialMode?: 'login' | 'signup';
   initialRole?: 'seeker' | 'alumni';
-  onSuccess: (token: string, user: { id: number, role: 'seeker' | 'alumni', name: string, email?: string, company?: string, college?: string }) => void;
+  onSuccess: (token: string, user: { id: number, role: 'seeker' | 'alumni', name: string, email?: string, company?: string, college?: string, isProfileComplete?: boolean }) => void;
   onBack: () => void;
   onForgotPassword: () => void;
 }
@@ -270,7 +270,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
             name: data.user.name,
             college: data.user.college,
             company: data.user.company,
-            email: data.user.email
+            email: data.user.email,
+            isProfileComplete: data.user.isProfileComplete
           });
         } else {
           setError(data.message || 'Login failed. Please check your credentials.');
@@ -300,7 +301,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
             name: data.user.name,
             college: data.user.college,
             company: data.user.company,
-            email: data.user.email
+            email: data.user.email,
+            isProfileComplete: data.user.isProfileComplete
           });
         } else {
           setError(data.message || 'Registration failed. Please check details.');

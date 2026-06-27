@@ -82,11 +82,7 @@ function App() {
             });
             // Only redirect to dashboard if we're not on reset or forgot password routes
             if (path !== '/forgot-password' && path !== '/reset-password') {
-              if (user.isProfileComplete === false) {
-                setCurrentPage('onboarding');
-              } else {
-                setCurrentPage('dashboard');
-              }
+              setCurrentPage('dashboard');
             }
           } else {
             localStorage.removeItem('token');
@@ -145,13 +141,8 @@ function App() {
       localStorage.setItem('savedEmail', user.email);
     }
     setSession(user);
-    if (user.isProfileComplete === false) {
-      setCurrentPage('onboarding');
-      window.history.pushState({}, '', '/onboarding');
-    } else {
-      setCurrentPage('dashboard');
-      window.history.pushState({}, '', '/dashboard');
-    }
+    setCurrentPage('dashboard');
+    window.history.pushState({}, '', '/dashboard');
   };
 
   const handleLogout = () => {
@@ -291,31 +282,32 @@ function App() {
           <ResetPassword onBack={() => handleNavigate('auth', 'login')} />
         )}
 
-        {currentPage === 'onboarding' && session && (
-          <OnboardingPage 
-            session={session}
-            onComplete={(updatedUser) => {
-              setSession({
-                ...session,
-                ...updatedUser,
-                isProfileComplete: true
-              });
-              setCurrentPage('dashboard');
-              window.history.pushState({}, '', '/dashboard');
-            }}
-            onLogout={handleLogout}
-          />
-        )}
-
         {currentPage === 'dashboard' && session && (
-          <DashboardPage 
-            id={session.id}
-            role={session.role}
-            name={session.name}
-            college={session.college}
-            company={session.company}
-            onLogout={handleLogout}
-          />
+          <>
+            <DashboardPage 
+              id={session.id}
+              role={session.role}
+              name={session.name}
+              college={session.college}
+              company={session.company}
+              onLogout={handleLogout}
+            />
+            {session.isProfileComplete === false && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md overflow-y-auto p-4 py-8">
+                <OnboardingPage 
+                  session={session}
+                  onComplete={(updatedUser) => {
+                    setSession({
+                      ...session,
+                      ...updatedUser,
+                      isProfileComplete: true
+                    });
+                  }}
+                  onLogout={handleLogout}
+                />
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

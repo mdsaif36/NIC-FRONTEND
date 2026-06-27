@@ -744,28 +744,28 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                               onChange={(e) => setTargetRole(e.target.value)}
                               className="w-full px-2 py-1.5 bg-black border border-white/10 rounded-lg text-white text-[10px] focus:outline-none focus:border-purple-500/40"
                             >
-                              {alumniForRequest.company === 'Google' && (
+                              {alumniForRequest?.company === 'Google' && (
                                 <>
                                   <option>L3 Software Engineer</option>
                                   <option>Software Engineer Intern (Fall)</option>
                                   <option>Silicon & Hardware Architect</option>
                                 </>
                               )}
-                              {alumniForRequest.company === 'Microsoft' && (
+                              {alumniForRequest?.company === 'Microsoft' && (
                                 <>
                                   <option>Associate Product Manager</option>
                                   <option>Azure Cloud SWE Intern</option>
                                   <option>Data & ML Specialist</option>
                                 </>
                               )}
-                              {alumniForRequest.company === 'Amazon' && (
+                              {alumniForRequest?.company === 'Amazon' && (
                                 <>
                                   <option>SDE I (Full-time)</option>
                                   <option>Cloud Infrastructure Intern</option>
                                   <option>Business Analyst Intern</option>
                                 </>
                               )}
-                              {!['Google', 'Microsoft', 'Amazon'].includes(alumniForRequest.company) && (
+                              {alumniForRequest && !['Google', 'Microsoft', 'Amazon'].includes(alumniForRequest.company) && (
                                 <>
                                   <option>Software Developer Associate</option>
                                   <option>Product Consultant Intern</option>
@@ -877,11 +877,13 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                         Send Request
                       </button>
                     )}
-                    <div className="text-center">
-                      <span className="text-[8px] text-slate-550 font-semibold">
-                        {alumniForRequest.name} typically responds {alumniForRequest.responseSpeed.toLowerCase()}.
-                      </span>
-                    </div>
+                    {alumniForRequest && (
+                      <div className="text-center">
+                        <span className="text-[8px] text-slate-555 font-semibold">
+                          {alumniForRequest.name} typically responds {alumniForRequest.responseSpeed?.toLowerCase() || 'in a few days'}.
+                        </span>
+                      </div>
+                    )}
                   </div>
 
             </ReferralModal>

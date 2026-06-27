@@ -33,6 +33,27 @@ const getCleanFilename = (name: string): string => {
   return name;
 };
 
+const getCandidateCollege = (req: any) => {
+  if (req.college) return req.college;
+  if (req.class) {
+    const parts = req.class.split(',');
+    if (parts.length > 1) return parts[parts.length - 1].trim();
+    return req.class;
+  }
+  return "Unknown College";
+};
+
+const getCollegeTier = (collegeName: string): 'Top-tier' | 'State' | 'Private' => {
+  const c = collegeName.toLowerCase();
+  if (c.includes('iit') || c.includes('nit') || c.includes('bits') || c.includes('pilani') || c.includes('dtu') || c.includes('delhi technological') || c.includes('iiit') || c.includes('nsut') || c.includes('rvce')) {
+    return 'Top-tier';
+  }
+  if (c.includes('university') || c.includes('state') || c.includes('government') || c.includes('coep') || c.includes('vjti')) {
+    return 'State';
+  }
+  return 'Private';
+};
+
 interface AlumniDashboardProps {
   college: string;
   company: string;
@@ -482,28 +503,6 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
     } finally {
       setIsUploadingScreenshot(false);
     }
-  };
-
-  // Helper functions for candidate college tier mapping
-  const getCandidateCollege = (req: any) => {
-    if (req.college) return req.college;
-    if (req.class) {
-      const parts = req.class.split(',');
-      if (parts.length > 1) return parts[parts.length - 1].trim();
-      return req.class;
-    }
-    return "Unknown College";
-  };
-
-  const getCollegeTier = (collegeName: string): 'Top-tier' | 'State' | 'Private' => {
-    const c = collegeName.toLowerCase();
-    if (c.includes('iit') || c.includes('nit') || c.includes('bits') || c.includes('pilani') || c.includes('dtu') || c.includes('delhi technological') || c.includes('iiit') || c.includes('nsut') || c.includes('rvce')) {
-      return 'Top-tier';
-    }
-    if (c.includes('university') || c.includes('state') || c.includes('government') || c.includes('coep') || c.includes('vjti')) {
-      return 'State';
-    }
-    return 'Private';
   };
 
   // Local state for requests, initialized with requests props or empty array

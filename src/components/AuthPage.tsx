@@ -772,27 +772,27 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
         </div>
 
         {/* ── Overlay Float Card (Bottom Right Hovering) ── */}
-        <div className="hidden lg:block absolute -bottom-10 right-10 z-20 pointer-events-auto transform rotate-2 hover:rotate-0 transition-all duration-500 shadow-2xl">
-          <div className="bg-white/95 backdrop-blur-xl border border-white/20 p-6 rounded-[2rem] text-left max-w-[260px]">
-            <h3 className="font-space-grotesk text-sm font-extrabold text-slate-900 tracking-tight leading-snug">
+        <div className="hidden lg:block absolute -bottom-10 right-10 z-20 pointer-events-auto transform rotate-2 hover:rotate-0 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="bg-gradient-to-br from-rose-500/10 via-purple-500/10 to-blue-500/10 backdrop-blur-2xl border border-white/10 p-6 rounded-[2rem] text-left max-w-[260px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+            <h3 className="font-space-grotesk text-sm font-extrabold text-white tracking-tight leading-snug">
               Get your right job and right place apply now
             </h3>
-            <p className="text-slate-600 text-[10px] leading-relaxed mt-2">
-              Be among the first founders to experience the easiest way to start run a business.
+            <p className="text-slate-300 text-[10px] leading-relaxed mt-2">
+              Join the referral network to experience the easiest way to kickstart your career.
             </p>
             {/* Avatar overlapping circles */}
             <div className="flex items-center justify-between mt-4">
               <div className="flex items-center -space-x-2">
-                <div className="w-6 h-6 rounded-full bg-slate-200 border-2 border-white overflow-hidden flex items-center justify-center font-bold text-[8px] text-slate-800">
-                  <div className="w-full h-full bg-slate-400 flex items-center justify-center text-white">AS</div>
+                <div className="w-6 h-6 rounded-full bg-slate-800 border-2 border-white/20 overflow-hidden flex items-center justify-center font-bold text-[8px] text-white">
+                  <div className="w-full h-full bg-slate-700 flex items-center justify-center">AS</div>
                 </div>
-                <div className="w-6 h-6 rounded-full bg-[#FF8F7B] border-2 border-white flex items-center justify-center font-bold text-[8px] text-white">
+                <div className="w-6 h-6 rounded-full bg-[#FF8F7B] border-2 border-white/20 flex items-center justify-center font-bold text-[8px] text-white">
                   RS
                 </div>
-                <div className="w-6 h-6 rounded-full bg-[#1E40FF] border-2 border-white flex items-center justify-center font-bold text-[8px] text-white">
+                <div className="w-6 h-6 rounded-full bg-[#1E40FF] border-2 border-white/20 flex items-center justify-center font-bold text-[8px] text-white">
                   PM
                 </div>
-                <div className="w-6 h-6 rounded-full bg-slate-900 text-white border-2 border-white flex items-center justify-center font-black text-[7px]">
+                <div className="w-6 h-6 rounded-full bg-black/60 text-white border-2 border-white/20 flex items-center justify-center font-black text-[7px] backdrop-blur-md">
                   +2
                 </div>
               </div>

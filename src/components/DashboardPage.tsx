@@ -1198,6 +1198,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             )}
             {activeTab === 'profile' && (
               <ProfileTab
+                currentUser={currentUser}
                 fetchProfile={fetchProfile}
                 isEditMode={isEditMode}
                 setIsEditMode={toggleEditMode as any}

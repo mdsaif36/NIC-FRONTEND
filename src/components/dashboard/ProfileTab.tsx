@@ -144,6 +144,7 @@ interface ProfileTabProps {
   setTargetCompanies: (companies: string[]) => void;
   fetchProfile?: () => Promise<void>;
   onLogout?: () => void;
+  currentUser?: any;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
@@ -194,7 +195,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   setSkills,
   setTargetCompanies,
   fetchProfile,
-  onLogout
+  onLogout,
+  currentUser
 }) => {
 
   const [dragActive, setDragActive] = React.useState(false);

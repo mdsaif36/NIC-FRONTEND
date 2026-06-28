@@ -850,12 +850,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                   <div className="p-3 bg-slate-950/40 rounded-xl border border-purple-500/10 hover:border-purple-500/20 transition-all duration-300">
-                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Profile Score</span>
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Avg Response</span>
                     <div className="flex items-baseline mt-1 truncate">
                       <span className="text-sm sm:text-base md:text-sm lg:text-lg font-sora font-extrabold text-white">
-                        {(3.0 + (bio ? 0.5 : 0) + (resumeName ? 0.5 : 0) + (skills.length > 0 ? 0.5 : 0) + (githubUrl ? 0.25 : 0) + (linkedinUrl ? 0.25 : 0)).toFixed(1)}
+                        &lt; 24
                       </span>
-                      <span className="text-[10px] ml-1">⭐</span>
+                      <span className="text-[8px] sm:text-[9px] text-slate-400 ml-1 uppercase font-bold tracking-wider">Hrs</span>
                     </div>
                   </div>
                   <div className="p-3 bg-slate-950/40 rounded-xl border border-blue-500/10 hover:border-blue-500/20 transition-all duration-300">

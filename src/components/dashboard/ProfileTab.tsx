@@ -207,36 +207,49 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   const [loadingActivity, setLoadingActivity] = React.useState(true);
 
   React.useEffect(() => {
-    if (!userId) return;
-    
     let isMounted = true;
     setLoadingActivity(true);
     
-    const token = localStorage.getItem('token');
-    fetch(`${API_BASE_URL}/api/users/activity/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+    // Compute map dynamically using Seeker's actual data (Account Creation + Referral Apps)
+    setTimeout(() => {
+      if (!isMounted) return;
+      const map: Record<string, number> = {};
+      
+      // 1. Account Created Date
+      if (currentUser?.createdAt) {
+        try {
+          const joinDate = new Date(currentUser.createdAt);
+          const y = joinDate.getFullYear();
+          const m = String(joinDate.getMonth() + 1).padStart(2, '0');
+          const d = String(joinDate.getDate()).padStart(2, '0');
+          map[`${y}-${m}-${d}`] = 1; 
+        } catch (e) {}
       }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (isMounted && Array.isArray(data)) {
-          const map: Record<string, number> = {};
-          data.forEach((act: any) => {
-            map[act.date] = act.count;
-          });
-          setActivityMap(map);
-        }
-      })
-      .catch(err => console.error('Error fetching user activity:', err))
-      .finally(() => {
-        if (isMounted) setLoadingActivity(false);
-      });
+
+      // 2. Referral Application Dates
+      if (requestsList && Array.isArray(requestsList)) {
+        requestsList.forEach((req: any) => {
+          if (req.createdAt || req.date) {
+            try {
+              const reqDate = new Date(req.createdAt || req.date);
+              const y = reqDate.getFullYear();
+              const m = String(reqDate.getMonth() + 1).padStart(2, '0');
+              const d = String(reqDate.getDate()).padStart(2, '0');
+              const key = `${y}-${m}-${d}`;
+              map[key] = (map[key] || 0) + 1;
+            } catch (e) {}
+          }
+        });
+      }
+
+      setActivityMap(map);
+      setLoadingActivity(false);
+    }, 400);
       
     return () => {
       isMounted = false;
     };
-  }, [userId]);
+  }, [currentUser, requestsList]);
 
   const calendarCells = React.useMemo(() => {
     const cells = [];
@@ -297,14 +310,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       if (isFuture) {
         tooltipText = `${dateFormatted} (Future day)`;
       } else if (count > 0) {
-        const levelNames = [
-          'No activity',
-          'Low activity',
-          'Moderate activity',
-          'High activity',
-          'Very high activity'
-        ];
-        tooltipText = `${dateFormatted}: ${count} activity event${count > 1 ? 's' : ''} (${levelNames[level]})`;
+        tooltipText = `${dateFormatted}: ${count} Platform Action${count > 1 ? 's' : ''} (Join / Referrals)`;
       }
 
       cells.push({
@@ -1017,7 +1023,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                     <div className="flex items-center justify-between pb-2 border-b border-white/5 mb-4">
                       <h4 className="font-sora text-white text-xs font-bold uppercase tracking-wider font-space-grotesk flex items-center gap-1.5">
                         <Calendar className="w-4 h-4 text-purple-400" />
-                        Alumni Active Days Verification
+                        Seeker Platform Activity Tracker
                       </h4>
                       <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />

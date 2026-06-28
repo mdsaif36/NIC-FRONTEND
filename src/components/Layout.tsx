@@ -1,4 +1,5 @@
 import React from 'react';
+import { ReportButton } from './ReportButton';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ export default function AppLayout({ children, sidebar, bottomNav }: AppLayoutPro
       {/* 3. The Bottom Navigation: ONLY visible on mobile */}
       {bottomNav}
 
+      <ReportButton />
     </div>
   );
 }

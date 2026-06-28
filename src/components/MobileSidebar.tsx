@@ -62,7 +62,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
         
         {/* Left-Side Blurry Transparent Drawer */}
         <div 
-          className={`absolute top-0 left-0 h-full w-[280px] bg-[#050508]/60 backdrop-blur-2xl border-r border-white/10 shadow-2xl p-6 pt-24 transition-transform duration-500 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`absolute top-0 left-0 h-full w-60 bg-[#050508]/60 backdrop-blur-2xl shadow-2xl p-6 pt-24 transition-transform duration-500 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
           <nav className="flex flex-col gap-2 overflow-y-auto no-scrollbar pb-10">
             {items.map((item) => {

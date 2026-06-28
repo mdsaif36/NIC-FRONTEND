@@ -240,13 +240,13 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
                 </div>
 
                 {/* Grid of Alumni */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                   {getFilteredAlumni().map((alumni) => {
                     const isSaved = savedAlumniIds.includes(alumni.id);
                     return (
                       <div 
                         key={alumni.id}
-                        className="p-5 rounded-2xl border border-white/5 bg-[#08080b]/90 hover:border-purple-500/35 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(168,85,247,0.06)] flex flex-col justify-between text-left"
+                        className="p-4 lg:p-5 rounded-2xl border border-white/5 bg-[#08080b]/90 hover:border-purple-500/35 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(168,85,247,0.06)] flex flex-col justify-between text-left"
                       >
                         <div>
                           {/* Top Header Card */}

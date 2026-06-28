@@ -432,7 +432,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
                   </div>
                   <div className="relative w-full">
                     <label className="block text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 font-space-grotesk">
-                      {role === 'seeker' ? 'College Email (.edu)' : 'Work Email'}
+                      Email
                     </label>
                     <div className="relative rounded-full p-[1.5px] premium-neon-input-wrap">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 z-10" />
@@ -441,7 +441,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder={role === 'seeker' ? "name@college.edu" : "name@company.com"}
+                        placeholder="name@example.com"
                         className="w-full pl-8 pr-3 py-1.5 sm:py-2 lg:py-2.5 bg-black hover:bg-slate-950/80 rounded-full text-white placeholder-slate-500 focus:outline-none transition text-xs font-inter relative z-0"
                       />
                     </div>
@@ -528,7 +528,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
               <div className="space-y-3">
                 <div className="relative w-full">
                   <label className="block text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 font-space-grotesk">
-                    {role === 'seeker' ? 'College Email (.edu)' : 'Work Email'}
+                    Email
                   </label>
                   <div className="relative rounded-full p-[1.5px] premium-neon-input-wrap">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 z-10" />
@@ -537,7 +537,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder={role === 'seeker' ? "name@college.edu" : "name@company.com"}
+                      placeholder="name@example.com"
                       autoComplete="off"
                       className="w-full pl-9 pr-4 py-2 sm:py-2.5 bg-black hover:bg-slate-950/80 rounded-full text-white placeholder-slate-500 focus:outline-none transition text-xs font-inter relative z-0"
                     />

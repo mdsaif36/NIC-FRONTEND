@@ -8,21 +8,39 @@ interface Testimonial {
   role: string;
 }
 
-const testimonials: Testimonial[] = [
-  {
-    quote: "Search and find your dream job is now easier than ever. Just browse a job and apply if you need to.",
-    author: "Mas Parjono",
-    role: "UI Designer at Google"
-  },
+const seekerTestimonials: Testimonial[] = [
   {
     quote: "Verify email, find a senior, get referred. It is the most powerful career accelerator for college students.",
     author: "Amit Sharma",
     role: "SWE at Microsoft"
   },
   {
+    quote: "Search and find your dream job is now easier than ever. Just browse a job and apply if you need to.",
+    author: "Mas Parjono",
+    role: "UI Designer at Google"
+  },
+  {
+    quote: "NiC connected me with an alum from my own college who referred me for my dream internship!",
+    author: "Sneha Reddy",
+    role: "Student at IIT Bombay"
+  }
+];
+
+const alumniTestimonials: Testimonial[] = [
+  {
     quote: "As an alumni, referring juniors from my college is incredibly rewarding. NiC makes the routing seamless.",
     author: "Priya Patel",
     role: "Product Manager at Meta"
+  },
+  {
+    quote: "Giving back to my alma mater by mentoring and referring talented students has never been this easy and structured.",
+    author: "Rohan Sen",
+    role: "Staff Engineer at Netflix"
+  },
+  {
+    quote: "I found amazing talent for my team directly from my college. It's a win-win for everyone involved.",
+    author: "Sarah Jenkins",
+    role: "Engineering Manager at Apple"
   }
 ];
 
@@ -61,6 +79,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
     setPassword('');
     setShowPassword(false);
     setError(null);
+    setCurrentTestimonial(0);
   }, [isLogin, role]);
   
   
@@ -130,12 +149,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
 
+  const activeTestimonials = role === 'seeker' ? seekerTestimonials : alumniTestimonials;
+
   const handlePrevTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
+    setCurrentTestimonial((prev) => (prev === 0 ? activeTestimonials.length - 1 : prev - 1));
   };
 
   const handleNextTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
+    setCurrentTestimonial((prev) => (prev === activeTestimonials.length - 1 ? 0 : prev + 1));
   };
 
   const [error, setError] = useState<string | null>(null);
@@ -658,21 +679,29 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
         </div>
 
         {/* ── Right Pane: Testimonial & Glowing Geometric Wireframe Star ── */}
-        <div className="hidden lg:flex relative rounded-[2rem] bg-slate-950/80 p-8 md:p-10 border border-white/5 overflow-hidden flex-col justify-between select-none h-full">
+        <div className={`hidden lg:flex relative rounded-[2rem] bg-slate-950/80 p-8 md:p-10 border ${role === 'seeker' ? 'border-blue-500/10' : 'border-rose-500/10'} overflow-hidden flex-col justify-between select-none h-full transition-all duration-500`}>
           
           {/* Subtle Ambient light inside panel */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className={`absolute top-0 right-0 w-64 h-64 ${role === 'seeker' ? 'bg-indigo-500/10' : 'bg-rose-500/10'} rounded-full blur-3xl pointer-events-none transition-all duration-500`} />
+          <div className={`absolute bottom-0 left-0 w-64 h-64 ${role === 'seeker' ? 'bg-cyan-500/10' : 'bg-amber-500/10'} rounded-full blur-3xl pointer-events-none transition-all duration-500`} />
 
           {/* Testimonial Header Title */}
           <div className="relative z-10 text-left">
-            <h2 className="font-sora text-white text-2xl md:text-3xl font-extrabold tracking-tight leading-tight mb-2">
-              What's our
-              <br />
-              Jobseekers Said.
-            </h2>
+            {role === 'seeker' ? (
+              <h2 className="font-sora text-white text-2xl md:text-3xl font-extrabold tracking-tight leading-tight mb-2">
+                Accelerating
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Jobseekers.</span>
+              </h2>
+            ) : (
+              <h2 className="font-sora text-white text-2xl md:text-3xl font-extrabold tracking-tight leading-tight mb-2">
+                Empowering
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-300">Alumni.</span>
+              </h2>
+            )}
             {/* Elegant massive quote sign */}
-            <span className="block font-serif text-[5.5rem] leading-none text-[#FF8F7B]/50 font-black h-12 -ml-2 select-none">
+            <span className={`block font-serif text-[5.5rem] leading-none ${role === 'seeker' ? 'text-cyan-400/20' : 'text-rose-400/20'} font-black h-12 -ml-2 select-none transition-colors duration-500`}>
               “
             </span>
           </div>
@@ -680,11 +709,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
           {/* Testimonial Active Quote Area */}
           <div className="relative z-10 text-left my-8 min-h-[100px] flex flex-col justify-center">
             <p className="text-slate-200 text-sm md:text-base font-medium leading-relaxed italic transition-all duration-300">
-              "{testimonials[currentTestimonial].quote}"
+              "{activeTestimonials[currentTestimonial]?.quote}"
             </p>
             <div className="mt-4">
-              <span className="block font-bold text-white text-sm">{testimonials[currentTestimonial].author}</span>
-              <span className="block text-slate-400 text-xs mt-0.5">{testimonials[currentTestimonial].role}</span>
+              <span className="block font-bold text-white text-sm">{activeTestimonials[currentTestimonial]?.author}</span>
+              <span className="block text-slate-400 text-xs mt-0.5">{activeTestimonials[currentTestimonial]?.role}</span>
             </div>
           </div>
 
@@ -715,7 +744,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
             className="absolute bottom-2 -right-8 w-56 h-56 z-0 pointer-events-none animate-star-rotate"
             style={{ transformStyle: 'preserve-3d' }}
           >
-            <svg viewBox="0 0 100 100" className="w-full h-full text-indigo-400/30 opacity-70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 100 100" className={`w-full h-full ${role === 'seeker' ? 'text-indigo-400/30' : 'text-rose-400/30'} opacity-70 transition-colors duration-500`} fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 4" />
               <circle cx="50" cy="50" r="30" stroke="currentColor" strokeWidth="0.3" />
               {/* Star spikes */}

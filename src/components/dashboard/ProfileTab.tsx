@@ -850,23 +850,29 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                   <div className="p-3 bg-slate-950/40 rounded-xl border border-purple-500/10 hover:border-purple-500/20 transition-all duration-300">
-                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Rating Score</span>
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Profile Score</span>
                     <div className="flex items-baseline mt-1 truncate">
-                      <span className="text-sm sm:text-base md:text-sm lg:text-lg font-sora font-extrabold text-white">4.9</span>
+                      <span className="text-sm sm:text-base md:text-sm lg:text-lg font-sora font-extrabold text-white">
+                        {(3.0 + (bio ? 0.5 : 0) + (resumeName ? 0.5 : 0) + (skills.length > 0 ? 0.5 : 0) + (githubUrl ? 0.25 : 0) + (linkedinUrl ? 0.25 : 0)).toFixed(1)}
+                      </span>
                       <span className="text-[10px] ml-1">⭐</span>
                     </div>
                   </div>
                   <div className="p-3 bg-slate-950/40 rounded-xl border border-blue-500/10 hover:border-blue-500/20 transition-all duration-300">
-                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Referred</span>
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Sent</span>
                     <div className="flex items-baseline mt-1 truncate">
-                      <span className="text-sm sm:text-base md:text-sm lg:text-lg font-sora font-extrabold text-white">8</span>
-                      <span className="text-[8px] sm:text-[9px] text-slate-400 ml-1 uppercase font-bold tracking-wider">Times</span>
+                      <span className="text-sm sm:text-base md:text-sm lg:text-lg font-sora font-extrabold text-white">
+                        {requestsList.length}
+                      </span>
+                      <span className="text-[8px] sm:text-[9px] text-slate-400 ml-1 uppercase font-bold tracking-wider">Reqs</span>
                     </div>
                   </div>
                   <div className="p-3 bg-slate-950/40 rounded-xl border border-emerald-500/10 hover:border-emerald-500/20 transition-all duration-300">
                     <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Match Index</span>
                     <div className="flex items-baseline mt-1 truncate">
-                      <span className="text-sm sm:text-base md:text-sm lg:text-lg font-sora font-extrabold text-white">94</span>
+                      <span className="text-sm sm:text-base md:text-sm lg:text-lg font-sora font-extrabold text-white">
+                        {Math.min(99, 65 + (skills.length * 3))}
+                      </span>
                       <span className="text-[8px] sm:text-[9px] text-emerald-400 ml-0.5 font-bold">%</span>
                     </div>
                   </div>
@@ -887,10 +893,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                     </div>
                   </div>
                   <div className="p-3 bg-slate-950/40 rounded-xl border border-slate-700/20 hover:border-slate-700/40 transition-all duration-300">
-                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Interviews</span>
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Accepted</span>
                     <div className="flex items-baseline mt-1 truncate">
-                      <span className="text-sm sm:text-base md:text-sm lg:text-lg font-sora font-extrabold text-white">12</span>
-                      <span className="text-[8px] sm:text-[9px] text-slate-400 ml-1 uppercase font-bold tracking-wider">Scheduled</span>
+                      <span className="text-sm sm:text-base md:text-sm lg:text-lg font-sora font-extrabold text-white">
+                        {requestsList.filter((r: any) => r.status === 'accepted').length}
+                      </span>
+                      <span className="text-[8px] sm:text-[9px] text-slate-400 ml-1 uppercase font-bold tracking-wider">Reqs</span>
                     </div>
                   </div>
                 </div>

@@ -411,7 +411,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
               className={`flex-1 text-center py-1.5 sm:py-2 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
                 role === 'seeker'
                   ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md shadow-blue-500/20'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-400 hover:bg-blue-900 hover:text-white'
               }`}
             >
               Seeker
@@ -422,7 +422,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
               className={`flex-1 text-center py-1.5 sm:py-2 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
                 role === 'alumni'
                   ? 'bg-gradient-to-r from-red-650 to-rose-500 text-white shadow-md shadow-red-500/20'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-400 hover:bg-red-900 hover:text-white'
               }`}
             >
               Alumni

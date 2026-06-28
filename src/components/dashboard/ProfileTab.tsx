@@ -205,46 +205,54 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [previewingResume, setPreviewingResume] = React.useState<ResumeHistoryItem | null>(null);
   const [fileUrlsMap, setFileUrlsMap] = React.useState<{[key: string]: string}>({});
-  const [activityMap, setActivityMap] = React.useState<Record<string, number>>({});
+  const [activityList, setActivityList] = React.useState<Array<{ id: string; type: 'join' | 'referral'; date: Date; title: string; subtitle?: string; }>>([]);
   const [loadingActivity, setLoadingActivity] = React.useState(true);
 
   React.useEffect(() => {
     let isMounted = true;
     setLoadingActivity(true);
     
-    // Compute map dynamically using Seeker's actual data (Account Creation + Referral Apps)
+    // Compute timeline dynamically using Seeker's actual data
     setTimeout(() => {
       if (!isMounted) return;
-      const map: Record<string, number> = {};
+      const list: Array<{ id: string; type: 'join' | 'referral'; date: Date; title: string; subtitle?: string; }> = [];
       
       // 1. Account Created Date
       if (currentUser?.createdAt) {
         try {
           const joinDate = new Date(currentUser.createdAt);
-          const y = joinDate.getFullYear();
-          const m = String(joinDate.getMonth() + 1).padStart(2, '0');
-          const d = String(joinDate.getDate()).padStart(2, '0');
-          map[`${y}-${m}-${d}`] = 1; 
+          list.push({
+            id: 'join',
+            type: 'join',
+            date: joinDate,
+            title: 'Joined NextInCampus',
+            subtitle: 'Account successfully created.'
+          });
         } catch (e) {}
       }
 
       // 2. Referral Application Dates
       if (requestsList && Array.isArray(requestsList)) {
-        requestsList.forEach((req: any) => {
+        requestsList.forEach((req: any, idx: number) => {
           if (req.createdAt || req.date) {
             try {
               const reqDate = new Date(req.createdAt || req.date);
-              const y = reqDate.getFullYear();
-              const m = String(reqDate.getMonth() + 1).padStart(2, '0');
-              const d = String(reqDate.getDate()).padStart(2, '0');
-              const key = `${y}-${m}-${d}`;
-              map[key] = (map[key] || 0) + 1;
+              list.push({
+                id: `req-${req.id || idx}`,
+                type: 'referral',
+                date: reqDate,
+                title: 'Applied for Referral',
+                subtitle: `Requested referral for ${req.company || 'a company'}. Status: ${req.status || 'Pending'}`
+              });
             } catch (e) {}
           }
         });
       }
 
-      setActivityMap(map);
+      // Sort descending by date (newest first)
+      list.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+      setActivityList(list);
       setLoadingActivity(false);
     }, 400);
       
@@ -252,88 +260,6 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       isMounted = false;
     };
   }, [currentUser, requestsList]);
-
-  const calendarCells = React.useMemo(() => {
-    const cells = [];
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    
-    // Find Monday of the current week
-    const currentDay = today.getDay();
-    const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
-    const currentWeekMonday = new Date(today);
-    currentWeekMonday.setDate(today.getDate() - distanceToMonday);
-    currentWeekMonday.setHours(0, 0, 0, 0);
-
-    const start = new Date(currentWeekMonday);
-    start.setDate(start.getDate() - 23 * 7);
-
-    let activeCount = 0;
-
-    for (let idx = 0; idx < 168; idx++) {
-      const col = Math.floor(idx / 7);
-      const row = idx % 7;
-      
-      const cellDate = new Date(start);
-      cellDate.setDate(start.getDate() + col * 7 + row);
-      
-      const year = cellDate.getFullYear();
-      const month = String(cellDate.getMonth() + 1).padStart(2, '0');
-      const day = String(cellDate.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-      
-      const count = activityMap[dateStr] || 0;
-      const isFuture = cellDate > today;
-      
-      let level = 0;
-      if (isFuture) {
-        level = 0;
-      } else if (count >= 1 && count <= 2) {
-        level = 1;
-      } else if (count >= 3 && count <= 5) {
-        level = 2;
-      } else if (count >= 6 && count <= 9) {
-        level = 3;
-      } else if (count >= 10) {
-        level = 4;
-      }
-
-      if (count > 0 && !isFuture) {
-        activeCount++;
-      }
-
-      const dateFormatted = cellDate.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-
-      let tooltipText = `${dateFormatted}: No activity`;
-      if (isFuture) {
-        tooltipText = `${dateFormatted} (Future day)`;
-      } else if (count > 0) {
-        tooltipText = `${dateFormatted}: ${count} Platform Action${count > 1 ? 's' : ''} (Join / Referrals)`;
-      }
-
-      cells.push({
-        dateStr,
-        level,
-        tooltipText,
-        isFuture
-      });
-    }
-
-    // Month Headers calculation (at weeks 0, 4, 8, 12, 16, 20)
-    const monthHeaders = [];
-    const indices = [0, 4, 8, 12, 16, 20];
-    for (const col of indices) {
-      const date = new Date(start);
-      date.setDate(start.getDate() + col * 7);
-      monthHeaders.push(date.toLocaleDateString(undefined, { month: 'short' }));
-    }
-
-    return { cells, activeCount, monthHeaders };
-  }, [activityMap]);
 
   const handleDownloadResume = async (name: string) => {
     if (name.startsWith('http://') || name.startsWith('https://')) {
@@ -1019,83 +945,39 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   </p>
                 </div>
 
-                {/* Git Activity Verification Calendar (Span 7) */}
-                <div className="p-6 rounded-2xl border border-white/5 bg-[#08080b]/90 space-y-4 lg:col-span-7 flex flex-col justify-between shadow-[0_4px_25px_rgba(0,0,0,0.4)]">
-                  <div>
-                    <div className="flex items-center justify-between pb-2 border-b border-white/5 mb-4">
-                      <h4 className="font-sora text-white text-xs font-bold uppercase tracking-wider font-space-grotesk flex items-center gap-1.5">
-                        <Calendar className="w-4 h-4 text-purple-400" />
-                        Seeker Platform Activity Tracker
-                      </h4>
-                      <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        Active Days Tracking
-                      </span>
-                    </div>
-
-                    <div className="flex gap-2.5 select-none relative">
-                      {/* Y-axis days */}
-                      <div className="flex flex-col justify-between text-[8px] text-slate-500 font-bold h-[92px] pt-1 shrink-0 font-space-grotesk">
-                        <span>Mon</span>
-                        <span>Wed</span>
-                        <span>Fri</span>
-                      </div>
-
-                      {/* Contribution Grid */}
-                      <div className="flex-1 flex flex-col gap-1 overflow-hidden">
-                        {/* Month Headers */}
-                        <div className="flex justify-between text-[8px] text-slate-500 font-bold px-1 select-none font-space-grotesk mb-0.5">
-                          {calendarCells.monthHeaders.map((m, i) => (
-                            <span key={i}>{m}</span>
-                          ))}
-                        </div>
-
-                        {/* Calendar cells (arranged 7 rows, 24 cols) */}
-                        <div className="grid grid-flow-col grid-rows-7 gap-[3.5px] overflow-x-auto no-scrollbar">
-                          {calendarCells.cells.map((cell, idx) => {
-                            // Dynamic tailwind bg and shadow classes
-                            const levelStyles = [
-                              'bg-slate-900 border border-white/5', // 0
-                              'bg-emerald-950/50 border border-emerald-500/10', // 1
-                              'bg-emerald-800/40 border border-emerald-500/20', // 2
-                              'bg-emerald-600/70 border border-emerald-500/30', // 3
-                              'bg-emerald-400 border border-emerald-400/50 shadow-[0_0_8px_rgba(52,211,153,0.3)]' // 4
-                            ];
-
-                            return (
-                              <div
-                                key={idx}
-                                className={`w-[9px] h-[9px] rounded-[1.5px] ${levelStyles[cell.level]} hover:scale-130 transition-transform duration-100 cursor-help group/cell relative`}
-                              >
-                                {/* Tooltip display on hover */}
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/cell:block bg-slate-900 border border-white/10 px-2 py-1 rounded text-[8px] font-bold text-white whitespace-nowrap z-50 shadow-2xl">
-                                  {cell.tooltipText}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
+                {/* Seeker Activity Timeline (Span 7) */}
+                <div className="p-6 rounded-2xl border border-white/5 bg-[#08080b]/90 space-y-4 lg:col-span-7 flex flex-col justify-between shadow-[0_4px_25px_rgba(0,0,0,0.4)] relative overflow-hidden">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/5 mb-2 shrink-0">
+                    <h4 className="font-sora text-white text-xs font-bold uppercase tracking-wider font-space-grotesk flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-purple-400" />
+                      Seeker Platform Activity Tracker
+                    </h4>
+                    <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Live Tracking
+                    </span>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1 font-space-grotesk text-[8px] text-slate-500 font-bold">
-                    <span className="flex items-center gap-1">
-                      {loadingActivity ? (
-                        <span>Loading activity logs...</span>
-                      ) : (
-                        <span>{calendarCells.activeCount} active days in last 6 months</span>
-                      )}
-                    </span>
-                    <div className="flex items-center gap-1 select-none">
-                      <span>Less</span>
-                      <div className="w-[8px] h-[8px] rounded-[1px] bg-slate-900 border border-white/5" />
-                      <div className="w-[8px] h-[8px] rounded-[1px] bg-emerald-950/50 border border-emerald-500/10" />
-                      <div className="w-[8px] h-[8px] rounded-[1px] bg-emerald-800/40 border border-emerald-500/20" />
-                      <div className="w-[8px] h-[8px] rounded-[1px] bg-emerald-600/70 border border-emerald-500/30" />
-                      <div className="w-[8px] h-[8px] rounded-[1px] bg-emerald-400 border border-emerald-400/50" />
-                      <span>More</span>
-                    </div>
+                  <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 relative py-2 pl-3 border-l border-white/10 ml-2 max-h-[120px]">
+                    {loadingActivity ? (
+                      <p className="text-xs text-slate-500 font-medium italic text-center py-4">Loading activity logs...</p>
+                    ) : activityList.length === 0 ? (
+                      <p className="text-xs text-slate-500 font-medium italic text-center py-4">No recent activity found.</p>
+                    ) : (
+                      activityList.map((item) => (
+                        <div key={item.id} className="relative flex flex-col gap-1 pl-4 group">
+                          {/* Dot */}
+                          <div className={`absolute left-[-5px] top-1.5 w-[9px] h-[9px] rounded-full border-2 border-slate-900 ${item.type === 'join' ? 'bg-emerald-400' : 'bg-purple-400'} group-hover:scale-125 transition-transform duration-300 shadow-[0_0_8px_rgba(0,0,0,0.5)]`} />
+                          
+                          {/* Content */}
+                          <div className="flex items-baseline justify-between gap-4">
+                            <span className="text-[11px] font-bold text-white font-sora">{item.title}</span>
+                            <span className="text-[9px] font-bold text-slate-500 font-space-grotesk shrink-0">{item.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          </div>
+                          {item.subtitle && <p className="text-[10px] text-slate-400 font-medium leading-relaxed">{item.subtitle}</p>}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 

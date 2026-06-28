@@ -16,7 +16,7 @@ import { CareerIntelligenceTab } from './dashboard/CareerIntelligenceTab';
 import { API_BASE_URL } from '../config';
 import AppLayout from './Layout';
 import Sidebar from './Sidebar';
-import BottomNav from './BottomNav';
+import { MobileSidebar } from './MobileSidebar';
 
 
 const getNextResetDate = () => {
@@ -981,11 +981,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
             referralCredits={referralCredits}
           />
         }
-        bottomNav={
-          <BottomNav
+        mobileNav={
+          <MobileSidebar
             items={seekerBottomNavItems}
             activeTab={activeTab}
-            setActiveTab={setActiveTab as any}
+            setActiveTab={setActiveTab}
             role="seeker"
           />
         }

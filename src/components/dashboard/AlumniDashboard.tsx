@@ -12,7 +12,7 @@ import { LeaderboardTab } from './LeaderboardTab.js';
 import { API_BASE_URL } from '../../config';
 import AppLayout from '../Layout';
 import Sidebar from '../Sidebar';
-import BottomNav from '../BottomNav';
+import { MobileSidebar } from '../MobileSidebar';
 
 
 const getCleanFilename = (name: string): string => {
@@ -816,8 +816,8 @@ export const AlumniDashboard: React.FC<AlumniDashboardProps> = ({
           onLogout={onLogout}
         />
       }
-      bottomNav={
-        <BottomNav
+      mobileNav={
+        <MobileSidebar
           items={alumniBottomNavItems}
           activeTab={activeTab}
           setActiveTab={setActiveTab as any}

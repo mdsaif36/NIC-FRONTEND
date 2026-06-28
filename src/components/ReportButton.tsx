@@ -11,11 +11,33 @@ export const ReportButton = () => {
     if (!description.trim()) return;
     setIsSubmitting(true);
     try {
-      // Changed to use the API_BASE_URL to automatically connect to the backend
+      let userData: any = {};
+      const token = localStorage.getItem('token');
+      
+      if (token) {
+        try {
+          const meRes = await fetch(`${API_BASE_URL}/api/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (meRes.ok) {
+            userData = await meRes.json();
+          }
+        } catch (e) {
+          console.error("Failed to fetch user data for report:", e);
+        }
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/report-issue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description, pageUrl: window.location.href }),
+        body: JSON.stringify({ 
+          description, 
+          pageUrl: window.location.href,
+          userEmail: userData.email || 'Anonymous',
+          userName: userData.name || 'Anonymous',
+          userRole: userData.role || 'Visitor',
+          createdAt: userData.createdAt || new Date().toISOString()
+        }),
       });
 
       if (res.ok) {

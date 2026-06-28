@@ -773,7 +773,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
 
         {/* ── Overlay Float Card (Bottom Right Hovering) ── */}
         <div className="hidden lg:block absolute -bottom-10 right-10 z-20 pointer-events-auto transform rotate-2 hover:rotate-0 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          <div className="bg-gradient-to-br from-rose-500/40 via-purple-500/40 to-blue-500/40 backdrop-blur-3xl border border-white/30 p-6 rounded-[2rem] text-left max-w-[260px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
+          <div className={`backdrop-blur-3xl border border-white/30 p-6 rounded-[2rem] text-left max-w-[260px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] transition-colors duration-500 ${role === 'seeker' ? 'bg-gradient-to-br from-blue-500/40 via-cyan-500/40 to-indigo-500/40' : 'bg-gradient-to-br from-rose-500/40 via-red-500/40 to-amber-500/40'}`}>
             <h3 className="font-space-grotesk text-sm font-extrabold text-white tracking-tight leading-snug drop-shadow-md">
               Get your right job and right place apply now
             </h3>

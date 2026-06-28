@@ -11,7 +11,7 @@ export const ReportButton = () => {
     if (!description.trim()) return;
     setIsSubmitting(true);
     try {
-      let userData: any = {};
+      let userData: any = null;
       const token = localStorage.getItem('token');
       
       if (token) {
@@ -27,16 +27,18 @@ export const ReportButton = () => {
         }
       }
 
+      console.log("User Data:", userData);
+
       const res = await fetch(`${API_BASE_URL}/api/report-issue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           description, 
           pageUrl: window.location.href,
-          userEmail: userData.email || 'Anonymous',
-          userName: userData.name || 'Anonymous',
-          userRole: userData.role || 'Visitor',
-          createdAt: userData.createdAt || new Date().toISOString()
+          userEmail: userData?.email || "No Email Provided",
+          userName: userData?.name || "Unknown User",
+          userRole: userData?.role || "Unknown Role",
+          createdAt: userData?.createdAt || "Unknown Date"
         }),
       });
 

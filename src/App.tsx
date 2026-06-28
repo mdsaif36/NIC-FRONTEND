@@ -259,7 +259,7 @@ function App() {
               <div className="absolute w-full left-0 top-1/2 -translate-y-1/2 h-[14px] xs:h-[18px] sm:h-[32px] md:h-[40px] bg-[#020205] flex items-center justify-center z-10 border-y border-white/5">
                 {/* Tagline centered inside the cut with responsive tracking & text sizes to prevent overflow */}
                 <span className="text-center px-4 font-space-grotesk text-[5.5px] xs:text-[7.5px] sm:text-[10px] md:text-[11px] font-extrabold tracking-[0.06em] xs:tracking-[0.16em] sm:tracking-[0.3em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400 drop-shadow-[0_2px_8px_rgba(56,189,248,0.15)]">
-                  where your college network becomes your career
+                  where your network becomes your career
                 </span>
               </div>
             </div>

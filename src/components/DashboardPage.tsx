@@ -985,7 +985,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ id, role, name, co
           <MobileSidebar
             items={seekerBottomNavItems}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={setActiveTab as any}
             role="seeker"
           />
         }

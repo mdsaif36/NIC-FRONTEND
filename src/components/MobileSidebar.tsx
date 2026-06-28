@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Menu, X } from 'lucide-react';
 
 export interface MobileNavItem {
   id: string;
@@ -35,42 +34,36 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
 
   return (
     <>
-      {/* Header with Hamburger Menu */}
-      <div className="md:hidden flex items-center justify-between bg-[#050508]/85 backdrop-blur-xl border-b border-white/5 p-4 z-40 sticky top-0 shadow-sm">
+      {/* Header with Animated Hamburger Menu */}
+      <div className="md:hidden flex items-center justify-between bg-[#050508]/80 backdrop-blur-xl border-b border-white/5 p-4 z-[110] sticky top-0 shadow-sm">
         <span className="font-sora font-bold text-lg tracking-wider text-white">NextInCampus</span>
         <button 
-          onClick={() => setIsOpen(true)} 
-          className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-          aria-label="Open Menu"
+          onClick={() => setIsOpen(!isOpen)} 
+          className="p-2 hover:bg-white/5 rounded-lg transition-colors z-[110]"
+          aria-label="Toggle Menu"
         >
-          <Menu className="w-6 h-6 text-white" />
+          <div className="space-y-1.5 w-6 relative">
+            <div className={`w-full h-0.5 bg-white transition-transform duration-500 ease-in-out ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></div>
+            <div className={`w-full h-0.5 bg-white transition-opacity duration-500 ease-in-out ${isOpen ? 'opacity-0' : ''}`}></div>
+            <div className={`w-full h-0.5 bg-white transition-transform duration-500 ease-in-out ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}></div>
+          </div>
         </button>
       </div>
 
       {/* Slide-in Overlay */}
       <div 
-        className={`fixed inset-0 z-[100] transition-all duration-300 md:hidden ${isOpen ? 'visible' : 'invisible'}`}
+        className={`fixed inset-0 z-[100] transition-all duration-500 md:hidden ${isOpen ? 'visible' : 'invisible'}`}
       >
         {/* Background Fade */}
         <div 
           onClick={() => setIsOpen(false)}
-          className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-500 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0'}`}
         />
         
-        {/* Sidebar Panel */}
+        {/* Left-Side Blurry Transparent Drawer */}
         <div 
-          className={`absolute top-0 right-0 h-full w-[280px] bg-[#050508] border-l border-white/10 shadow-2xl p-6 transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+          className={`absolute top-0 left-0 h-full w-[280px] bg-[#050508]/60 backdrop-blur-2xl border-r border-white/10 shadow-2xl p-6 pt-24 transition-transform duration-500 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
-          <div className="flex items-center justify-between mb-8">
-            <span className="font-sora font-bold text-lg text-white tracking-widest">MENU</span>
-            <button 
-              onClick={() => setIsOpen(false)} 
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <X className="w-6 h-6 text-slate-400 hover:text-white" />
-            </button>
-          </div>
-
           <nav className="flex flex-col gap-2 overflow-y-auto no-scrollbar pb-10">
             {items.map((item) => {
               const Icon = item.icon;
@@ -81,14 +74,14 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => handleTabClick(item.id)}
-                  className={`flex items-center gap-4 w-full p-4 rounded-xl transition-all duration-200 text-left ${
+                  className={`flex items-center gap-4 w-full p-4 rounded-xl transition-all duration-300 ease-in-out text-left ${
                     isActive 
                       ? `${activeBg} ${activeColor} border border-white/5` 
-                      : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                      : 'text-slate-400 hover:bg-white/10 hover:text-slate-200'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${isActive ? activeColor : 'text-slate-500'}`} />
-                  <span className={`text-xs font-space-grotesk uppercase tracking-widest font-bold flex-1 ${isActive ? 'text-white' : ''}`}>
+                  <Icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? activeColor : 'text-slate-500 group-hover:text-slate-300'}`} />
+                  <span className={`text-xs font-space-grotesk uppercase tracking-widest font-bold flex-1 transition-colors duration-300 ${isActive ? 'text-white' : ''}`}>
                     {item.label}
                   </span>
                   

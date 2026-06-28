@@ -1,46 +1,49 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../config';
-import { Mail, Lock, User, Briefcase, GraduationCap, ChevronLeft, ChevronRight, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { 
+  Mail, Lock, User, Briefcase, GraduationCap, ArrowLeft, Eye, EyeOff, AlertCircle,
+  Sparkles, Rocket, ShieldCheck, Zap, Award, Users, Target 
+} from 'lucide-react';
 
-interface Testimonial {
-  quote: string;
-  author: string;
-  role: string;
+interface FeatureItem {
+  title: string;
+  desc: string;
+  icon: React.ComponentType<any>;
 }
 
-const seekerTestimonials: Testimonial[] = [
+const seekerFeatures: FeatureItem[] = [
   {
-    quote: "Verify email, find a senior, get referred. It is the most powerful career accelerator for college students.",
-    author: "Amit Sharma",
-    role: "SWE at Microsoft"
+    title: "Direct Referrals",
+    desc: "Bypass recruiter black holes by connecting directly with alumni who can refer you.",
+    icon: Rocket
   },
   {
-    quote: "Search and find your dream job is now easier than ever. Just browse a job and apply if you need to.",
-    author: "Mas Parjono",
-    role: "UI Designer at Google"
+    title: "Campus-Verified Profile",
+    desc: "Stand out to top employers with verified academic credentials and college identity.",
+    icon: ShieldCheck
   },
   {
-    quote: "NiC connected me with an alum from my own college who referred me for my dream internship!",
-    author: "Sneha Reddy",
-    role: "Student at IIT Bombay"
+    title: "Exclusive Opportunities",
+    desc: "Access job listings, internships, and mentorship calls found only within your college network.",
+    icon: Zap
   }
 ];
 
-const alumniTestimonials: Testimonial[] = [
+const alumniFeatures: FeatureItem[] = [
   {
-    quote: "As an alumni, referring juniors from my college is incredibly rewarding. NiC makes the routing seamless.",
-    author: "Priya Patel",
-    role: "Product Manager at Meta"
+    title: "Structured Referrals",
+    desc: "Manage all referral requests in one organized workspace. No more messy LinkedIn messages.",
+    icon: Award
   },
   {
-    quote: "Giving back to my alma mater by mentoring and referring talented students has never been this easy and structured.",
-    author: "Rohan Sen",
-    role: "Staff Engineer at Netflix"
+    title: "Source Top Talent",
+    desc: "Find and hire exceptional students and fresh graduates from your own college.",
+    icon: Users
   },
   {
-    quote: "I found amazing talent for my team directly from my college. It's a win-win for everyone involved.",
-    author: "Sarah Jenkins",
-    role: "Engineering Manager at Apple"
+    title: "Expand Your Network",
+    desc: "Connect with fellow alumni working at top companies and expand your industry reach.",
+    icon: Target
   }
 ];
 
@@ -79,7 +82,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
     setPassword('');
     setShowPassword(false);
     setError(null);
-    setCurrentTestimonial(0);
   }, [isLogin, role]);
   
   
@@ -138,9 +140,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
     }
   }, [onSuccess, API_BASE_URL]);
 
-  // Testimonial slider state
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -148,16 +147,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
   const [college, setCollege] = useState('');
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
-
-  const activeTestimonials = role === 'seeker' ? seekerTestimonials : alumniTestimonials;
-
-  const handlePrevTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev === 0 ? activeTestimonials.length - 1 : prev - 1));
-  };
-
-  const handleNextTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev === activeTestimonials.length - 1 ? 0 : prev + 1));
-  };
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -678,65 +667,74 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
 
         </div>
 
-        {/* ── Right Pane: Testimonial & Glowing Geometric Wireframe Star ── */}
+        {/* ── Right Pane: Platform Features & Glowing Geometric Wireframe Star ── */}
         <div className={`hidden lg:flex relative rounded-[2rem] bg-slate-950/80 p-8 md:p-10 border ${role === 'seeker' ? 'border-blue-500/10' : 'border-rose-500/10'} overflow-hidden flex-col justify-between select-none h-full transition-all duration-500`}>
           
           {/* Subtle Ambient light inside panel */}
           <div className={`absolute top-0 right-0 w-64 h-64 ${role === 'seeker' ? 'bg-indigo-500/10' : 'bg-rose-500/10'} rounded-full blur-3xl pointer-events-none transition-all duration-500`} />
           <div className={`absolute bottom-0 left-0 w-64 h-64 ${role === 'seeker' ? 'bg-cyan-500/10' : 'bg-amber-500/10'} rounded-full blur-3xl pointer-events-none transition-all duration-500`} />
 
-          {/* Testimonial Header Title */}
+          {/* Feature Header */}
           <div className="relative z-10 text-left">
-            {role === 'seeker' ? (
-              <h2 className="font-sora text-white text-2xl md:text-3xl font-extrabold tracking-tight leading-tight mb-2">
-                Accelerating
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Jobseekers.</span>
-              </h2>
-            ) : (
-              <h2 className="font-sora text-white text-2xl md:text-3xl font-extrabold tracking-tight leading-tight mb-2">
-                Empowering
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-300">Alumni.</span>
-              </h2>
-            )}
-            {/* Elegant massive quote sign */}
-            <span className={`block font-serif text-[5.5rem] leading-none ${role === 'seeker' ? 'text-cyan-400/20' : 'text-rose-400/20'} font-black h-12 -ml-2 select-none transition-colors duration-500`}>
-              “
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${role === 'seeker' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'} border mb-4 transition-all duration-500`}>
+              <Sparkles className="w-3.5 h-3.5" />
+              {role === 'seeker' ? 'Platform Power' : 'Alumni Network'}
             </span>
+            {role === 'seeker' ? (
+              <>
+                <h2 className="font-sora text-white text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">
+                  Supercharge Your
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-400">Career Journey.</span>
+                </h2>
+                <p className="text-slate-400 text-xs mt-3 leading-relaxed max-w-sm">
+                  Connect with verified alumni from your college working at top companies. Get referred, get hired.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="font-sora text-white text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">
+                  Guide the Next
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-pink-400 to-amber-300">Generation.</span>
+                </h2>
+                <p className="text-slate-400 text-xs mt-3 leading-relaxed max-w-sm">
+                  Help students from your alma mater bypass recruiter filters and secure interviews. Build your network.
+                </p>
+              </>
+            )}
           </div>
 
-          {/* Testimonial Active Quote Area */}
-          <div className="relative z-10 text-left my-8 min-h-[100px] flex flex-col justify-center">
-            <p className="text-slate-200 text-sm md:text-base font-medium leading-relaxed italic transition-all duration-300">
-              "{activeTestimonials[currentTestimonial]?.quote}"
+          {/* Features List */}
+          <div className="relative z-10 space-y-4 text-left my-auto">
+            {(role === 'seeker' ? seekerFeatures : alumniFeatures).map((feat, index) => {
+              const IconComp = feat.icon;
+              return (
+                <div 
+                  key={index}
+                  className="flex gap-4 p-4 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/10 transition-all duration-300 group"
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-500 ${role === 'seeker' ? 'bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20' : 'bg-rose-500/10 text-rose-400 group-hover:bg-rose-500/20'}`}>
+                    <IconComp className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-sora text-white text-xs font-bold tracking-wide uppercase mb-1">
+                      {feat.title}
+                    </h3>
+                    <p className="text-slate-400 text-[11px] leading-relaxed">
+                      {feat.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Control Arrows Footer Row replacement */}
+          <div className="relative z-10 text-left mt-auto">
+            <p className="text-[10px] text-slate-500 font-medium tracking-wide">
+              {role === 'seeker' ? 'NextInCampus for Jobseekers' : 'NextInCampus for Alumni'}
             </p>
-            <div className="mt-4">
-              <span className="block font-bold text-white text-sm">{activeTestimonials[currentTestimonial]?.author}</span>
-              <span className="block text-slate-400 text-xs mt-0.5">{activeTestimonials[currentTestimonial]?.role}</span>
-            </div>
-          </div>
-
-          {/* Control Arrows Footer Row */}
-          <div className="relative z-10 flex items-center justify-between mt-auto">
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handlePrevTestimonial}
-                className="w-9 h-9 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition pointer-events-auto"
-                aria-label="Previous testimonial"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleNextTestimonial}
-                className="w-9 h-9 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition pointer-events-auto"
-                aria-label="Next testimonial"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
 
           {/* ── Rotating Animated Wireframe Star Graphic (mockup bottom-right) ── */}

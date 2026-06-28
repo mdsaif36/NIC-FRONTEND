@@ -47,9 +47,9 @@ export default function Sidebar({
     : 'S';
 
   return (
-    <aside className="hidden md:flex flex-col bg-gray-900 border-r border-gray-800 transition-all duration-300 w-20 lg:w-64 shrink-0 relative z-30">
+    <aside className="hidden md:flex flex-col bg-[#0a0a0a]/40 backdrop-blur-2xl border-r border-white/[0.05] transition-all duration-300 w-20 lg:w-64 shrink-0 relative z-30">
       {/* Brand Logo Area */}
-      <div className="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-gray-800 shrink-0">
+      <div className="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-white/[0.05] shrink-0">
         <span className="font-space-grotesk font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FF1E3C] to-[#1E40FF] text-xl tracking-tight leading-none block lg:hidden">
           N'
         </span>
@@ -138,7 +138,7 @@ export default function Sidebar({
       </div>
 
       {/* Account Info and Sign Out Area */}
-      <div className="px-3 pb-5 border-t border-gray-800 pt-4 relative z-10 flex flex-col gap-2 shrink-0">
+      <div className="px-3 pb-5 border-t border-white/[0.05] pt-4 relative z-10 flex flex-col gap-2 shrink-0">
         <span className="hidden lg:block text-[8px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">
           Account
         </span>

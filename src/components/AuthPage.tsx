@@ -2,45 +2,45 @@ import React, { useState } from 'react';
 import { API_BASE_URL } from '../config';
 import { Mail, Lock, User, Briefcase, GraduationCap, ChevronLeft, ChevronRight, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
-interface Testimonial {
-  quote: string;
-  author: string;
-  role: string;
+interface PlatformFeature {
+  title: string;
+  description: string;
+  tag: string;
 }
 
-const seekerTestimonials: Testimonial[] = [
+const seekerFeatures: PlatformFeature[] = [
   {
-    quote: "Verify email, find a senior, get referred. It is the most powerful career accelerator for college students.",
-    author: "Amit Sharma",
-    role: "SWE at Microsoft"
+    title: "Connect with Alumni",
+    description: "Easily find and connect with alumni from your college who are now working at top-tier companies worldwide.",
+    tag: "Networking"
   },
   {
-    quote: "Search and find your dream job is now easier than ever. Just browse a job and apply if you need to.",
-    author: "Mas Parjono",
-    role: "UI Designer at Google"
+    title: "Get Referrals",
+    description: "Skip the resume black hole. Request referrals directly from verified professionals for your desired roles.",
+    tag: "Career Growth"
   },
   {
-    quote: "NiC connected me with an alum from my own college who referred me for my dream internship!",
-    author: "Sneha Reddy",
-    role: "Student at IIT Bombay"
+    title: "Accelerate Your Journey",
+    description: "Leverage your college network to land interviews faster and secure your dream job or internship.",
+    tag: "Success"
   }
 ];
 
-const alumniTestimonials: Testimonial[] = [
+const alumniFeatures: PlatformFeature[] = [
   {
-    quote: "As an alumni, referring juniors from my college is incredibly rewarding. NiC makes the routing seamless.",
-    author: "Priya Patel",
-    role: "Product Manager at Meta"
+    title: "Give Back to Your Roots",
+    description: "Guide, mentor, and refer talented students from your alma mater who are eager to kickstart their careers.",
+    tag: "Mentorship"
   },
   {
-    quote: "Giving back to my alma mater by mentoring and referring talented students has never been this easy and structured.",
-    author: "Rohan Sen",
-    role: "Staff Engineer at Netflix"
+    title: "Discover Top Talent",
+    description: "Find the best and brightest candidates for your team directly from a trusted college network.",
+    tag: "Recruitment"
   },
   {
-    quote: "I found amazing talent for my team directly from my college. It's a win-win for everyone involved.",
-    author: "Sarah Jenkins",
-    role: "Engineering Manager at Apple"
+    title: "Build Your Legacy",
+    description: "Get recognized on the platform leaderboard and establish your personal brand as a leading alumni mentor.",
+    tag: "Community"
   }
 ];
 
@@ -79,7 +79,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
     setPassword('');
     setShowPassword(false);
     setError(null);
-    setCurrentTestimonial(0);
+    setCurrentFeature(0);
   }, [isLogin, role]);
   
   
@@ -138,8 +138,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
     }
   }, [onSuccess, API_BASE_URL]);
 
-  // Testimonial slider state
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  // Feature slider state
+  const [currentFeature, setCurrentFeature] = useState(0);
 
   // Form states
   const [email, setEmail] = useState('');
@@ -149,14 +149,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
 
-  const activeTestimonials = role === 'seeker' ? seekerTestimonials : alumniTestimonials;
+  const activeFeatures = role === 'seeker' ? seekerFeatures : alumniFeatures;
 
-  const handlePrevTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev === 0 ? activeTestimonials.length - 1 : prev - 1));
+  const handlePrevFeature = () => {
+    setCurrentFeature((prev) => (prev === 0 ? activeFeatures.length - 1 : prev - 1));
   };
 
-  const handleNextTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev === activeTestimonials.length - 1 ? 0 : prev + 1));
+  const handleNextFeature = () => {
+    setCurrentFeature((prev) => (prev === activeFeatures.length - 1 ? 0 : prev + 1));
   };
 
   const [error, setError] = useState<string | null>(null);
@@ -700,21 +700,22 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-300">Alumni.</span>
               </h2>
             )}
-            {/* Elegant massive quote sign */}
-            <span className={`block font-serif text-[5.5rem] leading-none ${role === 'seeker' ? 'text-cyan-400/20' : 'text-rose-400/20'} font-black h-12 -ml-2 select-none transition-colors duration-500`}>
-              “
-            </span>
+            <div className={`mt-2 w-12 h-1 rounded-full ${role === 'seeker' ? 'bg-cyan-500' : 'bg-rose-500'} transition-colors duration-500`} />
           </div>
 
-          {/* Testimonial Active Quote Area */}
-          <div className="relative z-10 text-left my-8 min-h-[100px] flex flex-col justify-center">
-            <p className="text-slate-200 text-sm md:text-base font-medium leading-relaxed italic transition-all duration-300">
-              "{activeTestimonials[currentTestimonial]?.quote}"
-            </p>
-            <div className="mt-4">
-              <span className="block font-bold text-white text-sm">{activeTestimonials[currentTestimonial]?.author}</span>
-              <span className="block text-slate-400 text-xs mt-0.5">{activeTestimonials[currentTestimonial]?.role}</span>
+          {/* Feature Active Info Area */}
+          <div className="relative z-10 text-left my-8 min-h-[120px] flex flex-col justify-center">
+            <div className="mb-3">
+              <span className={`inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${role === 'seeker' ? 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10' : 'text-rose-400 border-rose-500/30 bg-rose-500/10'} transition-colors duration-500`}>
+                {activeFeatures[currentFeature]?.tag}
+              </span>
             </div>
+            <h3 className="font-bold text-white text-lg md:text-xl mb-2 transition-all duration-300">
+              {activeFeatures[currentFeature]?.title}
+            </h3>
+            <p className="text-slate-300 text-sm md:text-base font-medium leading-relaxed transition-all duration-300">
+              {activeFeatures[currentFeature]?.description}
+            </p>
           </div>
 
           {/* Control Arrows Footer Row */}
@@ -722,17 +723,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={handlePrevTestimonial}
+                onClick={handlePrevFeature}
                 className="w-9 h-9 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition pointer-events-auto"
-                aria-label="Previous testimonial"
+                aria-label="Previous feature"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 type="button"
-                onClick={handleNextTestimonial}
+                onClick={handleNextFeature}
                 className="w-9 h-9 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition pointer-events-auto"
-                aria-label="Next testimonial"
+                aria-label="Next feature"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

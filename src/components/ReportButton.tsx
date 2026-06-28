@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { API_BASE_URL } from '../config';
-import { MessageSquareWarning, X } from 'lucide-react';
+import { MessageSquareWarning, X, CheckCircle } from 'lucide-react';
 
 export const ReportButton = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,7 +44,7 @@ export const ReportButton = () => {
       });
 
       if (res.ok) {
-        alert("Report sent successfully! Thank you.");
+        setShowSuccess(true);
         setIsOpen(false);
         setDescription('');
       } else {
@@ -98,6 +99,24 @@ export const ReportButton = () => {
                 {isSubmitting ? 'Sending...' : 'Submit'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showSuccess && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-[#0a0a0a] border border-white/10 p-8 rounded-2xl w-full max-w-sm shadow-2xl relative animate-scale-in text-center">
+            <div className="w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8" />
+            </div>
+            <h2 className="font-bold text-xl mb-2 text-white">Report Submitted!</h2>
+            <p className="text-gray-400 text-sm mb-6">Your query has been submitted successfully. We'll look into it right away.</p>
+            <button 
+              onClick={() => setShowSuccess(false)}
+              className="bg-white text-black px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition-colors w-full"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

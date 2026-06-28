@@ -773,11 +773,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login', initi
 
         {/* ── Overlay Float Card (Bottom Right Hovering) ── */}
         <div className="hidden lg:block absolute -bottom-10 right-10 z-20 pointer-events-auto transform rotate-2 hover:rotate-0 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          <div className="bg-gradient-to-br from-rose-500/10 via-purple-500/10 to-blue-500/10 backdrop-blur-2xl border border-white/10 p-6 rounded-[2rem] text-left max-w-[260px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-            <h3 className="font-space-grotesk text-sm font-extrabold text-white tracking-tight leading-snug">
+          <div className="bg-gradient-to-br from-rose-500/40 via-purple-500/40 to-blue-500/40 backdrop-blur-3xl border border-white/30 p-6 rounded-[2rem] text-left max-w-[260px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
+            <h3 className="font-space-grotesk text-sm font-extrabold text-white tracking-tight leading-snug drop-shadow-md">
               Get your right job and right place apply now
             </h3>
-            <p className="text-slate-300 text-[10px] leading-relaxed mt-2">
+            <p className="text-white/90 text-[10px] leading-relaxed mt-2 font-medium drop-shadow-sm">
               Join the referral network to experience the easiest way to kickstart your career.
             </p>
             {/* Avatar overlapping circles */}
